@@ -89,6 +89,8 @@ Yes — that is how you pick up their changes when you want them. Prefer small, 
 
 ## Dependencies
 
+For a Python-dev-friendly walkthrough (cheat sheet, install checklist, Cargo equivalents), open **[dev-setup.html](dev-setup.html)** in a browser.
+
 | Layer | How it’s managed |
 |-------|------------------|
 | Rust crates | `Cargo.toml` / `Cargo.lock` — use `cargo add` for new deps |
