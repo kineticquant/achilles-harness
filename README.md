@@ -1,63 +1,132 @@
-<div align="center">
+# Achilles
 
-# goose
+**Achilles** is a custom agent harness built on a fork of [goose](https://github.com/aaif-goose/goose).  
+**Arrav** is the fine-tuned Liquid AI model that snaps into Achilles and can run locally.
 
-_your native open source AI agent — desktop app, CLI, and API — for code, workflows, and everything in between_
+This is **not** an MIT-style open product. Goose-derived code stays under Apache 2.0; Achilles / Arrav additions are proprietary. See [LICENSING.md](LICENSING.md).
 
-<p align="center">
-  <a href="https://opensource.org/licenses/Apache-2.0"
-    ><img src="https://img.shields.io/badge/License-Apache_2.0-blue.svg"></a>
-  <a href="https://discord.gg/n8R5VaWDAn"
-    ><img src="https://img.shields.io/discord/1287729918100246654?logo=discord&logoColor=white&label=Join+Us&color=blueviolet" alt="Discord"></a>
-  <a href="https://github.com/aaif-goose/goose/actions/workflows/ci.yml"
-     ><img src="https://img.shields.io/github/actions/workflow/status/aaif-goose/goose/ci.yml?branch=main" alt="CI"></a>
-  <a href="https://insights.linuxfoundation.org/project/goose"><img src="https://insights.linuxfoundation.org/api/badge/health-score?project=goose"></a>
-  <a href="https://repology.org/project/goose-cli/versions"><img src="https://repology.org/badge/tiny-repos/goose-cli.svg" alt="Packaging status"></a>
-</p>
+## Naming
 
-<a href="https://trendshift.io/repositories/25298?utm_source=repository-badge&amp;utm_medium=badge&amp;utm_campaign=badge-repository-25298" target="_blank" rel="noopener noreferrer"><img src="https://trendshift.io/api/badge/repositories/25298" alt="aaif-goose%2Fgoose | Trendshift" width="250" height="55"/></a>
+| Name | What it is |
+|------|------------|
+| **Achilles** | The harness (CLI, desktop UI, agent runtime, tooling) |
+| **Arrav** | The model that runs inside the harness (local Liquid AI fine-tune) |
+| **goose** | Upstream open-source project this fork is based on |
 
-</div>
+## Goals
 
+- Ship a branded desktop + CLI agent experience (**Achilles**)
+- Default to / prefer the local **Arrav** model (Liquid AI fine-tune)
+- Keep the ability to pull useful fixes and features from upstream goose
+- Restrict commercial reuse of Achilles / Arrav materials via proprietary licensing
 
-goose is a general-purpose AI agent that runs on your machine. Not just for code — use it for research, writing, automation, data analysis, or anything you need to get done.
+## Build & run (Windows)
 
-A native desktop app for macOS, Linux, and Windows. A full CLI for terminal workflows. An API to embed it anywhere. Built in Rust for performance and portability.
+### Prerequisites
 
-goose works with 15+ providers — Anthropic, OpenAI, Google, Ollama, OpenRouter, Azure, Bedrock, and more. Use API keys or your existing Claude, ChatGPT, or Gemini subscriptions via [ACP](https://goose-docs.ai/docs/guides/acp-providers). Connect to 70+ extensions via the [Model Context Protocol](https://modelcontextprotocol.io/) open standard.
+- [Rust](https://rustup.rs/) (see `rust-version` in root `Cargo.toml`)
+- [Visual Studio Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/) (MSVC) for native builds
+- Node.js + pnpm (Hermit can provide these once activated; see below)
+- Git
 
-goose is part of the [Agentic AI Foundation (AAIF)](https://aaif.io/) at the Linux Foundation.
+### Option A — Hermit toolchain (recommended by upstream)
 
-# Get started
+```powershell
+# From repo root (Git Bash or WSL may be easier for `source`)
+# On Windows, use Git Bash:
+source ./bin/activate-hermit
 
-**[Download the desktop app](https://goose-docs.ai/docs/getting-started/installation)** for macOS, Linux, and Windows.
-
-Or install the CLI:
-
-```bash
-curl -fsSL https://github.com/aaif-goose/goose/releases/download/stable/download_cli.sh | bash
+cargo build
+cargo build --release -p goose-cli --bin goose
 ```
 
-# Quick links
-- [Quickstart](https://goose-docs.ai/docs/quickstart)
-- [Installation](https://goose-docs.ai/docs/getting-started/installation)
-- [Tutorials](https://goose-docs.ai/docs/category/tutorials)
-- [Documentation](https://goose-docs.ai/docs/category/getting-started)
-- [Governance](https://github.com/aaif-goose/goose/blob/main/GOVERNANCE.md)
-- [Custom Distributions](https://github.com/aaif-goose/goose/blob/main/CUSTOM_DISTROS.md) — build your own goose distro with preconfigured providers, extensions, and branding
+### Option B — System Rust + UI
 
-## Need help?
-- [Diagnostics & Reporting](https://goose-docs.ai/docs/troubleshooting/diagnostics-and-reporting)
-- [Known Issues](https://goose-docs.ai/docs/troubleshooting/known-issues)
+```powershell
+# CLI / core
+cargo build
+cargo build --release -p goose-cli --bin goose
 
-# a little goose humor 🪿
+# Desktop UI
+cd ui/desktop
+pnpm install
+pnpm run start
+```
 
-> Why did the developer choose goose as their AI agent?
-> 
-> Because it always helps them "migrate" their code to production! 🚀
+Or from repo root with [just](https://github.com/casey/just):
 
-# goose around with us
-- [Discord](https://discord.gg/n8R5VaWDAn)
-- [YouTube](https://www.youtube.com/@goose-oss)
-- [LinkedIn](https://www.linkedin.com/company/goose-oss)
-- [Twitter/X](https://x.com/goose_oss)
+```powershell
+just run-ui        # builds release CLI binary, then starts Electron UI
+just run-ui-only   # UI only (expects binary already in place)
+just release-windows
+```
+
+The desktop app launches the bundled `goose` CLI binary and talks to it over ACP. Binary names may still say `goose` internally until we finish renaming; the product brand is **Achilles**.
+
+### Useful checks
+
+```powershell
+cargo fmt
+cargo clippy --all-targets -- -D warnings
+cargo test -p goose
+cd ui/desktop; pnpm run typecheck; pnpm test
+```
+
+## Remotes
+
+| Remote | URL | Purpose |
+|--------|-----|---------|
+| `origin` | `https://github.com/kineticquant/achilles-harness.git` | Your Achilles / Arrav repo (push here) |
+| `upstream` | `https://github.com/aaif-goose/goose.git` | goose source — fetch/merge when you want their changes |
+
+```powershell
+git fetch upstream
+git log HEAD..upstream/main --oneline   # see what you'd pick up
+# merge or cherry-pick as needed
+```
+
+Yes — that is how you pick up their changes when you want them. Prefer small, reviewed merges; keep Achilles-specific code isolated when possible.
+
+## Dependencies
+
+| Layer | How it’s managed |
+|-------|------------------|
+| Rust crates | `Cargo.toml` / `Cargo.lock` — use `cargo add` for new deps |
+| Desktop / JS | `ui/pnpm-workspace.yaml`, `ui/pnpm-lock.yaml` — use `pnpm` in `ui/` |
+| Toolchain pins | Hermit under `bin/` (Rust/Node/pnpm/etc. when activated) |
+| Arrav model | To be added as a first-class provider / local inference path (not upstream) |
+
+When syncing upstream, expect lockfile conflicts — regenerate with `cargo update` / `pnpm install` carefully rather than blindly taking one side.
+
+## Recommended VS Code / Cursor extensions
+
+Add these for day-to-day work on Achilles:
+
+| Extension | Why |
+|-----------|-----|
+| **rust-analyzer** (`rust-lang.rust-analyzer`) | Rust IDE features, go-to-def, borrow checking |
+| **CodeLLDB** (`vadimcn.vscode-lldb`) | Debug Rust binaries |
+| **Even Better TOML** (`tamasfe.even-better-toml`) | `Cargo.toml` editing |
+| **crates** (`serayuzgur.crates`) | Crate versions / docs in Cargo.toml |
+| **ESLint** (`dbaeumer.vscode-eslint`) | Desktop TS/TSX lint |
+| **Prettier** (`esbenp.prettier-vscode`) | UI formatting |
+| **Tailwind CSS IntelliSense** (`bradlc.vscode-tailwindcss`) | Desktop styling |
+| **Error Lens** (`usernamehw.errorlens`) | Inline diagnostics |
+| **GitLens** (`eamodio.gitlens`) | Blame / history while syncing upstream |
+| **YAML** (`redhat.vscode-yaml`) | Recipes / config YAML |
+
+Optional: **Thunder Client** or **REST Client** for hitting local ACP HTTP endpoints.
+
+## Project map
+
+```
+crates/goose*     # agent core, CLI, MCP, local inference
+ui/desktop/       # Electron Achilles UI (rebranding in progress)
+CUSTOM_DISTROS.md # upstream guide for white-label forks (still useful)
+LICENSING.md      # how Apache + proprietary licenses layer
+AGENTS.md         # instructions for coding agents working in this repo
+```
+
+## Status
+
+Early fork. Branding to Achilles has started (UI product name, prompts, English strings). Arrav Liquid AI integration and full rename of internal `goose` identifiers are planned next.
