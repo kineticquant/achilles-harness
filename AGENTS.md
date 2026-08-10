@@ -1,121 +1,149 @@
-# AGENTS Instructions
+# AGENTS.md — Achilles / Arrav
 
-goose is an AI agent framework in Rust with CLI and Electron desktop interfaces.
+Instructions for coding agents and humans working in this repository.
 
-## Contribution Workflow
+## Product identity
 
-The issue is the source of truth for work intended for an upstream pull request. Track issue status on the [Goose Issues board](https://github.com/orgs/aaif-goose/projects/1).
+| Name | Role |
+|------|------|
+| **Achilles** | The harness — desktop app, CLI, agent runtime, MCP/extensions surface |
+| **Arrav** | The model — fine-tuned Liquid AI model that snaps into Achilles and can run locally |
+| **goose** | Upstream base project ([aaif-goose/goose](https://github.com/aaif-goose/goose)) |
 
-- Before implementing an issue for a pull request, confirm that it is on the board with Status **Ready**.
-- Do not implement issues in **Inbox**, **Needs info**, or **Accepted / design**. Help resolve the issue discussion instead.
-- Read the agreed design, constraints, non-goals, and verification plan before changing code.
-- Keep the implementation within the issue's agreed scope.
-- If implementation reveals a material design change, return to the issue before continuing.
-- Every external pull request must link the Ready issue it implements and explain how the verification plan was performed.
-- Structure new issues on the matching template in `.github/ISSUE_TEMPLATE/` and set the issue type (e.g. Bug, Feature). `gh issue create` does not apply templates automatically.
+This repo is a **fork of goose** used to build Achilles. It is **not** intended as MIT/Apache-for-everything FOSS for our additions. Goose-derived code remains Apache-2.0; Achilles / Arrav original work is proprietary. See `LICENSING.md`, `LICENSE-APACHE`, `LICENSE-ACHILLES`, `NOTICE`.
 
-Maintainer-directed work, urgent security fixes, release automation, and local or exploratory changes do not require a Ready issue.
+## Goals (current)
 
-## Agent Loop Migration
+1. Keep a maintainable fork that can pull upstream goose fixes/features via the `upstream` remote.
+2. Rebrand the product to **Achilles** (UI strings, packaging, prompts, icons over time).
+3. Integrate **Arrav** as the preferred local model (Liquid AI fine-tune).
+4. Enforce restrictive licensing on Achilles / Arrav materials while preserving Apache obligations for goose code.
+5. Prefer isolating proprietary pieces (Arrav provider, branding, business logic) to ease upstream merges.
 
-We are replacing the legacy agent loop in `crates/goose/src/agents/agent.rs` with the state machine in `crates/goose/src/agents/state_machine/`. The state-machine path is enabled with `GOOSE_STATE_MACHINE=1`.
+## Repo remotes
 
-Until the migration is complete, changes to agent-loop behavior must be implemented and tested in both paths. When reviewing code, check whether a change to either path also applies to the other and flag missing parity.
+- `upstream` → `https://github.com/aaif-goose/goose.git` (track / merge as needed)
+- `origin` → `https://github.com/kineticquant/achilles-harness.git` (your Achilles / Arrav repo)
+
+Sync pattern:
+
+```bash
+git fetch upstream
+git log HEAD..upstream/main --oneline
+# merge or cherry-pick deliberately
+```
+
+## Licensing rules for agents
+
+- Do **not** delete `LICENSE-APACHE`, `NOTICE`, or Apache headers on goose-derived files.
+- New Achilles / Arrav files should be treated as proprietary (`LICENSE-ACHILLES`).
+- Do not claim this entire tree is MIT or “fully open source.”
+- Do not use Goose/AAIF trademarks in a way that implies endorsement.
+
+## Architecture (inherited from goose)
+
+```
+crates/
+├── goose                 # core agent, providers, prompts, state machine
+├── goose-cli             # CLI entry (`goose` binary for now)
+├── goose-mcp             # MCP extensions
+├── goose-local-inference # local model path (relevant for Arrav)
+└── ...
+
+ui/desktop/               # Electron UI → brand as Achilles
+```
+
+Useful upstream docs still in-tree: `CUSTOM_DISTROS.md` (white-label guide), `BUILDING_LINUX.md`, `BUILDING_DOCKER.md`, `ui/desktop/README.md`.
 
 ## Setup
+
 ```bash
-source bin/activate-hermit
+# Prefer Hermit when available
+source bin/activate-hermit   # Git Bash / Unix
+
 cargo build
 ```
+
+Windows: MSVC Build Tools + Rust via rustup; for Hermit activation use Git Bash. UI needs pnpm (see `ui/desktop/package.json` engines).
 
 ## Commands
 
 ### Build
+
 ```bash
-cargo build                   # debug
-cargo build --release         # release  
-just release-binary           # release binary
+cargo build                              # debug
+cargo build --release -p goose-cli --bin goose
+just release-windows                     # Windows MSVC release binary
+just run-ui                              # build CLI + start desktop
+just run-ui-only                         # desktop only
 ```
 
-### Test
-```bash
-cargo test                   # all tests
-cargo test -p goose          # specific crate
-cargo test --package goose --test mcp_integration_test
-just record-mcp-tests        # record MCP
-```
+### Test / lint
 
-### Lint/Format
 ```bash
+cargo test
+cargo test -p goose
 cargo fmt
 cargo clippy --all-targets -- -D warnings
+cd ui/desktop && pnpm run typecheck && pnpm test
 ```
 
 ### UI
+
 ```bash
-just run-ui                  # start desktop
-cd ui/desktop && pnpm run typecheck
-cd ui/desktop && pnpm test   # test UI
+cd ui/desktop && pnpm install && pnpm run start-gui
+# or from root: just run-ui
 ```
 
-## Structure
-```
-crates/
-├── goose              # core logic
-├── goose-acp-macros   # ACP proc macros
-├── goose-cli          # CLI entry
-├── goose-mcp          # MCP extensions
-├── goose-test         # test utilities
-└── goose-test-support # test helpers
+## Branding work
 
-ui/desktop/            # Electron app
-```
+Started:
 
-## Development Loop
-```bash
-# 1. source bin/activate-hermit
-# 2. Make changes
-# 3. cargo fmt
-```
+- Desktop `productName` / description → Achilles
+- `index.html` title → Achilles
+- Forge packaging display names → Achilles
+- English UI strings (`en.json`) user-facing Goose → Achilles (technical ids like `.goosehints`, `goose://` left alone for now)
+- System prompts → Achilles / Arrav framing
 
-### Run these only if the user has asked you to build/test your changes:
-```
-# 1. cargo build
-# 2. cargo test -p <crate>
-# 3. cargo clippy --all-targets -- -D warnings
-```
+Still TODO:
 
-## Rules
+- Icons / splash assets under `ui/desktop/src/images/`
+- Remaining locale files
+- Hardcoded `Goose` strings in TSX components
+- Binary / protocol / config renames (`goose` CLI name, `goose://`, env vars) — do carefully; high breakage
+- Arrav provider + Liquid AI local snap-in
+- Telemetry defaults (`GOOSE_DISABLE_TELEMETRY=1` for private distros)
 
-- Test: Prefer tests/ folder, e.g. crates/goose/tests/
-- Test: When adding features, update goose-self-test.yaml, rebuild, then run `goose run --recipe goose-self-test.yaml` to validate
-- Error: Use anyhow::Result
-- Provider: Implement Provider trait see providers/base.rs
-- MCP: Extensions in crates/goose-mcp/
-- UI Desktop: Use ACP SDK types or local `src/types/*` types. Do not import generated OpenAPI types/client code from `ui/desktop/src/api`
+## Arrav (model) — planned
 
-## Code Quality
+- Fine-tuned Liquid AI model
+- Runs locally inside Achilles
+- Implementation will likely touch `crates/goose-local-inference` and/or a declarative provider under `crates/goose/src/providers/`
+- Ship as Achilles-default model without requiring cloud API keys when possible
 
-- Comments: Write self-documenting code - prefer clear names over comments
-- Comments: Never add comments that restate what code does
-- Comments: Only comment for complex algorithms, non-obvious business logic, or "why" not "what"
-- Simplicity: Don't make things optional that don't need to be - the compiler will enforce
-- Simplicity: Booleans should default to false, not be optional
-- Errors: Don't add error context that doesn't add useful information (e.g., `.context("Failed to X")` when error already says it failed)
-- Simplicity: Avoid overly defensive code - trust Rust's type system
-- Logging: Clean up existing logs, don't add more unless for errors or security events
+## Agent loop note (upstream)
 
-## Never
+Upstream is migrating the agent loop to a state machine under `crates/goose/src/agents/state_machine/` (`GOOSE_STATE_MACHINE=1`). Until that lands fully upstream, behavior changes may need parity in both paths. See historical notes in git history of upstream `AGENTS.md` if needed.
 
-- Never: Recreate `ui/desktop/src/api` or add `@hey-api/openapi-ts` to `ui/desktop`
-- Cargo.toml: For human-authored dependency changes, use `cargo add` instead of manually editing dependency entries unless there is a specific reason not to.
-- Cargo.toml: Automated dependency bump PRs are exempt; when manual edits are necessary, keep `Cargo.lock` consistent.
-- Never: Skip cargo fmt
-- Never: Merge without running clippy
-- Never: Comment self-evident operations (`// Initialize`, `// Return result`), getters/setters, constructors, or standard Rust idioms
-- Never: Overwrite a live binary in place (e.g. `cp`/`fs.copyFileSync` onto an existing executable) - unlink or atomic-rename the destination first, otherwise macOS SIGKILLs running processes with "Code Signature Invalid"
+## Coding rules
 
-## Entry Points
-- CLI: crates/goose-cli/src/main.rs
-- UI: ui/desktop/src/main.ts
-- Agent: crates/goose/src/agents/agent.rs
+- Prefer small, reviewable diffs; isolate Achilles-specific changes.
+- Rust: `anyhow::Result`; use `cargo add` for human-authored dependency changes; keep `Cargo.lock` consistent.
+- UI: ACP SDK types or `ui/desktop/src/types/*` — do not recreate `ui/desktop/src/api` / openapi client there.
+- Do not overwrite a live binary in place on macOS (signature invalidation).
+- Comments: explain why, not what; skip noise.
+- Run fmt/clippy/tests when the user asks to verify changes.
+
+## Entry points
+
+- CLI: `crates/goose-cli/src/main.rs`
+- UI: `ui/desktop/src/main.ts`
+- Agent: `crates/goose/src/agents/agent.rs`
+- System prompt: `crates/goose/src/prompts/system.md`
+
+## Do not
+
+- Push proprietary Arrav weights or secrets into public remotes
+- Strip Apache notices
+- Mass-rename internal `goose` identifiers without a staged plan
+- Treat upstream contribution workflow (Ready issues board) as required for private Achilles work

@@ -27,9 +27,9 @@ interface UpdateCheckResult {
 }
 
 export class GitHubUpdater {
-  private readonly owner = process.env.GITHUB_OWNER || 'aaif-goose';
-  private readonly repo = process.env.GITHUB_REPO || 'goose';
-  private readonly bundleName = process.env.GOOSE_BUNDLE_NAME || 'Goose';
+  private readonly owner = process.env.GITHUB_OWNER || 'kineticquant';
+  private readonly repo = process.env.GITHUB_REPO || 'achilles-harness';
+  private readonly bundleName = process.env.GOOSE_BUNDLE_NAME || 'Achilles';
   private readonly apiUrl = `https://api.github.com/repos/${this.owner}/${this.repo}/releases/latest`;
 
   async checkForUpdates(): Promise<UpdateCheckResult> {
@@ -50,7 +50,7 @@ export class GitHubUpdater {
       const response = await fetch(this.apiUrl, {
         headers: {
           Accept: 'application/vnd.github.v3+json',
-          'User-Agent': `Goose-Desktop/${app.getVersion()}`,
+          'User-Agent': `Achilles-Desktop/${app.getVersion()}`,
         },
         signal: controller.signal,
       });

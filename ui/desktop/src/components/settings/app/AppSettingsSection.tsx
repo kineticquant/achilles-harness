@@ -41,7 +41,7 @@ const i18n = defineMessages({
   },
   taskNotificationsDesc: {
     id: 'settings.notifications.task.description',
-    defaultMessage: 'Notify when Goose finishes a task while the window is in the background',
+    defaultMessage: 'Notify when Achilles finishes a task while the window is in the background',
   },
   menuBarIcon: { id: 'settings.menuBarIcon.title', defaultMessage: 'Menu bar icon' },
   menuBarIconDesc: {
@@ -511,7 +511,7 @@ export default function AppSettingsSection({ scrollToSection }: AppSettingsSecti
             <Button
               onClick={() => {
                 window.open(
-                  'https://github.com/aaif-goose/goose/issues/new?template=bug_report.md',
+                  'https://github.com/kineticquant/achilles-harness/issues/new',
                   '_blank'
                 );
               }}
@@ -523,7 +523,7 @@ export default function AppSettingsSection({ scrollToSection }: AppSettingsSecti
             <Button
               onClick={() => {
                 window.open(
-                  'https://github.com/aaif-goose/goose/issues/new?template=feature_request.md',
+                  'https://github.com/kineticquant/achilles-harness/issues/new',
                   '_blank'
                 );
               }}
