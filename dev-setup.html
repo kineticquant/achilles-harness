@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Achilles — Dev setup (Python → Rust)</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a222c;
+      --border: #2a3542;
+      --text: #e7ecf1;
+      --muted: #9aa8b5;
+      --accent: #c4a35a;
+      --ok: #3d9a6a;
+      --bad: #c45c5c;
+      --code-bg: #0b0f13;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(ellipse 80% 50% at 10% -10%, #1e2a38 0%, transparent 55%),
+        radial-gradient(ellipse 60% 40% at 100% 0%, #2a2218 0%, transparent 50%),
+        var(--bg);
+      color: var(--text);
+      line-height: 1.55;
+    }
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 4rem;
+    }
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 650;
+      letter-spacing: -0.02em;
+      margin: 0 0 0.4rem;
+    }
+    .lede {
+      color: var(--muted);
+      font-size: 1.05rem;
+      margin: 0 0 2rem;
+    }
+    h2 {
+      font-size: 1.15rem;
+      margin: 2.25rem 0 0.75rem;
+      padding-bottom: 0.35rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--accent);
+      font-weight: 600;
+    }
+    p { margin: 0.6rem 0 1rem; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      margin: 0.75rem 0 1.25rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    th, td {
+      text-align: left;
+      padding: 0.65rem 0.85rem;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    th {
+      background: #121820;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    tr:last-child td { border-bottom: none; }
+    code, .mono {
+      font-family: ui-monospace, "Cascadia Code", "Consolas", monospace;
+      font-size: 0.88em;
+    }
+    code {
+      background: var(--code-bg);
+      padding: 0.12em 0.4em;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+    }
+    pre {
+      background: var(--code-bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem 1.1rem;
+      overflow-x: auto;
+      margin: 0.75rem 0 1.25rem;
+    }
+    pre code {
+      border: none;
+      background: none;
+      padding: 0;
+      font-size: 0.85rem;
+    }
+    ol {
+      padding-left: 1.25rem;
+      margin: 0.5rem 0 1rem;
+    }
+    li { margin: 0.55rem 0; }
+    a { color: var(--accent); }
+    .badge {
+      display: inline-block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      letter-spacing: 0.02em;
+    }
+    .badge-bad {
+      background: color-mix(in srgb, var(--bad) 22%, transparent);
+      color: #f0a8a8;
+      border: 1px solid color-mix(in srgb, var(--bad) 45%, transparent);
+    }
+    .badge-ok {
+      background: color-mix(in srgb, var(--ok) 22%, transparent);
+      color: #9fd4b5;
+      border: 1px solid color-mix(in srgb, var(--ok) 45%, transparent);
+    }
+    .note {
+      background: var(--surface);
+      border-left: 3px solid var(--accent);
+      padding: 0.85rem 1rem;
+      margin: 1rem 0;
+      border-radius: 0 8px 8px 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+    footer {
+      margin-top: 3rem;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Achilles — Dev setup</h1>
+    <p class="lede">
+      Quick guide for Python developers. Rust’s equivalent of
+      <code>requirements.txt</code> / <code>pip install</code>, plus what must be
+      installed before this harness builds on Windows.
+    </p>
+
+    <h2>Python → Rust cheat sheet</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Python</th>
+          <th>Rust</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>requirements.txt</code> / <code>pyproject.toml</code></td>
+          <td><code>Cargo.toml</code> (declared dependencies)</td>
+        </tr>
+        <tr>
+          <td>Lockfile (<code>poetry.lock</code>, etc.)</td>
+          <td><code>Cargo.lock</code> (pinned versions — already in this repo)</td>
+        </tr>
+        <tr>
+          <td><code>pip install -r requirements.txt</code></td>
+          <td><code>cargo build</code> (downloads + compiles crates into <code>target/</code>)</td>
+        </tr>
+        <tr>
+          <td><code>venv</code></td>
+          <td>Not really needed — Cargo manages deps per project</td>
+        </tr>
+        <tr>
+          <td><code>pip list</code></td>
+          <td><code>cargo tree</code> (after the toolchain is installed)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>
+      There is also a <strong>Node / UI</strong> side
+      (<code>ui/pnpm-lock.yaml</code>) — a second package manager for the Electron desktop app.
+    </p>
+
+    <h2>Are dependencies installed?</h2>
+    <p>
+      Having <code>Cargo.lock</code> in the repo is <em>not</em> the same as having
+      crates downloaded and compiled on your machine. Check with:
+    </p>
+    <pre><code>rustc --version
+cargo --version
+node --version
+pnpm --version</code></pre>
+    <p>Typical Windows status before first setup:</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Thing</th>
+          <th>Meaning</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Rust (<code>rustc</code> / <code>cargo</code> / <code>rustup</code>)</td>
+          <td><span class="badge badge-bad">Must install</span></td>
+        </tr>
+        <tr>
+          <td>MSVC Build Tools (C++)</td>
+          <td><span class="badge badge-bad">Must install on Windows</span></td>
+        </tr>
+        <tr>
+          <td>Node.js</td>
+          <td>Needed for desktop UI</td>
+        </tr>
+        <tr>
+          <td>pnpm</td>
+          <td><span class="badge badge-bad">Install if missing</span> (<code>npm install -g pnpm</code>)</td>
+        </tr>
+        <tr>
+          <td><code>target/</code> folder</td>
+          <td>Appears after first successful <code>cargo build</code></td>
+        </tr>
+        <tr>
+          <td><code>node_modules</code> under <code>ui/</code></td>
+          <td>Appears after <code>pnpm install</code></td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Minimal setup (once)</h2>
+    <ol>
+      <li>
+        <strong>Install Rust</strong> from
+        <a href="https://rustup.rs/">https://rustup.rs/</a>.
+        Run the installer, then <em>open a new terminal</em>.
+      </li>
+      <li>
+        <strong>Install Visual Studio Build Tools</strong>
+        (<a href="https://visualstudio.microsoft.com/visual-cpp-build-tools/">download</a>).
+        Select the <strong>Desktop development with C++</strong> workload.
+        Rust on Windows needs this to link native code.
+      </li>
+      <li>
+        <strong>Install pnpm</strong> (for the UI):
+        <pre><code>npm install -g pnpm</code></pre>
+      </li>
+      <li>
+        <strong>Fetch &amp; build Rust deps</strong> from the repo root:
+        <pre><code>cargo build</code></pre>
+        First run downloads a lot and can take a long time — that is normal.
+      </li>
+      <li>
+        <strong>UI deps</strong> (when you work on the desktop app):
+        <pre><code>cd ui\desktop
+pnpm install</code></pre>
+      </li>
+    </ol>
+
+    <div class="note">
+      After <code>cargo build</code> succeeds without errors, your Rust side is set up.
+      Use <code>cargo build --release -p goose-cli --bin goose</code> for a release CLI binary,
+      and see the root <a href="README.md">README.md</a> for running the UI.
+    </div>
+
+    <h2>Useful Cargo commands</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Command</th>
+          <th>Like…</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><code>cargo build</code></td>
+          <td>Install + compile debug build</td>
+        </tr>
+        <tr>
+          <td><code>cargo build --release</code></td>
+          <td>Optimized production build</td>
+        </tr>
+        <tr>
+          <td><code>cargo test</code></td>
+          <td><code>pytest</code></td>
+        </tr>
+        <tr>
+          <td><code>cargo add some_crate</code></td>
+          <td><code>pip install some_pkg</code> + pin in lockfile</td>
+        </tr>
+        <tr>
+          <td><code>cargo tree</code></td>
+          <td>See dependency tree</td>
+        </tr>
+        <tr>
+          <td><code>cargo fmt</code> / <code>cargo clippy</code></td>
+          <td>Formatter / linter</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>VS Code / Cursor extensions</h2>
+    <p>Recommended for this repo (also in <code>.vscode/extensions.json</code>):</p>
+    <table>
+      <thead>
+        <tr>
+          <th>Extension</th>
+          <th>ID</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>rust-analyzer</td><td><code>rust-lang.rust-analyzer</code></td></tr>
+        <tr><td>CodeLLDB</td><td><code>vadimcn.vscode-lldb</code></td></tr>
+        <tr><td>Even Better TOML</td><td><code>tamasfe.even-better-toml</code></td></tr>
+        <tr><td>crates</td><td><code>serayuzgur.crates</code></td></tr>
+        <tr><td>ESLint</td><td><code>dbaeumer.vscode-eslint</code></td></tr>
+        <tr><td>Prettier</td><td><code>esbenp.prettier-vscode</code></td></tr>
+        <tr><td>Tailwind CSS IntelliSense</td><td><code>bradlc.vscode-tailwindcss</code></td></tr>
+        <tr><td>Error Lens</td><td><code>usernamehw.errorlens</code></td></tr>
+        <tr><td>GitLens</td><td><code>eamodio.gitlens</code></td></tr>
+        <tr><td>YAML</td><td><code>redhat.vscode-yaml</code></td></tr>
+      </tbody>
+    </table>
+
+    <footer>
+      Achilles harness · Arrav model · Open this file in a browser from the repo root.
+    </footer>
+  </main>
+</body>
+</html>
