@@ -1,7 +1,7 @@
 [Desktop Entry]
-Name=Goose
-Exec=/usr/lib/Goose/Goose %U
-Icon=/usr/share/pixmaps/Goose.png
+Name=Achilles
+Exec=/usr/lib/Achilles/Achilles %U
+Icon=/usr/share/pixmaps/Achilles.png
 Terminal=false
 Type=Application
 Categories=Development;

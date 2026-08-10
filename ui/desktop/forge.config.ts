@@ -19,7 +19,7 @@ let cfg = {
   // Protocol registration
   protocols: [
     {
-      name: 'GooseProtocol',
+      name: 'AchillesProtocol',
       schemes: ['goose'],
     },
   ],
@@ -36,9 +36,9 @@ let cfg = {
     ],
     // Usage descriptions for macOS TCC (Transparency, Consent, and Control)
     NSMicrophoneUsageDescription:
-      'Goose needs access to your microphone for voice dictation.',
+      'Achilles needs access to your microphone for voice dictation.',
     NSAppleEventsUsageDescription:
-      'Goose needs access to send Apple Events to control other apps on your behalf.',
+      'Achilles needs access to send Apple Events to control other apps on your behalf.',
   },
 };
 
@@ -65,8 +65,8 @@ module.exports = {
       name: '@electron-forge/publisher-github',
       config: {
         repository: {
-          owner: process.env.GITHUB_OWNER || 'aaif-goose',
-          name: process.env.GITHUB_REPO || 'goose',
+          owner: process.env.GITHUB_OWNER || 'kineticquant',
+          name: process.env.GITHUB_REPO || 'achilles-harness',
         },
         prerelease: false,
         draft: true,
@@ -87,10 +87,10 @@ module.exports = {
     {
       name: '@electron-forge/maker-deb',
       config: {
-        name: 'Goose',
-        bin: 'Goose',
-        maintainer: 'AAIF (Agentic AI Foundation)',
-        homepage: 'https://goose-docs.ai/',
+        name: 'Achilles',
+        bin: 'Achilles',
+        maintainer: 'Arrav / Achilles',
+        homepage: 'https://github.com/kineticquant/achilles-harness',
         categories: ['Development'],
         desktopTemplate: './forge.deb.desktop',
         options: {
@@ -103,10 +103,10 @@ module.exports = {
     {
       name: '@electron-forge/maker-rpm',
       config: {
-        name: 'Goose',
-        bin: 'Goose',
-        maintainer: 'AAIF (Agentic AI Foundation)',
-        homepage: 'https://goose-docs.ai/',
+        name: 'Achilles',
+        bin: 'Achilles',
+        maintainer: 'Arrav / Achilles',
+        homepage: 'https://github.com/kineticquant/achilles-harness',
         categories: ['Development'],
         desktopTemplate: './forge.rpm.desktop',
         options: {

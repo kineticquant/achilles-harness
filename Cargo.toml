@@ -10,10 +10,10 @@ resolver = "2"
 edition = "2021"
 version = "1.45.0"
 rust-version = "1.94.1"
-authors = ["AAIF <ai-oss-tools@block.xyz>"]
-license = "Apache-2.0"
-repository = "https://github.com/aaif-goose/goose"
-description = "An AI agent"
+authors = ["Kineticquant"]
+license = "SEE LICENSE IN LICENSE"
+repository = "https://github.com/kineticquant/achilles-harness"
+description = "Achilles — agent harness for Arrav"
 
 [workspace.lints.clippy]
 uninlined_format_args = "allow"

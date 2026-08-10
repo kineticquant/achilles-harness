@@ -23,7 +23,7 @@ const i18n = defineMessages({
   },
   responseStylesDescription: {
     id: 'chatSettings.responseStylesDescription',
-    defaultMessage: 'Choose how Goose should format and style its responses',
+    defaultMessage: 'Choose how Achilles should format and style its responses',
   },
 });
 
