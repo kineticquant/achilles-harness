@@ -95,3 +95,6 @@ gooseselftest/
 /crates/goose-sdk/examples/uniffi/kotlin/.gradle/
 /crates/goose-sdk/examples/uniffi/kotlin/.kotlin/
 /crates/goose-sdk/examples/uniffi/kotlin/build/
+
+# Local working sessions (notes, plans, scratch) — never commit
+.working_sessions/
