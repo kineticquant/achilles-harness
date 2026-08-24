@@ -1226,6 +1226,30 @@
   "externalBackendSection.useExternalServerDescription": {
     "defaultMessage": "कहीं और चल रहे goose सर्वर से कनेक्ट करें (ऐप पुनरारंभ की आवश्यकता है)"
   },
+  "findingsView.description": {
+    "defaultMessage": "Secrets and dependency results from Scan my repo. Ledger lives in achilles.db, not chat."
+  },
+  "findingsView.empty": {
+    "defaultMessage": "No findings yet. Choose a workspace from New Chat, then run Scan my repo."
+  },
+  "findingsView.lastScan": {
+    "defaultMessage": "Last scan {status} · {count} open"
+  },
+  "findingsView.noDir": {
+    "defaultMessage": "Pick a workspace folder first (New Chat directory switcher)."
+  },
+  "findingsView.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "findingsView.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "findingsView.scanning": {
+    "defaultMessage": "Scanning…"
+  },
+  "findingsView.title": {
+    "defaultMessage": "Findings"
+  },
   "goosehintsModal.close": {
     "defaultMessage": "बंद करें"
   },
@@ -1354,6 +1378,18 @@
   },
   "hub.goodMorning": {
     "defaultMessage": "सुप्रभात"
+  },
+  "hub.noWorkspace": {
+    "defaultMessage": "Pick a workspace folder first."
+  },
+  "hub.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "hub.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "hub.scanning": {
+    "defaultMessage": "Scanning…"
   },
   "huggingFaceModelSearch.download": {
     "defaultMessage": "डाउनलोड करें"
@@ -2339,6 +2375,9 @@
   "navigation.itemExtensions": {
     "defaultMessage": "एक्सटेंशन"
   },
+  "navigation.itemFindings": {
+    "defaultMessage": "Findings"
+  },
   "navigation.itemHome": {
     "defaultMessage": "नई चैट"
   },
@@ -2857,6 +2896,9 @@
   },
   "providerSelector.addCustomProviderTitle": {
     "defaultMessage": "कस्टम प्रदाता जोड़ें"
+  },
+  "providerSelector.comingSoon": {
+    "defaultMessage": "जल्द आ रहा है"
   },
   "providerSelector.connectProvider": {
     "defaultMessage": "किसी प्रदाता से कनेक्ट करें"

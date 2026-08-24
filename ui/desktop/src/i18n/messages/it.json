@@ -1226,6 +1226,30 @@
   "externalBackendSection.useExternalServerDescription": {
     "defaultMessage": "Connettiti a un server goose in esecuzione altrove (richiede il riavvio dell'app)"
   },
+  "findingsView.description": {
+    "defaultMessage": "Secrets and dependency results from Scan my repo. Ledger lives in achilles.db, not chat."
+  },
+  "findingsView.empty": {
+    "defaultMessage": "No findings yet. Choose a workspace from New Chat, then run Scan my repo."
+  },
+  "findingsView.lastScan": {
+    "defaultMessage": "Last scan {status} · {count} open"
+  },
+  "findingsView.noDir": {
+    "defaultMessage": "Pick a workspace folder first (New Chat directory switcher)."
+  },
+  "findingsView.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "findingsView.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "findingsView.scanning": {
+    "defaultMessage": "Scanning…"
+  },
+  "findingsView.title": {
+    "defaultMessage": "Findings"
+  },
   "goosehintsModal.close": {
     "defaultMessage": "Chiudi"
   },
@@ -1354,6 +1378,18 @@
   },
   "hub.goodMorning": {
     "defaultMessage": "Buongiorno"
+  },
+  "hub.noWorkspace": {
+    "defaultMessage": "Pick a workspace folder first."
+  },
+  "hub.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "hub.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "hub.scanning": {
+    "defaultMessage": "Scanning…"
   },
   "huggingFaceModelSearch.download": {
     "defaultMessage": "Scarica"
@@ -2339,6 +2375,9 @@
   "navigation.itemExtensions": {
     "defaultMessage": "Estensioni"
   },
+  "navigation.itemFindings": {
+    "defaultMessage": "Findings"
+  },
   "navigation.itemHome": {
     "defaultMessage": "Nuova chat"
   },
@@ -2857,6 +2896,9 @@
   },
   "providerSelector.addCustomProviderTitle": {
     "defaultMessage": "Aggiungi provider personalizzato"
+  },
+  "providerSelector.comingSoon": {
+    "defaultMessage": "Prossimamente"
   },
   "providerSelector.connectProvider": {
     "defaultMessage": "Connetti a un provider"

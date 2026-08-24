@@ -20,6 +20,10 @@ import { getInitialWorkingDir } from '../utils/workingDir';
 import { createSession } from '../sessions';
 import LoadingGoose from './LoadingGoose';
 import { UserInput } from '../types/message';
+import { Button } from './ui/button';
+import { ShieldAlert } from 'lucide-react';
+import { toast } from 'react-toastify';
+import { acpStartAssessment } from '../acp/achilles';
 import {
   createNextChatExtensionDraft,
   selectNextChatExtensions,
@@ -30,6 +34,10 @@ const i18n = defineMessages({
   goodMorning: { id: 'hub.goodMorning', defaultMessage: 'Good morning' },
   goodAfternoon: { id: 'hub.goodAfternoon', defaultMessage: 'Good afternoon' },
   goodEvening: { id: 'hub.goodEvening', defaultMessage: 'Good evening' },
+  scanMyRepo: { id: 'hub.scanMyRepo', defaultMessage: 'Scan my repo' },
+  scanning: { id: 'hub.scanning', defaultMessage: 'Scanning…' },
+  noDir: { id: 'hub.noWorkspace', defaultMessage: 'Pick a workspace folder first.' },
+  scanFailed: { id: 'hub.scanFailed', defaultMessage: 'Scan failed: {error}' },
 });
 
 function useClock(): { time: string; meridiem: string; hour: number } {
@@ -56,6 +64,7 @@ export default function Hub({
   const { extensionsList } = useConfig();
   const [workingDir, setWorkingDir] = useState(getInitialWorkingDir());
   const [isCreatingSession, setIsCreatingSession] = useState(false);
+  const [isScanning, setIsScanning] = useState(false);
   const [nextChatExtensionDraft, setNextChatExtensionDraft] =
     useState<NextChatExtensionDraft | null>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -120,6 +129,26 @@ export default function Hub({
     }
   };
 
+  const handleScanRepo = async () => {
+    if (!workingDir) {
+      toast.error(intl.formatMessage(i18n.noDir));
+      return;
+    }
+    setIsScanning(true);
+    try {
+      const assessment = await acpStartAssessment(workingDir);
+      setView('findings', { assessmentId: assessment.id });
+    } catch (error) {
+      toast.error(
+        intl.formatMessage(i18n.scanFailed, {
+          error: error instanceof Error ? error.message : String(error),
+        })
+      );
+    } finally {
+      setIsScanning(false);
+    }
+  };
+
   return (
     <div className="flex flex-col h-full min-h-0 items-center justify-center px-6 relative">
       <div className="w-full max-w-2xl">
@@ -152,6 +181,19 @@ export default function Hub({
             onNextChatExtensionDraftChange={handleNextChatExtensionDraftChange}
           />
         </ChatInputCard>
+
+        <div className="mt-4 flex justify-center">
+          <Button
+            variant="outline"
+            onClick={() => void handleScanRepo()}
+            disabled={isCreatingSession || isScanning}
+          >
+            <ShieldAlert className="size-4" />
+            {isScanning
+              ? intl.formatMessage(i18n.scanning)
+              : intl.formatMessage(i18n.scanMyRepo)}
+          </Button>
+        </div>
       </div>
 
       {isCreatingSession && (

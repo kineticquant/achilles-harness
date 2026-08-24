@@ -1226,6 +1226,30 @@
   "externalBackendSection.useExternalServerDescription": {
     "defaultMessage": "Sambung ke pelayan goose yang berjalan di tempat lain (memerlukan memulakan semula aplikasi)"
   },
+  "findingsView.description": {
+    "defaultMessage": "Secrets and dependency results from Scan my repo. Ledger lives in achilles.db, not chat."
+  },
+  "findingsView.empty": {
+    "defaultMessage": "No findings yet. Choose a workspace from New Chat, then run Scan my repo."
+  },
+  "findingsView.lastScan": {
+    "defaultMessage": "Last scan {status} · {count} open"
+  },
+  "findingsView.noDir": {
+    "defaultMessage": "Pick a workspace folder first (New Chat directory switcher)."
+  },
+  "findingsView.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "findingsView.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "findingsView.scanning": {
+    "defaultMessage": "Scanning…"
+  },
+  "findingsView.title": {
+    "defaultMessage": "Findings"
+  },
   "goosehintsModal.close": {
     "defaultMessage": "Tutup"
   },
@@ -1354,6 +1378,18 @@
   },
   "hub.goodMorning": {
     "defaultMessage": "Selamat pagi"
+  },
+  "hub.noWorkspace": {
+    "defaultMessage": "Pick a workspace folder first."
+  },
+  "hub.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "hub.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "hub.scanning": {
+    "defaultMessage": "Scanning…"
   },
   "huggingFaceModelSearch.download": {
     "defaultMessage": "Muat Turun"
@@ -2339,6 +2375,9 @@
   "navigation.itemExtensions": {
     "defaultMessage": "Sambungan"
   },
+  "navigation.itemFindings": {
+    "defaultMessage": "Findings"
+  },
   "navigation.itemHome": {
     "defaultMessage": "Sembang Baharu"
   },
@@ -2857,6 +2896,9 @@
   },
   "providerSelector.addCustomProviderTitle": {
     "defaultMessage": "Tambah Penyedia Tersuai"
+  },
+  "providerSelector.comingSoon": {
+    "defaultMessage": "Akan datang"
   },
   "providerSelector.connectProvider": {
     "defaultMessage": "Sambung ke Penyedia"

@@ -27,7 +27,7 @@
     "defaultMessage": "Delete \"{name}\"? This cannot be undone."
   },
   "appsView.description": {
-    "defaultMessage": "Applications from your MCP servers and Apps built by Achilles itself. You can ask it to create new apps through the chat interface and they will appear here."
+    "defaultMessage": "Applications from your MCP servers and Apps built by goose itself. You can ask it to create new apps through the chat interface and they will appear here."
   },
   "appsView.errorLoading": {
     "defaultMessage": "Error loading apps: {error}"
@@ -45,7 +45,7 @@
     "defaultMessage": "Loading apps..."
   },
   "appsView.noAppsDescription": {
-    "defaultMessage": "Open a chat and ask Achilles for the app you want to have. It can build one for you and that will appear here. Or if somebody shared an app, you can import it using the button above."
+    "defaultMessage": "Open a chat and ask goose for the app you want to have. It can build one for you and that will appear here. Or if somebody shared an app, you can import it using the button above."
   },
   "appsView.noAppsTitle": {
     "defaultMessage": "No apps available"
@@ -84,7 +84,7 @@
     "defaultMessage": "Credential deleted"
   },
   "authSettings.description": {
-    "defaultMessage": "Manage provider credentials stored locally by Achilles."
+    "defaultMessage": "Manage provider credentials stored locally by goose."
   },
   "authSettings.empty": {
     "defaultMessage": "No locally stored provider credentials were found."
@@ -168,10 +168,10 @@
     "defaultMessage": "Launch"
   },
   "chat.notification.taskComplete.body": {
-    "defaultMessage": "Click here to bring Achilles back into focus."
+    "defaultMessage": "Click here to bring Goose back into focus."
   },
   "chat.notification.taskComplete.title": {
-    "defaultMessage": "Achilles finished the task."
+    "defaultMessage": "Goose finished the task."
   },
   "chatInput.contextWindow": {
     "defaultMessage": "Context window"
@@ -222,7 +222,7 @@
     "defaultMessage": "Waiting for images to save..."
   },
   "chatSettings.modeDescription": {
-    "defaultMessage": "Choose the default mode Achilles uses for new sessions. Existing sessions keep their current mode."
+    "defaultMessage": "Choose the default mode Goose uses for new sessions. Existing sessions keep their current mode."
   },
   "chatSettings.modeTitle": {
     "defaultMessage": "Default Mode"
@@ -249,10 +249,10 @@
     "defaultMessage": "Configuration Editor"
   },
   "configSettings.description": {
-    "defaultMessage": "Edit your Achilles configuration settings"
+    "defaultMessage": "Edit your goose configuration settings"
   },
   "configSettings.descriptionWithProvider": {
-    "defaultMessage": "Edit your Achilles configuration settings (current settings for {provider})"
+    "defaultMessage": "Edit your goose configuration settings (current settings for {provider})"
   },
   "configSettings.done": {
     "defaultMessage": "Done"
@@ -777,7 +777,7 @@
     "defaultMessage": "Edit {name} settings"
   },
   "defaultCardButtons.getStarted": {
-    "defaultMessage": "Get started with Achilles!"
+    "defaultMessage": "Get started with goose!"
   },
   "defaultProviderSetupForm.apiHostLabel": {
     "defaultMessage": "API Host"
@@ -1167,7 +1167,7 @@
     "defaultMessage": "Extensions enabled here are used as the default for new chats. You can also toggle active extensions during chat."
   },
   "extensionsView.description": {
-    "defaultMessage": "These extensions use the Model Context Protocol (MCP). They can expand Achilles's capabilities using three main components: Prompts, Resources, and Tools. {searchShortcut} to search."
+    "defaultMessage": "These extensions use the Model Context Protocol (MCP). They can expand Goose's capabilities using three main components: Prompts, Resources, and Tools. {searchShortcut} to search."
   },
   "extensionsView.heading": {
     "defaultMessage": "Extensions"
@@ -1185,7 +1185,7 @@
     "defaultMessage": "AA:BB:CC:... or sha256/base64"
   },
   "externalBackendSection.description": {
-    "defaultMessage": "By default Achilles starts a local backend. Use this to connect to an external ACP-compatible backend."
+    "defaultMessage": "By default Goose starts a local backend. Use this to connect to an external ACP-compatible backend."
   },
   "externalBackendSection.fingerprintRequiresHttps": {
     "defaultMessage": "Certificate fingerprint requires an https URL"
@@ -1206,7 +1206,7 @@
     "defaultMessage": "Backend Base URL"
   },
   "externalBackendSection.serverUrlHelp": {
-    "defaultMessage": "Enter the HTTP(S) base URL. Achilles checks /status and connects to /acp under this base."
+    "defaultMessage": "Enter the HTTP(S) base URL. Goose checks /status and connects to /acp under this base."
   },
   "externalBackendSection.title": {
     "defaultMessage": "External Backend (ACP)"
@@ -1226,6 +1226,51 @@
   "externalBackendSection.useExternalServerDescription": {
     "defaultMessage": "Connect to an ACP-compatible backend running elsewhere."
   },
+  "findingsView.description": {
+    "defaultMessage": "Secrets and dependency results from Scan my repo. Ledger lives in achilles.db, not chat."
+  },
+  "findingsView.empty": {
+    "defaultMessage": "No findings yet. Pick a workspace, then run Scan my repo."
+  },
+  "findingsView.chooseWorkspace": {
+    "defaultMessage": "Choose workspace…"
+  },
+  "findingsView.workspace": {
+    "defaultMessage": "Workspace: {dir}"
+  },
+  "findingsView.rescan": {
+    "defaultMessage": "Rescan"
+  },
+  "findingsView.noFindings": {
+    "defaultMessage": "No open findings on this scan."
+  },
+  "findingsView.phaseQueued": {
+    "defaultMessage": "queued"
+  },
+  "findingsView.phaseRunning": {
+    "defaultMessage": "running"
+  },
+  "findingsView.phaseDone": {
+    "defaultMessage": "done"
+  },
+  "findingsView.lastScan": {
+    "defaultMessage": "Last scan {status} · {count} open"
+  },
+  "findingsView.noDir": {
+    "defaultMessage": "Pick a workspace folder first (New Chat directory switcher)."
+  },
+  "findingsView.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "findingsView.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "findingsView.scanning": {
+    "defaultMessage": "Scanning…"
+  },
+  "findingsView.title": {
+    "defaultMessage": "Findings"
+  },
   "goosehintsModal.close": {
     "defaultMessage": "Close"
   },
@@ -1233,7 +1278,7 @@
     "defaultMessage": "Developer"
   },
   "goosehintsModal.dialogDescription": {
-    "defaultMessage": "Provide additional context about your project to improve communication with Achilles"
+    "defaultMessage": "Provide additional context about your project to improve communication with Goose"
   },
   "goosehintsModal.dialogTitle": {
     "defaultMessage": "Configure Project Hints (.goosehints)"
@@ -1254,7 +1299,7 @@
     "defaultMessage": ".goosehints file found at: {filePath}"
   },
   "goosehintsModal.helpText1": {
-    "defaultMessage": ".goosehints is a text file used to provide additional context about your project and improve the communication with Achilles."
+    "defaultMessage": ".goosehints is a text file used to provide additional context about your project and improve the communication with Goose."
   },
   "goosehintsModal.helpText2": {
     "defaultMessage": "Please make sure {bold} extension is enabled in the extensions page. This extension is required to use .goosehints. You'll need to restart your session for .goosehints updates to take effect."
@@ -1281,13 +1326,13 @@
     "defaultMessage": "Configure"
   },
   "goosehintsSection.description": {
-    "defaultMessage": "Configure your project's .goosehints file to provide additional context to Achilles"
+    "defaultMessage": "Configure your project's .goosehints file to provide additional context to Goose"
   },
   "goosehintsSection.title": {
     "defaultMessage": "Project Hints (.goosehints)"
   },
   "groupedExtensionLoadingToast.askGoose": {
-    "defaultMessage": "Ask Achilles"
+    "defaultMessage": "Ask goose"
   },
   "groupedExtensionLoadingToast.collapseDetails": {
     "defaultMessage": "Collapse details"
@@ -1355,6 +1400,18 @@
   "hub.goodMorning": {
     "defaultMessage": "Good morning"
   },
+  "hub.noWorkspace": {
+    "defaultMessage": "Pick a workspace folder first."
+  },
+  "hub.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "hub.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "hub.scanning": {
+    "defaultMessage": "Scanning…"
+  },
   "huggingFaceModelSearch.download": {
     "defaultMessage": "Download"
   },
@@ -1407,7 +1464,7 @@
     "defaultMessage": "Hugging Face"
   },
   "imagePreview.altText": {
-    "defaultMessage": "Achilles image"
+    "defaultMessage": "goose image"
   },
   "imagePreview.clickToCollapse": {
     "defaultMessage": "Click to collapse"
@@ -1455,7 +1512,7 @@
     "defaultMessage": "Recipe File"
   },
   "importRecipeForm.reviewWarning": {
-    "defaultMessage": "Ensure you review contents of recipe files before adding them to your Achilles interface."
+    "defaultMessage": "Ensure you review contents of recipe files before adding them to your goose interface."
   },
   "importRecipeForm.schemaDescription": {
     "defaultMessage": "Your YAML or JSON file should follow this structure. Required fields are: title, description, and either instructions or prompt."
@@ -1668,7 +1725,7 @@
     "defaultMessage": "Reset to Defaults"
   },
   "keyboardShortcuts.restartDescription": {
-    "defaultMessage": "Changes to application shortcuts (like New Chat, Settings, etc.) require restarting Achilles to take effect. Global shortcuts (Focus Window, Quick Launcher) work immediately."
+    "defaultMessage": "Changes to application shortcuts (like New Chat, Settings, etc.) require restarting Goose to take effect. Global shortcuts (Focus Window, Quick Launcher) work immediately."
   },
   "keyboardShortcuts.restartRequired": {
     "defaultMessage": "Restart Required"
@@ -1698,13 +1755,13 @@
     "defaultMessage": "Toggle Navigation"
   },
   "launcher.placeholder": {
-    "defaultMessage": "Ask Achilles anything..."
+    "defaultMessage": "Ask goose anything..."
   },
   "loadingGoose.compacting": {
-    "defaultMessage": "Achilles is compacting the conversation..."
+    "defaultMessage": "goose is compacting the conversation..."
   },
   "loadingGoose.idle": {
-    "defaultMessage": "Achilles is working on it…"
+    "defaultMessage": "goose is working on it…"
   },
   "loadingGoose.loadingConversation": {
     "defaultMessage": "loading conversation..."
@@ -1713,13 +1770,13 @@
     "defaultMessage": "restarting session..."
   },
   "loadingGoose.streaming": {
-    "defaultMessage": "Achilles is working on it…"
+    "defaultMessage": "goose is working on it…"
   },
   "loadingGoose.thinking": {
-    "defaultMessage": "Achilles is thinking…"
+    "defaultMessage": "goose is thinking…"
   },
   "loadingGoose.waiting": {
-    "defaultMessage": "Achilles is waiting…"
+    "defaultMessage": "goose is waiting…"
   },
   "localInferenceSettings.deleteConfirm": {
     "defaultMessage": "Delete this model? You can re-download it later."
@@ -2339,6 +2396,9 @@
   "navigation.itemExtensions": {
     "defaultMessage": "Extensions"
   },
+  "navigation.itemFindings": {
+    "defaultMessage": "Findings"
+  },
   "navigation.itemHome": {
     "defaultMessage": "New Chat"
   },
@@ -2406,10 +2466,10 @@
     "defaultMessage": "Your local AI agent. Connect an AI model provider to get started."
   },
   "onboardingGuard.welcomeTitle": {
-    "defaultMessage": "Welcome to Achilles"
+    "defaultMessage": "Welcome to goose"
   },
   "onboardingSuccess.allSet": {
-    "defaultMessage": "You're all set to start using Achilles."
+    "defaultMessage": "You're all set to start using goose."
   },
   "onboardingSuccess.connectedTo": {
     "defaultMessage": "Connected to {providerName}"
@@ -2424,7 +2484,7 @@
     "defaultMessage": "Local model ready"
   },
   "onboardingSuccess.privacyDescription": {
-    "defaultMessage": "Anonymous usage data helps improve Achilles. We never collect your conversations, code, or personal data."
+    "defaultMessage": "Anonymous usage data helps improve goose. We never collect your conversations, code, or personal data."
   },
   "onboardingSuccess.privacyTitle": {
     "defaultMessage": "Privacy"
@@ -2592,10 +2652,10 @@
     "defaultMessage": "Session metrics (duration, interaction count, token usage)"
   },
   "privacyInfoModal.collectVersion": {
-    "defaultMessage": "Achilles version and install method"
+    "defaultMessage": "goose version and install method"
   },
   "privacyInfoModal.description": {
-    "defaultMessage": "Anonymous usage data helps us understand how Achilles is used and identify areas for improvement."
+    "defaultMessage": "Anonymous usage data helps us understand how goose is used and identify areas for improvement."
   },
   "privacyInfoModal.neverCollect": {
     "defaultMessage": "We never collect your conversations, code, tool arguments, error messages, or any personal data. You can change this setting anytime in Settings."
@@ -2664,7 +2724,7 @@
     "defaultMessage": "Failed to save prompt"
   },
   "promptsSettings.promptEditingDescription": {
-    "defaultMessage": "Customize the prompts that define Achilles's behavior in different contexts. These prompts use Jinja2 templating syntax. Be careful when modifying template variables, as incorrect changes can break functionality. Please share any improvements with the community."
+    "defaultMessage": "Customize the prompts that define goose's behavior in different contexts. These prompts use Jinja2 templating syntax. Be careful when modifying template variables, as incorrect changes can break functionality. Please share any improvements with the community."
   },
   "promptsSettings.promptEditingTitle": {
     "defaultMessage": "Prompt Editing"
@@ -2760,7 +2820,7 @@
     "defaultMessage": "Signing in..."
   },
   "providerConfigurationModal.addApiKeyDescription": {
-    "defaultMessage": "Add your API key(s) for this provider to integrate into Achilles"
+    "defaultMessage": "Add your API key(s) for this provider to integrate into goose"
   },
   "providerConfigurationModal.browserWindowHint": {
     "defaultMessage": "A browser window will open for you to complete the login."
@@ -2796,7 +2856,7 @@
     "defaultMessage": "Error"
   },
   "providerConfigurationModal.externalSetupIntro": {
-    "defaultMessage": "This provider is configured outside of Achilles. Follow these steps:"
+    "defaultMessage": "This provider is configured outside of goose. Follow these steps:"
   },
   "providerConfigurationModal.goBack": {
     "defaultMessage": "Go Back"
@@ -2858,6 +2918,9 @@
   "providerSelector.addCustomProviderTitle": {
     "defaultMessage": "Add Custom Provider"
   },
+  "providerSelector.comingSoon": {
+    "defaultMessage": "Coming Soon"
+  },
   "providerSelector.connectProvider": {
     "defaultMessage": "Connect to a Provider"
   },
@@ -2865,13 +2928,13 @@
     "defaultMessage": "Connect OpenAI, Anthropic, Google, etc"
   },
   "providerSelector.localModelDescription": {
-    "defaultMessage": "Download a model and run it on this device. No API key or account needed."
+    "defaultMessage": "Run Arrav on this device. No API key or account needed."
   },
   "providerSelector.selectProvider": {
     "defaultMessage": "Select a provider"
   },
   "providerSelector.useLocalModel": {
-    "defaultMessage": "Use a Local Model"
+    "defaultMessage": "Use Arrav locally"
   },
   "providerSettings.configurationSettings": {
     "defaultMessage": "Provider Configuration Settings"
@@ -2880,7 +2943,7 @@
     "defaultMessage": "Loading providers..."
   },
   "providerSettings.onboardingDescription": {
-    "defaultMessage": "Select an AI model provider to get started with Achilles. You'll need to use API keys generated by each provider which will be encrypted and stored locally. You can change your provider at any time in settings."
+    "defaultMessage": "Select an AI model provider to get started with goose. You'll need to use API keys generated by each provider which will be encrypted and stored locally. You can change your provider at any time in settings."
   },
   "providerSettings.otherProviders": {
     "defaultMessage": "Other providers"
@@ -3900,7 +3963,7 @@
     "defaultMessage": "Session description updated successfully"
   },
   "settings.appearance.description": {
-    "defaultMessage": "Configure how Achilles appears on your system"
+    "defaultMessage": "Configure how goose appears on your system"
   },
   "settings.appearance.title": {
     "defaultMessage": "Appearance"
@@ -3915,13 +3978,13 @@
     "defaultMessage": "Cost Tracking"
   },
   "settings.dockIcon.description": {
-    "defaultMessage": "Show Achilles in the dock"
+    "defaultMessage": "Show goose in the dock"
   },
   "settings.dockIcon.title": {
     "defaultMessage": "Dock icon"
   },
   "settings.help.description": {
-    "defaultMessage": "Help us improve Achilles by reporting issues or requesting new features"
+    "defaultMessage": "Help us improve goose by reporting issues or requesting new features"
   },
   "settings.help.reportBug": {
     "defaultMessage": "Report a Bug"
@@ -3933,7 +3996,7 @@
     "defaultMessage": "Help & feedback"
   },
   "settings.language.description": {
-    "defaultMessage": "Choose the display language for Achilles"
+    "defaultMessage": "Choose the display language for goose"
   },
   "settings.language.english": {
     "defaultMessage": "English"
@@ -3990,7 +4053,7 @@
     "defaultMessage": "Chinese (Traditional)"
   },
   "settings.menuBarIcon.description": {
-    "defaultMessage": "Show Achilles in the menu bar"
+    "defaultMessage": "Show goose in the menu bar"
   },
   "settings.menuBarIcon.title": {
     "defaultMessage": "Menu bar icon"
@@ -4011,7 +4074,7 @@
     "defaultMessage": "Click on Notifications"
   },
   "settings.notifications.modal.macStep3": {
-    "defaultMessage": "Find and select Achilles in the application list"
+    "defaultMessage": "Find and select goose in the application list"
   },
   "settings.notifications.modal.macStep4": {
     "defaultMessage": "Enable notifications and adjust settings as desired"
@@ -4029,7 +4092,7 @@
     "defaultMessage": "Go to System > Notifications"
   },
   "settings.notifications.modal.winStep3": {
-    "defaultMessage": "Find and select Achilles in the application list"
+    "defaultMessage": "Find and select goose in the application list"
   },
   "settings.notifications.modal.winStep4": {
     "defaultMessage": "Toggle notifications on and adjust settings as desired"
@@ -4047,19 +4110,19 @@
     "defaultMessage": "Notifications"
   },
   "settings.preventSleep.description": {
-    "defaultMessage": "Keep your computer awake while Achilles is running a task (screen can still lock)"
+    "defaultMessage": "Keep your computer awake while goose is running a task (screen can still lock)"
   },
   "settings.preventSleep.title": {
     "defaultMessage": "Prevent Sleep"
   },
   "settings.theme.description": {
-    "defaultMessage": "Customize the look and feel of Achilles"
+    "defaultMessage": "Customize the look and feel of goose"
   },
   "settings.theme.title": {
     "defaultMessage": "Theme"
   },
   "settings.updates.description": {
-    "defaultMessage": "Check for and install updates to keep Achilles running at its best"
+    "defaultMessage": "Check for and install updates to keep goose running at its best"
   },
   "settings.updates.title": {
     "defaultMessage": "Updates"
@@ -4125,7 +4188,7 @@
     "defaultMessage": "No matching skills found"
   },
   "skillsView.noSkillsDescription": {
-    "defaultMessage": "Skills are loaded from SKILL.md files in ~/.config/agents/skills/, .Achilles/skills/, or other supported directories."
+    "defaultMessage": "Skills are loaded from SKILL.md files in ~/.config/agents/skills/, .goose/skills/, or other supported directories."
   },
   "skillsView.noSkillsInstalled": {
     "defaultMessage": "No skills installed"
@@ -4377,10 +4440,10 @@
     "defaultMessage": "Use other provider"
   },
   "telemetryConsentPrompt.description": {
-    "defaultMessage": "Would you like to share anonymous usage data to help improve Achilles? We never collect your conversations, code, or personal data."
+    "defaultMessage": "Would you like to share anonymous usage data to help improve goose? We never collect your conversations, code, or personal data."
   },
   "telemetryConsentPrompt.heading": {
-    "defaultMessage": "Help improve Achilles"
+    "defaultMessage": "Help improve goose"
   },
   "telemetryConsentPrompt.learnMore": {
     "defaultMessage": "Learn more"
@@ -4407,7 +4470,7 @@
     "defaultMessage": "Privacy"
   },
   "telemetrySettings.toggleDescription": {
-    "defaultMessage": "Help improve Achilles by sharing anonymous usage statistics."
+    "defaultMessage": "Help improve goose by sharing anonymous usage statistics."
   },
   "telemetrySettings.toggleLabel": {
     "defaultMessage": "Anonymous usage data"

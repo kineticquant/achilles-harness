@@ -1226,6 +1226,30 @@
   "externalBackendSection.useExternalServerDescription": {
     "defaultMessage": "Conéctate a un servidor goose que se ejecuta en otro lugar (requiere reiniciar la app)"
   },
+  "findingsView.description": {
+    "defaultMessage": "Secrets and dependency results from Scan my repo. Ledger lives in achilles.db, not chat."
+  },
+  "findingsView.empty": {
+    "defaultMessage": "No findings yet. Choose a workspace from New Chat, then run Scan my repo."
+  },
+  "findingsView.lastScan": {
+    "defaultMessage": "Last scan {status} · {count} open"
+  },
+  "findingsView.noDir": {
+    "defaultMessage": "Pick a workspace folder first (New Chat directory switcher)."
+  },
+  "findingsView.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "findingsView.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "findingsView.scanning": {
+    "defaultMessage": "Scanning…"
+  },
+  "findingsView.title": {
+    "defaultMessage": "Findings"
+  },
   "goosehintsModal.close": {
     "defaultMessage": "Cerrar"
   },
@@ -1354,6 +1378,18 @@
   },
   "hub.goodMorning": {
     "defaultMessage": "Buenos días"
+  },
+  "hub.noWorkspace": {
+    "defaultMessage": "Pick a workspace folder first."
+  },
+  "hub.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "hub.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "hub.scanning": {
+    "defaultMessage": "Scanning…"
   },
   "huggingFaceModelSearch.download": {
     "defaultMessage": "Descargar"
@@ -2339,6 +2375,9 @@
   "navigation.itemExtensions": {
     "defaultMessage": "Extensiones"
   },
+  "navigation.itemFindings": {
+    "defaultMessage": "Findings"
+  },
   "navigation.itemHome": {
     "defaultMessage": "Nuevo chat"
   },
@@ -2857,6 +2896,9 @@
   },
   "providerSelector.addCustomProviderTitle": {
     "defaultMessage": "Añadir proveedor personalizado"
+  },
+  "providerSelector.comingSoon": {
+    "defaultMessage": "Próximamente"
   },
   "providerSelector.connectProvider": {
     "defaultMessage": "Conectar a un proveedor"

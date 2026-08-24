@@ -1226,6 +1226,30 @@
   "externalBackendSection.useExternalServerDescription": {
     "defaultMessage": "다른 곳에서 실행 중인 ACP 호환 백엔드에 연결합니다."
   },
+  "findingsView.description": {
+    "defaultMessage": "Secrets and dependency results from Scan my repo. Ledger lives in achilles.db, not chat."
+  },
+  "findingsView.empty": {
+    "defaultMessage": "No findings yet. Choose a workspace from New Chat, then run Scan my repo."
+  },
+  "findingsView.lastScan": {
+    "defaultMessage": "Last scan {status} · {count} open"
+  },
+  "findingsView.noDir": {
+    "defaultMessage": "Pick a workspace folder first (New Chat directory switcher)."
+  },
+  "findingsView.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "findingsView.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "findingsView.scanning": {
+    "defaultMessage": "Scanning…"
+  },
+  "findingsView.title": {
+    "defaultMessage": "Findings"
+  },
   "goosehintsModal.close": {
     "defaultMessage": "닫기"
   },
@@ -1354,6 +1378,18 @@
   },
   "hub.goodMorning": {
     "defaultMessage": "좋은 아침이에요"
+  },
+  "hub.noWorkspace": {
+    "defaultMessage": "Pick a workspace folder first."
+  },
+  "hub.scanFailed": {
+    "defaultMessage": "Scan failed: {error}"
+  },
+  "hub.scanMyRepo": {
+    "defaultMessage": "Scan my repo"
+  },
+  "hub.scanning": {
+    "defaultMessage": "Scanning…"
   },
   "huggingFaceModelSearch.download": {
     "defaultMessage": "다운로드"
@@ -2339,6 +2375,9 @@
   "navigation.itemExtensions": {
     "defaultMessage": "익스텐션"
   },
+  "navigation.itemFindings": {
+    "defaultMessage": "Findings"
+  },
   "navigation.itemHome": {
     "defaultMessage": "새 채팅"
   },
@@ -2857,6 +2896,9 @@
   },
   "providerSelector.addCustomProviderTitle": {
     "defaultMessage": "사용자 지정 제공업체 추가"
+  },
+  "providerSelector.comingSoon": {
+    "defaultMessage": "곧 출시"
   },
   "providerSelector.connectProvider": {
     "defaultMessage": "제공업체에 연결"
