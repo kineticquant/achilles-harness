@@ -213,6 +213,18 @@ pnpm --version</code></pre>
           <td><span class="badge badge-bad">Must install on Windows</span></td>
         </tr>
         <tr>
+          <td>Windows Developer Mode</td>
+          <td><span class="badge badge-bad">Must enable on Windows</span> — needed for build symlinks (<code>v8-goose</code>)</td>
+        </tr>
+        <tr>
+          <td>LLVM / libclang</td>
+          <td><span class="badge badge-bad">Must install on Windows</span> — needed by <code>bindgen</code> / <code>llama-cpp-sys</code></td>
+        </tr>
+        <tr>
+          <td>CMake</td>
+          <td><span class="badge badge-bad">Must install on Windows</span> — builds native <code>llama.cpp</code></td>
+        </tr>
+        <tr>
           <td>Node.js</td>
           <td>Needed for desktop UI</td>
         </tr>
@@ -241,8 +253,39 @@ pnpm --version</code></pre>
       <li>
         <strong>Install Visual Studio Build Tools</strong>
         (<a href="https://visualstudio.microsoft.com/visual-cpp-build-tools/">download</a>).
-        Select the <strong>Desktop development with C++</strong> workload.
+        Choose <strong>Select workloads and components manually</strong>, then check
+        <strong>Desktop development with C++</strong>. Install.
         Rust on Windows needs this to link native code.
+      </li>
+      <li>
+        <strong>Enable Windows Developer Mode</strong>
+        (Settings → System → For developers → Developer Mode → On).
+        Without this, <code>cargo build</code> can fail creating symlinks for
+        <code>v8-goose</code> with error <code>1314</code>
+        (“A required privilege is not held by the client”).
+        Reopen your terminal after enabling.
+      </li>
+      <li>
+        <strong>Install LLVM</strong> (provides <code>libclang.dll</code> for bindgen).
+        Prefer Scoop or PowerShell <code>winget</code> — Git Bash often hits
+        <code>Permission denied</code> on the WindowsApps <code>winget</code> stub.
+        <pre><code>scoop install llvm</code></pre>
+        Or in <strong>PowerShell</strong> (not Git Bash):
+        <pre><code>winget install LLVM.LLVM --accept-package-agreements --accept-source-agreements</code></pre>
+        If bindgen still can’t find libclang, set a <strong>User</strong> env var
+        <code>LIBCLANG_PATH</code> (new terminal after setting):
+        <ul>
+          <li>Scoop: <code>C:\Users\&lt;you&gt;\scoop\apps\llvm\current\bin</code></li>
+          <li>Default winget/installer: <code>C:\Program Files\LLVM\bin</code></li>
+        </ul>
+        One-shot in Git Bash instead of a permanent env var:
+        <pre><code>export LIBCLANG_PATH="$HOME/scoop/apps/llvm/current/bin"
+cargo build</code></pre>
+      </li>
+      <li>
+        <strong>Install CMake</strong> (builds <code>llama-cpp-sys</code> / llama.cpp):
+        <pre><code>scoop install cmake</code></pre>
+        Confirm with <code>cmake --version</code>. Reopen the terminal if <code>cmake</code> isn’t found yet.
       </li>
       <li>
         <strong>Install pnpm</strong> (for the UI):
@@ -265,6 +308,42 @@ pnpm install</code></pre>
       Use <code>cargo build --release -p goose-cli --bin goose</code> for a release CLI binary,
       and see the root <a href="README.md">README.md</a> for running the UI.
     </div>
+
+    <h2>Common Windows build failures</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Symptom</th>
+          <th>Fix</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>
+            <code>v8-goose</code>: Failed to create symlink / error <code>1314</code>
+          </td>
+          <td>Enable Developer Mode, reopen terminal, rebuild</td>
+        </tr>
+        <tr>
+          <td>
+            Unable to find libclang / <code>clang.dll</code> / <code>libclang.dll</code>
+          </td>
+          <td>Install LLVM; set <code>LIBCLANG_PATH</code> if needed</td>
+        </tr>
+        <tr>
+          <td>
+            <code>is cmake not installed?</code> / <code>program not found</code>
+          </td>
+          <td><code>scoop install cmake</code>, reopen terminal, rebuild</td>
+        </tr>
+        <tr>
+          <td>
+            Git Bash: <code>winget: Permission denied</code>
+          </td>
+          <td>Use Scoop, or run <code>winget</code> from PowerShell</td>
+        </tr>
+      </tbody>
+    </table>
 
     <h2>Useful Cargo commands</h2>
     <table>
