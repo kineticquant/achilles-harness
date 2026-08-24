@@ -56,6 +56,7 @@ rustls-tls = [
     "oauth2/reqwest",
     "oauth2/rustls-tls",
     "goose-providers/rustls-tls",
+    "achilles-store/rustls-tls",
 ]
 native-tls = [
     "dep:rcgen",
@@ -74,6 +75,7 @@ native-tls = [
     "oauth2/reqwest",
     "oauth2/native-tls",
     "goose-providers/native-tls",
+    "achilles-store/native-tls",
 ]
 system-keyring = ["dep:keyring"]
 portable-default = ["rustls-tls", "aws-providers", "telemetry", "otel"]
@@ -138,6 +140,7 @@ fs-err = { version = "3.1", default-features = false }
 goose-providers = { path = "../goose-providers", default-features = false }
 goose-download-manager = { path = "../goose-download-manager" }
 goose-sdk-types = { path = "../goose-sdk-types" }
+achilles-store = { path = "../achilles-store" }
 rand = { workspace = true }
 tokio-cron-scheduler = { version = "0.15", default-features = false }
 urlencoding = { workspace = true }

@@ -209,7 +209,11 @@ pub async fn handle_review(opts: ReviewOptions) -> Result<()> {
             session_id: None,
             no_session: true,
             no_profile: true,
-            builtins: vec!["developer".to_string(), "summon".to_string()],
+            builtins: vec![
+                "developer".to_string(),
+                "summon".to_string(),
+                "appsec".to_string(),
+            ],
             provider: opts.provider.clone(),
             model: opts.default_model.clone(),
             quiet: opts.quiet,

@@ -1,4 +1,5 @@
 pub mod analyze;
+pub mod appsec;
 pub mod apps;
 pub mod chatrecall;
 #[cfg(feature = "code-mode")]
@@ -163,6 +164,20 @@ pub static PLATFORM_EXTENSIONS: Lazy<HashMap<&'static str, PlatformExtensionDef>
                         .unwrap(),
                     ))
                 },
+            },
+        );
+
+        map.insert(
+            appsec::EXTENSION_NAME,
+            PlatformExtensionDef {
+                name: appsec::EXTENSION_NAME,
+                display_name: "AppSec",
+                description:
+                    "Scan for secrets and vulnerable dependencies; query the Achilles findings ledger",
+                default_enabled: true,
+                unprefixed_tools: true,
+                hidden: false,
+                client_factory: |ctx| Some(Box::new(appsec::AppsecClient::new(ctx).unwrap())),
             },
         );
 

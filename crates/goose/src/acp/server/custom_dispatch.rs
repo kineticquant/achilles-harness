@@ -1,4 +1,8 @@
 use super::*;
+use achilles_store::acp::{
+    AssessmentsGetRequest, AssessmentsGetResponse, AssessmentsListRequest, AssessmentsListResponse,
+    AssessmentsStartRequest, AssessmentsStartResponse, FindingsListRequest, FindingsListResponse,
+};
 use goose_acp_macros::custom_methods;
 
 #[custom_methods]
@@ -930,5 +934,37 @@ impl GooseAcpAgent {
     ) -> Result<LocalInferenceBuiltinChatTemplatesListResponse, agent_client_protocol::Error> {
         self.on_local_inference_builtin_chat_templates_list(req)
             .await
+    }
+
+    #[custom_method(AssessmentsStartRequest)]
+    async fn dispatch_achilles_assessments_start(
+        &self,
+        req: AssessmentsStartRequest,
+    ) -> Result<AssessmentsStartResponse, agent_client_protocol::Error> {
+        self.on_achilles_assessments_start(req).await
+    }
+
+    #[custom_method(AssessmentsListRequest)]
+    async fn dispatch_achilles_assessments_list(
+        &self,
+        req: AssessmentsListRequest,
+    ) -> Result<AssessmentsListResponse, agent_client_protocol::Error> {
+        self.on_achilles_assessments_list(req).await
+    }
+
+    #[custom_method(AssessmentsGetRequest)]
+    async fn dispatch_achilles_assessments_get(
+        &self,
+        req: AssessmentsGetRequest,
+    ) -> Result<AssessmentsGetResponse, agent_client_protocol::Error> {
+        self.on_achilles_assessments_get(req).await
+    }
+
+    #[custom_method(FindingsListRequest)]
+    async fn dispatch_achilles_findings_list(
+        &self,
+        req: FindingsListRequest,
+    ) -> Result<FindingsListResponse, agent_client_protocol::Error> {
+        self.on_achilles_findings_list(req).await
     }
 }
