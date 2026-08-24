@@ -17,6 +17,7 @@ export type View =
   | 'loading'
   | 'recipes'
   | 'skills'
+  | 'findings'
   | 'permission';
 
 export type ViewOptions = {
@@ -29,6 +30,7 @@ export type ViewOptions = {
   disableAnimation?: boolean;
   initialMessage?: UserInput;
   resumeSessionId?: string;
+  assessmentId?: string;
   pendingScheduleDeepLink?: string;
 };
 
@@ -66,6 +68,15 @@ export const createNavigationHandler = (navigate: NavigateFunction) => {
       case 'skills':
         navigate('/skills', { state: options });
         break;
+      case 'findings': {
+        const searchParams = new URLSearchParams();
+        if (options?.assessmentId) {
+          searchParams.set('assessmentId', options.assessmentId);
+        }
+        const url = searchParams.toString() ? `/findings?${searchParams.toString()}` : '/findings';
+        navigate(url, { state: options });
+        break;
+      }
       case 'permission':
         navigate('/permission', { state: options });
         break;
