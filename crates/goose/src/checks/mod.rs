@@ -5,6 +5,7 @@
 //! User-facing CRUD lives in `crate::sources` for parity with skills and
 //! projects; `goose review` consumes [`Check`] and [`discover`] directly.
 
+use crate::config::paths::Paths;
 use crate::sources::parse_frontmatter;
 use anyhow::{anyhow, bail, Context, Result};
 use goose_sdk_types::custom_requests::{SourceEntry, SourceType};
@@ -278,6 +279,9 @@ fn synthesize_review_md_check(scope_dir: &str, path: &Path, body: &str) -> Check
 /// (repo root, then sub-trees) shadow these globals when names collide.
 pub fn global_checks_dirs() -> Vec<PathBuf> {
     let mut dirs = Vec::new();
+    let data_dir = Paths::data_dir();
+    let _ = achilles_store::seed_bundled_review_checks(&data_dir);
+    dirs.push(data_dir.join("achilles").join("checks"));
     if let Some(home) = dirs_home() {
         dirs.push(home.join(".config").join("goose").join("checks"));
         dirs.push(home.join(".config").join("agents").join("checks"));

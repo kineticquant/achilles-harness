@@ -3,6 +3,27 @@
 version = 4
 
 [[package]]
+name = "achilles-store"
+version = "1.45.0"
+dependencies = [
+ "agent-client-protocol",
+ "anyhow",
+ "chrono",
+ "ignore",
+ "regex",
+ "reqwest 0.13.4",
+ "schemars 1.2.1",
+ "serde",
+ "serde_json",
+ "sha2 0.11.0",
+ "sqlx",
+ "tempfile",
+ "tokio",
+ "tracing",
+ "uuid",
+]
+
+[[package]]
 name = "addr2line"
 version = "0.25.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4916,6 +4937,7 @@ dependencies = [
 name = "goose"
 version = "1.45.0"
 dependencies = [
+ "achilles-store",
  "agent-client-protocol",
  "agent-client-protocol-http",
  "agent-client-protocol-schema",

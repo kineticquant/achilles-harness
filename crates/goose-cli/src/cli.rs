@@ -1409,7 +1409,7 @@ async fn handle_serve_command(args: ServeCommandArgs) -> Result<()> {
 
     let builtins = if builtins.is_empty() {
         AcpBuiltinSelection {
-            defaults: vec!["developer".to_string()],
+            defaults: vec!["developer".to_string(), "appsec".to_string()],
             explicit: Vec::new(),
         }
     } else {

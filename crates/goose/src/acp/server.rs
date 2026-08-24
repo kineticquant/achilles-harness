@@ -85,6 +85,7 @@ use self::tool_calls::conversion::{
 };
 use self::tool_calls::enrichment::{spawn_chain_summary_enrichment, spawn_tool_title_enrichment};
 
+mod achilles;
 mod agent_requests;
 pub use agent_requests::agent_request_schemas;
 mod agent_mentions;
@@ -216,6 +217,7 @@ pub struct GooseAcpAgent {
     client_cx: OnceCell<ConnectionTo<Client>>,
     config_dir: std::path::PathBuf,
     session_manager: Arc<SessionManager>,
+    achilles_store: achilles_store::AchillesStore,
     permission_manager: Arc<PermissionManager>,
     disable_session_naming: bool,
     provider_inventory: ProviderInventoryService,
@@ -636,12 +638,17 @@ impl GooseAcpAgent {
 
     // TODO: goose reads Paths::in_state_dir globally (e.g. RequestLog), ignoring this data_dir.
     pub async fn new(options: GooseAcpAgentOptions) -> Result<Self> {
-        let session_manager = Arc::new(SessionManager::new(options.data_dir));
+        let session_manager = Arc::new(SessionManager::new(options.data_dir.clone()));
+        let achilles_store = achilles_store::AchillesStore::new(options.data_dir.clone());
+        let achilles_warmup = achilles_store.clone();
 
         // Eagerly initialize the SQLite pool so it's ready when providers/sessions need it.
         let storage_clone = session_manager.storage().clone();
         tokio::spawn(async move {
             let _ = storage_clone.pool().await;
+        });
+        tokio::spawn(async move {
+            let _ = achilles_warmup.pool().await;
         });
 
         let permission_manager = Arc::new(PermissionManager::new(options.config_dir.clone()));
@@ -674,6 +681,7 @@ impl GooseAcpAgent {
             client_cx: OnceCell::new(),
             config_dir: options.config_dir,
             session_manager,
+            achilles_store,
             permission_manager,
             disable_session_naming: options.disable_session_naming,
             provider_inventory,
