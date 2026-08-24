@@ -1,0 +1,42 @@
+[package]
+name = "achilles-store"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+authors.workspace = true
+license = "LicenseRef-Achilles"
+repository.workspace = true
+description = "Achilles AppSec persistence (achilles.db) and first-pass scan engines"
+publish = false
+
+[lints]
+workspace = true
+
+[features]
+default = ["rustls-tls"]
+rustls-tls = ["reqwest/rustls"]
+native-tls = ["reqwest/native-tls"]
+
+[dependencies]
+agent-client-protocol = { workspace = true, features = ["unstable"] }
+anyhow = { workspace = true }
+chrono = { workspace = true, features = ["clock"] }
+ignore = { workspace = true }
+regex = { workspace = true }
+reqwest = { workspace = true, features = ["json"] }
+schemars = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+sha2 = { workspace = true }
+sqlx = { version = "0.8.5", default-features = false, features = [
+    "runtime-tokio",
+    "sqlite",
+    "macros",
+] }
+tokio = { workspace = true, features = ["fs", "io-util", "macros", "rt", "sync", "time"] }
+tracing = { workspace = true }
+uuid = { workspace = true }
+
+[dev-dependencies]
+tempfile = { workspace = true }
+tokio = { workspace = true, features = ["macros", "rt-multi-thread"] }
