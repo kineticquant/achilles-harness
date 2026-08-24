@@ -89,7 +89,7 @@ Yes — that is how you pick up their changes when you want them. Prefer small, 
 
 ## Dependencies
 
-For a Python-dev-friendly walkthrough (cheat sheet, install checklist, Cargo equivalents), open **[dev-setup.html](dev-setup.html)** in a browser.
+For a Python-dev-friendly walkthrough (cheat sheet, install checklist, Cargo equivalents), open **[requirement-guidance.html](requirement-guidance.html)** in a browser.
 
 | Layer | How it’s managed |
 |-------|------------------|
