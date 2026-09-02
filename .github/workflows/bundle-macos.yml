@@ -233,6 +233,8 @@ jobs:
           rm -f ui/desktop/src/bin/goose
           mv "ui/desktop/src/bin/internal-goose-${TARGET}" ui/desktop/src/bin/goose
           chmod +x ui/desktop/src/bin/goose
+          cp -f ui/desktop/src/bin/goose ui/desktop/src/bin/achilles
+          chmod +x ui/desktop/src/bin/achilles
           ls -la ui/desktop/src/bin/
 
       - name: Cache pnpm dependencies
@@ -269,6 +271,8 @@ jobs:
           APPLE_ID: ${{ inputs.signing && secrets.APPLE_ID || '' }}
           APPLE_ID_PASSWORD: ${{ inputs.signing && secrets.APPLE_ID_PASSWORD || '' }}
           APPLE_TEAM_ID: ${{ inputs.signing && secrets.APPLE_TEAM_ID || '' }}
+          GOOSE_BUNDLE_NAME: Achilles
+          ACHILLES_DMG_NAME: ${{ inputs.target == 'x86_64-apple-darwin' && 'Achilles-intel' || 'Achilles-arm64' }}
           BUNDLE_SCRIPT: ${{ inputs.target == 'x86_64-apple-darwin' && 'bundle:intel' || 'bundle:default' }}
         run: |
           source ../../bin/activate-hermit
@@ -288,7 +292,7 @@ jobs:
 
       - name: Verify macOS updater resources
         env:
-          APP_PATH: ${{ inputs.target == 'x86_64-apple-darwin' && 'out/Goose-darwin-x64/Goose.app' || 'out/Goose-darwin-arm64/Goose.app' }}
+          APP_PATH: ${{ inputs.target == 'x86_64-apple-darwin' && 'out/Achilles-darwin-x64/Achilles.app' || 'out/Achilles-darwin-arm64/Achilles.app' }}
         run: node scripts/verify-mac-update-resources.js "$APP_PATH"
         working-directory: ui/desktop
 
@@ -304,28 +308,43 @@ jobs:
           rm -f ui/desktop/src/bin/goose
           df -h
 
+      - name: Stage macOS disk image
+        env:
+          DMG_NAME: ${{ inputs.target == 'x86_64-apple-darwin' && 'Achilles-intel.dmg' || 'Achilles-arm64.dmg' }}
+        run: |
+          mkdir -p ui/desktop/release-assets
+          echo "=== Electron Forge make output ==="
+          find ui/desktop/out/make -type f | head -80
+          DMG_SRC="$(find ui/desktop/out/make -name '*.dmg' | head -n 1)"
+          if [ -z "$DMG_SRC" ] || [ ! -f "$DMG_SRC" ]; then
+            echo "macOS .dmg was not produced by maker-dmg"
+            exit 1
+          fi
+          cp -f "$DMG_SRC" "ui/desktop/release-assets/${DMG_NAME}"
+          ls -la ui/desktop/release-assets/
+
       - name: Upload Desktop artifact
         id: upload-app-bundle
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: ${{ inputs.target == 'x86_64-apple-darwin' && 'Goose-darwin-x64' || 'Goose-darwin-arm64' }}
-          path: ${{ inputs.target == 'x86_64-apple-darwin' && 'ui/desktop/out/Goose-darwin-x64/Goose_intel_mac.zip' || 'ui/desktop/out/Goose-darwin-arm64/Goose.zip' }}
+          name: ${{ inputs.target == 'x86_64-apple-darwin' && 'Achilles-intel-dmg' || 'Achilles-arm64-dmg' }}
+          path: ${{ inputs.target == 'x86_64-apple-darwin' && 'ui/desktop/release-assets/Achilles-intel.dmg' || 'ui/desktop/release-assets/Achilles-arm64.dmg' }}
           if-no-files-found: error
           overwrite: true
 
       - name: Quick launch test (macOS)
         env:
-          APP_PATH: ${{ inputs.target == 'x86_64-apple-darwin' && 'ui/desktop/out/Goose-darwin-x64/Goose.app' || 'ui/desktop/out/Goose-darwin-arm64/Goose.app' }}
+          APP_PATH: ${{ inputs.target == 'x86_64-apple-darwin' && 'ui/desktop/out/Achilles-darwin-x64/Achilles.app' || 'ui/desktop/out/Achilles-darwin-arm64/Achilles.app' }}
         run: |
           xattr -cr "$APP_PATH"
-          echo "Opening Goose.app..."
+          echo "Opening Achilles.app..."
           open -g "$APP_PATH"
           sleep 5
 
-          if pgrep -f "Goose.app/Contents/MacOS/Goose" > /dev/null; then
+          if pgrep -f "Achilles.app/Contents/MacOS/Achilles" > /dev/null; then
             echo "App appears to be running."
           else
             echo "App did not stay open. Possible crash or startup error."
             exit 1
           fi
-          pkill -f "Goose.app/Contents/MacOS/Goose"
+          pkill -f "Achilles.app/Contents/MacOS/Achilles"

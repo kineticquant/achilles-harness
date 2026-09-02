@@ -143,6 +143,8 @@ jobs:
           rm -f ui/desktop/src/bin/goose
           cp target/$TARGET/release/goose ui/desktop/src/bin/
           chmod +x ui/desktop/src/bin/goose
+          cp -f ui/desktop/src/bin/goose ui/desktop/src/bin/achilles
+          chmod +x ui/desktop/src/bin/achilles
           ls -la ui/desktop/src/bin/
 
       - name: Free Rust build artifacts before packaging

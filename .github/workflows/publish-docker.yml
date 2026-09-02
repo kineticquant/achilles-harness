@@ -8,7 +8,7 @@ on:
       - 'v*.*.*'
       - 'v*.*.*-*'  # For pre-releases like v1.2.3-beta
     paths-ignore:
-      - 'documentation/**'
+      - 'docs/**'
       - '*.md'
   workflow_dispatch:
 

@@ -6,7 +6,6 @@ on:
       - main
     paths:
       - "services/ask-ai-bot/**"
-      - "documentation/**"
       - ".github/workflows/publish-ask-ai-bot.yml"
   workflow_dispatch:
 

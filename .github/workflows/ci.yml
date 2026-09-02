@@ -28,9 +28,9 @@ jobs:
         with:
           filters: |
             docs-only:
-              - 'documentation/**'
+              - 'docs/**'
             code:
-              - '!documentation/**'
+              - '!docs/**'
 
   rust-format:
     name: Check Rust Code Format

@@ -4,7 +4,7 @@ on:
   pull_request_target:
     types: [opened, synchronize, reopened]
     paths:
-      - 'documentation/src/pages/recipes/data/recipes/**'
+      - 'recipes/**'
 
 concurrency:
   group: scanner-${{ github.workflow }}-${{ github.event.pull_request.number }}
@@ -32,7 +32,7 @@ jobs:
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9.0.0
         with:
           script: |
-            const recipePrefix = 'documentation/src/pages/recipes/data/recipes/';
+            const recipePrefix = 'recipes/';
             const pullNumber = context.payload.pull_request.number;
             const request = {
               owner: context.repo.owner,
@@ -140,7 +140,7 @@ jobs:
           fetch-depth: 0
           path: pr-content
           sparse-checkout: |
-            documentation/src/pages/recipes/data/recipes/
+            recipes/
 
       - name: Check if recipe files changed in this push
         id: recipe_changes
@@ -165,7 +165,7 @@ jobs:
           echo ""
           
           # Check if any recipe files were changed
-          if echo "$CHANGED_FILES" | grep -q "^documentation/src/pages/recipes/data/recipes/"; then
+          if echo "$CHANGED_FILES" | grep -q "^recipes/"; then
             echo "recipe_files_changed=true" >> "$GITHUB_OUTPUT"
             echo "✅ Recipe files were modified in this push - proceeding with scan"
           else
@@ -197,7 +197,7 @@ jobs:
           fi
           
           # Filter for recipe files only that were changed or added
-          RECIPE_FILES=$(echo "$CHANGED_FILES" | grep "^documentation/src/pages/recipes/data/recipes/" | grep -E "\.(yaml|yml)$" || true)
+          RECIPE_FILES=$(echo "$CHANGED_FILES" | grep "^recipes/" | grep -E "\.(yaml|yml)$" || true)
           
           if [ -z "$RECIPE_FILES" ]; then
             echo "No changed recipe files found in PR"

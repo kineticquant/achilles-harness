@@ -230,6 +230,7 @@ jobs:
           rm -rf ./ui/desktop/src/bin
           mkdir -p ./ui/desktop/src/bin
           cp -f ./backend/goose.exe ./ui/desktop/src/bin/
+          cp -f ./ui/desktop/src/bin/goose.exe ./ui/desktop/src/bin/achilles.exe
 
           if [ -d "./ui/desktop/src/platform/windows/bin" ]; then
             for file in ./ui/desktop/src/platform/windows/bin/*.{exe,dll,cmd}; do
@@ -255,6 +256,9 @@ jobs:
         shell: bash
         env:
           ELECTRON_PLATFORM: win32
+          GOOSE_BUNDLE_NAME: Achilles
+          GOOSE_WINDOWS_VARIANT: ${{ inputs.windows_variant }}
+          ACHILLES_SETUP_EXE: ${{ inputs.windows_variant == 'cuda' && 'AchillesSetup-cuda.exe' || 'AchillesSetup.exe' }}
         run: |
           cd ui/desktop
           pnpm install --frozen-lockfile
@@ -262,18 +266,34 @@ jobs:
           node scripts/prepare-platform-binaries.js
           pnpm run make --platform=win32 --arch=x64
 
-      - name: Prepare flat distribution
+      - name: Prepare unsigned app dir and installer
         shell: bash
+        env:
+          SETUP_EXE: ${{ inputs.windows_variant == 'cuda' && 'AchillesSetup-cuda.exe' || 'AchillesSetup.exe' }}
         run: |
           cd ui/desktop
-          mkdir -p ./out/Goose-win32-x64/resources/bin
-          cp -r src/bin/* out/Goose-win32-x64/resources/bin/
+          mkdir -p ./out/Achilles-win32-x64/resources/bin
+          cp -r src/bin/* out/Achilles-win32-x64/resources/bin/
 
           mkdir -p ./dist-windows
-          cp -r ./out/Goose-win32-x64/* ./dist-windows/
+          cp -r ./out/Achilles-win32-x64/* ./dist-windows/
 
-          ls -la ./dist-windows/
-          ls -la ./dist-windows/resources/bin/
+          mkdir -p ./release-assets
+          echo "=== Electron Forge make output ==="
+          find out/make -type f | head -80
+
+          SETUP_SRC=""
+          if [ -f "out/make/squirrel.windows/x64/${SETUP_EXE}" ]; then
+            SETUP_SRC="out/make/squirrel.windows/x64/${SETUP_EXE}"
+          else
+            SETUP_SRC="$(find out/make/squirrel.windows \( -name '*Setup.exe' -o -name '*.exe' \) | head -n 1)"
+          fi
+          if [ -z "$SETUP_SRC" ] || [ ! -f "$SETUP_SRC" ]; then
+            echo "Windows Setup.exe was not produced by maker-squirrel"
+            exit 1
+          fi
+          cp -f "$SETUP_SRC" "./release-assets/${SETUP_EXE}"
+          ls -la ./release-assets/
 
       - name: Upload unsigned distribution
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
@@ -282,6 +302,14 @@ jobs:
           path: ui/desktop/dist-windows/
           if-no-files-found: error
           retention-days: 1
+          overwrite: true
+
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
+        with:
+          name: ${{ inputs.windows_variant == 'cuda' && 'AchillesSetup-cuda' || 'AchillesSetup' }}
+          path: ui/desktop/release-assets/${{ inputs.windows_variant == 'cuda' && 'AchillesSetup-cuda.exe' || 'AchillesSetup.exe' }}
+          if-no-files-found: error
           overwrite: true
 
   sign-desktop-windows:
@@ -313,14 +341,14 @@ jobs:
           trusted-signing-account-name: ${{ secrets.AZURE_SIGNING_ACCOUNT_NAME }}
           certificate-profile-name: ${{ secrets.AZURE_CERTIFICATE_PROFILE_NAME }}
           files: |
-            ${{ github.workspace }}/dist-windows/Goose.exe
+            ${{ github.workspace }}/dist-windows/Achilles.exe
             ${{ github.workspace }}/dist-windows/resources/bin/goose.exe
 
       - name: Verify signed executables
         shell: pwsh
         run: |
           $files = @(
-            "dist-windows/Goose.exe",
+            "dist-windows/Achilles.exe",
             "dist-windows/resources/bin/goose.exe"
           )
           foreach ($file in $files) {
@@ -334,13 +362,13 @@ jobs:
         shell: bash
         env:
           VARIANT_SUFFIX: ${{ inputs.windows_variant == 'cuda' && '-cuda' || '' }}
-        run: 7z a -tzip "Goose-win32-x64${VARIANT_SUFFIX}.zip" dist-windows/
+        run: 7z a -tzip "Achilles-win32-x64${VARIANT_SUFFIX}.zip" dist-windows/
 
       - name: Upload signed Windows build
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: Goose-win32-x64${{ inputs.windows_variant == 'cuda' && '-cuda' || '' }}
-          path: Goose-win32-x64${{ inputs.windows_variant == 'cuda' && '-cuda' || '' }}.zip
+          name: Achilles-win32-x64${{ inputs.windows_variant == 'cuda' && '-cuda' || '' }}
+          path: Achilles-win32-x64${{ inputs.windows_variant == 'cuda' && '-cuda' || '' }}.zip
           if-no-files-found: error
           overwrite: true
 
@@ -350,22 +378,15 @@ jobs:
     if: ${{ inputs.package_desktop && !inputs.signing }}
     runs-on: windows-latest
     steps:
-      - name: Download unsigned distribution
+      - name: Confirm Windows installer
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c  # v8.0.1
         with:
-          name: internal-windows-unsigned${{ inputs.windows_variant == 'cuda' && '-cuda' || '' }}
-          path: dist-windows
+          name: ${{ inputs.windows_variant == 'cuda' && 'AchillesSetup-cuda' || 'AchillesSetup' }}
+          path: installer
 
-      - name: Create Windows zip package
+      - name: Check Setup.exe
         shell: bash
-        env:
-          VARIANT_SUFFIX: ${{ inputs.windows_variant == 'cuda' && '-cuda' || '' }}
-        run: 7z a -tzip "Goose-win32-x64${VARIANT_SUFFIX}.zip" dist-windows/
+        run: |
+          ls -la installer/
+          test -f installer/AchillesSetup.exe || test -f installer/AchillesSetup-cuda.exe
 
-      - name: Upload Windows build
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
-        with:
-          name: Goose-win32-x64${{ inputs.windows_variant == 'cuda' && '-cuda' || '' }}
-          path: Goose-win32-x64${{ inputs.windows_variant == 'cuda' && '-cuda' || '' }}.zip
-          if-no-files-found: error
-          overwrite: true

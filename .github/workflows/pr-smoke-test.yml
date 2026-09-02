@@ -42,7 +42,7 @@ jobs:
           base: ${{ github.event.before || github.event.pull_request.base.sha }}
           filters: |
             code:
-              - '!documentation/**'
+              - '!docs/**'
 
   build-binary:
     name: Build Binary
