@@ -389,8 +389,47 @@ impl OpenAiProvider {
         is_openai_responses_model(model_name)
     }
 
+    fn is_opencode_gateway_path(base_path: &str) -> bool {
+        Self::normalize_base_path(base_path)
+            .to_ascii_lowercase()
+            .contains("zen/")
+    }
+
+    fn opencode_wire_model(model_name: &str) -> &str {
+        model_name.rsplit('/').next().unwrap_or(model_name)
+    }
+
+    /// OpenCode Zen/Go expose GPT, Grok, and Muse Spark on `/responses`, not
+    /// chat completions. Claude, Gemini, and Qwen use other protocols and
+    /// cannot be driven by this OpenAI-compatible engine.
+    fn should_use_opencode_responses_api(model_name: &str) -> bool {
+        if Self::is_responses_model(model_name) {
+            return true;
+        }
+        let model = Self::opencode_wire_model(model_name).to_ascii_lowercase();
+        model.starts_with("grok-") || model.starts_with("muse-spark")
+    }
+
+    fn opencode_openai_engine_supports(model_name: &str) -> bool {
+        let model = Self::opencode_wire_model(model_name).to_ascii_lowercase();
+        !(model.starts_with("claude-") || model.starts_with("gemini-") || model.starts_with("qwen"))
+    }
+
+    fn filter_opencode_models(&self, models: Vec<String>) -> Vec<String> {
+        if !matches!(self.name.as_str(), "opencode" | "opencode_go") {
+            return models;
+        }
+        models
+            .into_iter()
+            .filter(|model| Self::opencode_openai_engine_supports(model))
+            .collect()
+    }
+
     fn should_use_responses_api(model_name: &str, base_path: &str) -> bool {
         let normalized_base_path = Self::normalize_base_path(base_path);
+        if Self::is_opencode_gateway_path(&normalized_base_path) {
+            return Self::should_use_opencode_responses_api(model_name);
+        }
         // Only the standard "v1/chat/completions" is treated as a default
         // path that defers to model-based routing.  The versionless
         // "chat/completions" (derived from an OPENAI_BASE_URL without /v1)
@@ -422,6 +461,8 @@ impl OpenAiProvider {
         "mistral",
         "moonshot",
         "nearai",
+        "opencode",
+        "opencode_go",
         "ovhcloud",
     ];
 
@@ -725,26 +766,29 @@ impl Provider for OpenAiProvider {
     }
 
     async fn fetch_supported_models(&self) -> Result<Vec<String>, ProviderError> {
-        if let Some(custom_models) = &self.custom_models {
+        let models = if let Some(custom_models) = &self.custom_models {
             let names: Vec<String> = custom_models.iter().map(|m| m.name.clone()).collect();
             if self.dynamic_models == Some(false) {
-                return Ok(names);
-            }
-            match self.fetch_models_from_api().await {
-                Ok(models) => return Ok(models),
-                Err(e) if e.is_endpoint_not_found() => {
-                    tracing::debug!(
-                        "Models endpoint not implemented for provider '{}' ({}), using predefined list",
-                        self.name,
-                        e
-                    );
-                    return Ok(names);
+                names
+            } else {
+                match self.fetch_models_from_api().await {
+                    Ok(models) => models,
+                    Err(e) if e.is_endpoint_not_found() => {
+                        tracing::debug!(
+                            "Models endpoint not implemented for provider '{}' ({}), using predefined list",
+                            self.name,
+                            e
+                        );
+                        names
+                    }
+                    Err(e) => return Err(e),
                 }
-                Err(e) => return Err(e),
             }
-        }
+        } else {
+            self.fetch_models_from_api().await?
+        };
 
-        self.fetch_models_from_api().await
+        Ok(self.filter_opencode_models(models))
     }
 
     async fn stream(
@@ -855,6 +899,34 @@ fn apply_declared_request_params(
     }
 }
 
+/// OpenCode Go asks third-party agents to send a product User-Agent instead of
+/// a library default (`reqwest/...`). Identify as Achilles; do not impersonate
+/// the official OpenCode CLI.
+const OPENCODE_CLIENT_USER_AGENT: &str = "Achilles";
+
+fn opencode_identity_headers(
+    provider_name: &str,
+    headers: Option<HashMap<String, String>>,
+) -> Option<HashMap<String, String>> {
+    let mut headers = headers.unwrap_or_default();
+    if matches!(provider_name, "opencode" | "opencode_go") {
+        let has_user_agent = headers
+            .keys()
+            .any(|key| key.eq_ignore_ascii_case("user-agent"));
+        if !has_user_agent {
+            headers.insert(
+                "User-Agent".to_string(),
+                OPENCODE_CLIENT_USER_AGENT.to_string(),
+            );
+        }
+    }
+    if headers.is_empty() {
+        None
+    } else {
+        Some(headers)
+    }
+}
+
 pub fn from_declarative_config(
     config: DeclarativeProviderConfig,
     tls_config: Option<TlsConfig>,
@@ -919,7 +991,8 @@ pub fn from_declarative_config(
         api_client = api_client.with_query(query_params);
     }
 
-    if let Some(headers) = &config.headers {
+    let headers = opencode_identity_headers(config.name.as_str(), config.headers.clone());
+    if let Some(headers) = &headers {
         let mut header_map = reqwest::header::HeaderMap::new();
         for (key, value) in headers {
             let header_name = reqwest::header::HeaderName::from_bytes(key.as_bytes())?;
@@ -931,7 +1004,7 @@ pub fn from_declarative_config(
 
     Ok(OpenAiProviderBuilder::new(api_client)
         .base_path(base_path)
-        .custom_headers(config.headers)
+        .custom_headers(headers)
         .supports_streaming(config.supports_streaming.unwrap_or(true))
         .name(config.name.clone())
         .custom_models(custom_models)
@@ -1199,6 +1272,55 @@ mod tests {
     }
 
     #[test]
+    fn opencode_providers_get_achilles_user_agent() {
+        for name in ["opencode", "opencode_go"] {
+            let headers = opencode_identity_headers(name, None).unwrap();
+            assert_eq!(
+                headers.get("User-Agent").map(String::as_str),
+                Some("Achilles")
+            );
+        }
+    }
+
+    #[test]
+    fn opencode_user_agent_does_not_override_explicit_header() {
+        let mut existing = HashMap::new();
+        existing.insert(
+            "User-Agent".to_string(),
+            "Achilles-desktop/1.45".to_string(),
+        );
+        let headers = opencode_identity_headers("opencode_go", Some(existing)).unwrap();
+        assert_eq!(
+            headers.get("User-Agent").map(String::as_str),
+            Some("Achilles-desktop/1.45")
+        );
+    }
+
+    #[test]
+    fn other_providers_do_not_get_opencode_identity_headers() {
+        assert!(opencode_identity_headers("openai", None).is_none());
+    }
+
+    #[test]
+    fn opencode_openai_engine_drops_non_openai_protocol_models() {
+        assert!(OpenAiProvider::opencode_openai_engine_supports(
+            "big-pickle"
+        ));
+        assert!(OpenAiProvider::opencode_openai_engine_supports(
+            "gpt-5.6-luna"
+        ));
+        assert!(!OpenAiProvider::opencode_openai_engine_supports(
+            "claude-sonnet-4-6"
+        ));
+        assert!(!OpenAiProvider::opencode_openai_engine_supports(
+            "gemini-3.5-flash"
+        ));
+        assert!(!OpenAiProvider::opencode_openai_engine_supports(
+            "qwen3.6-plus"
+        ));
+    }
+
+    #[test]
     fn nearai_uses_chat_completions_for_openai_reasoning_models() {
         let provider = make_provider("nearai");
 
@@ -1216,6 +1338,16 @@ mod tests {
             ("gpt-5.2-pro-2025-12-11", "v1/chat/completions", true),
             ("gpt-4o", "v1/chat/completions", false),
             ("gpt-5.2-codex", "openai/v1/chat/completions", false),
+            ("gpt-5.6-luna", "zen/v1/chat/completions", true),
+            ("grok-4.5", "zen/v1/chat/completions", true),
+            (
+                "muse-spark-1.2-contributor-free",
+                "zen/v1/chat/completions",
+                true,
+            ),
+            ("big-pickle", "zen/v1/chat/completions", false),
+            ("kimi-k2.6", "zen/go/v1/chat/completions", false),
+            ("gpt-5.6-luna", "zen/go/v1/chat/completions", true),
         ] {
             assert_eq!(
                 OpenAiProvider::should_use_responses_api(model_name, base_path),

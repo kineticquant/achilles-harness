@@ -37,6 +37,7 @@ pub(crate) mod declarative_providers {
         nvidia,
         ollama_cloud,
         omlx,
+        opencode,
         opencode_go,
         orcarouter,
         ovhcloud,

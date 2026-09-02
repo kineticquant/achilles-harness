@@ -7,8 +7,8 @@
   "base_url": "https://api.orcarouter.ai/v1",
   "catalog_provider_id": "orcarouter",
   "headers": {
-    "http-referer": "https://goose-docs.ai",
-    "x-title": "goose"
+    "http-referer": "https://achilles.sh",
+    "x-title": "Achilles"
   },
   "models": [
     { "name": "anthropic/claude-sonnet-4.6", "context_limit": 200000 },
