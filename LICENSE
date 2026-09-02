@@ -1,13 +1,13 @@
-This repository contains multiple licenses.
+Apache License, Version 2.0
 
-- Apache License, Version 2.0 — applies to goose-derived materials:
-  see LICENSE-APACHE
+This repository — goose-derived code and original Achilles / Arrav source —
+is licensed under the Apache License, Version 2.0. See LICENSE-APACHE for the
+full text.
 
-- Achilles Proprietary Software License — applies to original Achilles / Arrav materials:
-  see LICENSE-ACHILLES
+This product includes software from the goose project
+(https://github.com/aaif-goose/goose). Attribution is in NOTICE.
 
-Attribution and notices:
-  see NOTICE
+Do not use goose or AAIF marks in a way that implies endorsement.
+The product names are Achilles (harness) and Arrav (model).
 
-How the licenses work together:
-  see LICENSING.md
+See LICENSING.md for a short explanation of the fork.
