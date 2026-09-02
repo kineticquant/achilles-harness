@@ -1,8 +1,8 @@
-# Custom Distributions of goose
+# Custom distributions
 
 > **Tip:** This is sometimes referred to as "white labelling" — creating a branded or tailored version of an open source project for your organization.
 
-This guide explains how to create custom distributions of goose tailored to your organization's needs—whether that's preconfigured models, custom tools, branded interfaces, or entirely new user experiences.
+Achilles was built on [goose](https://github.com/aaif-goose/goose). This guide covers packaging a tailored desktop/CLI distribution—preconfigured models, custom tools, or a branded UI.
 
 ## Overview
 

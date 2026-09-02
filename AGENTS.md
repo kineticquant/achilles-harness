@@ -8,14 +8,13 @@ Instructions for coding agents and humans working in this repository.
 |------|------|
 | **Achilles** | The harness — desktop app, CLI, agent runtime, MCP/extensions surface |
 | **Arrav** | The local model that runs inside Achilles |
-| **goose** | Upstream base project ([aaif-goose/goose](https://github.com/aaif-goose/goose)) |
 
-This repo is a **fork of goose** used to build Achilles. Published source (goose-derived and Achilles / Arrav original work) is Apache-2.0. See `LICENSING.md`, `LICENSE-APACHE`, `NOTICE`. Do not call the tree MIT.
+Achilles was built on [goose](https://github.com/aaif-goose/goose). License: Apache 2.0 — [LICENSING.md](LICENSING.md).
 
 ## Repo remotes
 
-- `upstream` → `https://github.com/aaif-goose/goose.git`
-- `origin` → this Achilles / Arrav repository
+- `origin` → this repository
+- `upstream` → `https://github.com/aaif-goose/goose.git` (optional, for pulling engine changes)
 
 ```bash
 git fetch upstream
@@ -23,30 +22,11 @@ git log HEAD..upstream/main --oneline
 # merge or cherry-pick deliberately
 ```
 
-## Licensing rules for agents
+## Licensing
 
-- Do **not** delete `LICENSE-APACHE`, `NOTICE`, or Apache headers on goose-derived files.
-- New Achilles / Arrav source in this repo is Apache-2.0 as well. Do not add a second product license.
-- Do not claim this tree is MIT. It is Apache-2.0.
-- Do not use Goose/AAIF trademarks in a way that implies endorsement.
+See [LICENSING.md](LICENSING.md). Do not delete `LICENSE-APACHE`, `NOTICE`, or Apache headers.
 
-## Architecture (inherited from goose)
-
-```
-crates/
-├── goose                 # core agent, providers, prompts, state machine
-├── goose-cli             # CLI entry (`goose` binary for now)
-├── goose-mcp             # MCP extensions
-├── goose-local-inference # local model path
-└── ...
-
-ui/desktop/               # Electron UI (Achilles)
-docs/                     # Achilles product docs (Help / Settings links)
-```
-
-The fork does **not** ship the upstream goose Docusaurus site. Product guidance lives in `docs/`. Goose docs remain upstream at [aaif-goose/goose](https://github.com/aaif-goose/goose).
-
-Useful in-tree build notes: `CUSTOM_DISTROS.md`, `BUILDING_LINUX.md`, `BUILDING_DOCKER.md`, `ui/desktop/README.md`.
+Product docs live in `docs/`. Useful build notes: `CUSTOM_DISTROS.md`, `BUILDING_LINUX.md`, `BUILDING_DOCKER.md`, `ui/desktop/README.md`.
 
 ## Setup
 

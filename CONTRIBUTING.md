@@ -1,6 +1,6 @@
 # Contribution Guide
 
-This is **Achilles**, a fork of [goose](https://github.com/aaif-goose/goose). File bugs and features on [this repo](https://github.com/kineticquant/achilles-harness/issues), not on upstream goose.
+This is **Achilles**. File bugs and features on [this repo](https://github.com/kineticquant/achilles-harness/issues).
 
 Reporting a problem, reproducing it, sharing domain knowledge, shaping the design, implementing the solution, and verifying the result are all valuable work.
 
@@ -217,10 +217,10 @@ git clone https://github.com/<your-username>/achilles-harness.git
 cd achilles-harness
 ```
 
-4. Add this repository as origin (already set) and goose as upstream if you need to sync:
+4. Optionally add goose if you need to compare engine changes:
 
 ```
-git remote add upstream https://github.com/aaif-goose/goose.git
+git remote add goose https://github.com/aaif-goose/goose.git
 ```
 
 5. Create a branch in your fork for your changes:
@@ -229,12 +229,11 @@ git remote add upstream https://github.com/aaif-goose/goose.git
 git checkout -b my-feature-branch
 ```
 
-6. Sync your fork with the main repo:
+6. Sync your fork with Achilles `main`:
 
 ```
+git remote add upstream https://github.com/kineticquant/achilles-harness.git
 git fetch upstream
-
-# Merge them into your local branch (e.g., 'main' or 'my-feature-branch')
 git checkout main
 git merge upstream/main
 ```
@@ -257,8 +256,7 @@ repository. This helps avoid conflicts and allows us to merge your pull requests
 1. **Add the Main Repository as a Remote** (Skip if you have already set this up):
 
    ```bash
-   git remote add upstream https://github.com/aaif-goose/goose.git
-   # optional: pull goose changes; this fork’s origin is Achilles
+   git remote add upstream https://github.com/kineticquant/achilles-harness.git
    ```
 
 2. **Fetch the Latest Changes from the Main Repository**:

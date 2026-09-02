@@ -1,6 +1,6 @@
-# Building and Running goose with Docker
+# Building the Achilles CLI with Docker
 
-This guide covers building Docker images for goose CLI for production use, CI/CD pipelines, and local development.
+This guide covers building Docker images for the CLI for production use, CI/CD pipelines, and local development. Achilles was built on [goose](https://github.com/aaif-goose/goose); crate and image names below still use `goose` in several places.
 
 ## Quick Start
 
