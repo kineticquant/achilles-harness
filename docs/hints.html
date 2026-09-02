@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Achilles project hints</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <strong>Achilles</strong>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="quickstart.html">Quickstart</a>
+        <a href="extensions.html">Extensions</a>
+        <a href="hints.html">Project hints</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="troubleshooting.html">Troubleshooting</a>
+      </nav>
+    </header>
+    <h1>Project hints (<code>.goosehints</code>)</h1>
+    <p class="lead">A plain-text file the agent reads as extra project context. The filename is still <code>.goosehints</code> (inherited from goose).</p>
+
+    <p class="note">Enable the <strong>Developer</strong> extension. Restart the session after you save hints so they load into the prompt.</p>
+
+    <h2>Where to put it</h2>
+    <ul>
+      <li><strong>This workspace</strong> — Settings → Chat → Project Hints, or a <code>.goosehints</code> file at the project root (and optionally in nested dirs).</li>
+      <li><strong>All sessions</strong> — <code>~/.config/goose/.goosehints</code> (on Windows, <code>%USERPROFILE%\.config\goose\.goosehints</code>).</li>
+    </ul>
+    <p>Local hints win if they conflict with global ones. Nested directories load as the agent walks the tree. Keep the file short; it is added to the system prompt and uses tokens.</p>
+
+    <h2>What to write</h2>
+    <p>Direct sentences: build commands, “do not touch generated/”, how tests run, secrets that must never be committed. Repeat-prompt material belongs here.</p>
+    <pre><code># Example
+Use pnpm, not npm.
+Do not edit ui/desktop/src/bin.
+Findings live in achilles.db; do not invent extra issues.</code></pre>
+  </main>
+</body>
+</html>

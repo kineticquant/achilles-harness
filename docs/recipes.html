@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Achilles recipes</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <strong>Achilles</strong>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="quickstart.html">Quickstart</a>
+        <a href="extensions.html">Extensions</a>
+        <a href="hints.html">Project hints</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="troubleshooting.html">Troubleshooting</a>
+      </nav>
+    </header>
+    <h1>Recipes</h1>
+    <p class="lead">A recipe starts a whole session with tools, parameters, and a prompt already set. Skills teach mid-chat; recipes are the playbook you run on demand or on a timer.</p>
+
+    <h2>Shipped recipes</h2>
+    <p>YAML under <code>recipes/</code> is compiled into the app. On launch they appear in the Recipe Library (not deletable; editing saves a personal copy).</p>
+    <ul>
+      <li><strong>scan-recap</strong> — scan a workspace, then recap open findings</li>
+      <li><strong>sca-hygiene-report</strong> — known-vulnerable deps plus pinning / lockfile hygiene</li>
+      <li><strong>security-review</strong> — high-confidence review of a PR, branch, or git diff</li>
+    </ul>
+    <p>Recipes call <code>appsec_scan</code> / <code>appsec_query</code> / <code>appsec_intel</code>. Engines still write <code>achilles.db</code>. Do not treat the recipe folder as a second scanner.</p>
+
+    <h2>Desktop</h2>
+    <p>Sidebar → <strong>Recipes</strong> → Run. To automate: open the recipe and <strong>Schedule</strong>, or Scheduler → Create Schedule and pick it from the library. The scheduler only fires recipes; it is not a scan queue.</p>
+
+    <h2>CLI</h2>
+    <pre><code>goose run --recipe scan-recap --params workspace=/path/to/repo
+goose run --recipe recipes/security-review.yaml --params workspace=/path/to/repo --params pr=123</code></pre>
+    <p>Pass <code>workspace</code> on schedules so the job does not scan the server’s current directory.</p>
+    <p>More detail: <a href="https://github.com/kineticquant/achilles-harness/blob/main/recipes/README.md">recipes/README.md</a>.</p>
+  </main>
+</body>
+</html>

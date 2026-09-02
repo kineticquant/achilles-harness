@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Achilles quickstart</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <strong>Achilles</strong>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="quickstart.html">Quickstart</a>
+        <a href="extensions.html">Extensions</a>
+        <a href="hints.html">Project hints</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="troubleshooting.html">Troubleshooting</a>
+      </nav>
+    </header>
+    <h1>Quickstart</h1>
+    <p class="lead">Get the desktop app running, configure a model, and scan a workspace.</p>
+
+    <h2>Run from source</h2>
+    <p>From the repo root (Git Bash on Windows):</p>
+    <pre><code>./start-desktop.sh</code></pre>
+    <p>Or double-click <code>start-desktop.cmd</code>. First run compiles the CLI (several minutes). Later runs reuse that binary unless you pass <code>--rebuild</code>.</p>
+    <p>You need Rust, a C/C++ toolchain (MSVC Build Tools on Windows), Node.js + pnpm, and Git. Hermit can provide Node/pnpm if you use it:</p>
+    <pre><code>source ./bin/activate-hermit
+cargo build --release -p goose-cli --bin goose</code></pre>
+
+    <h2>Onboarding: pick a model</h2>
+    <ol>
+      <li>When the window opens, configure a provider if asked (API key, or a local path such as Arrav).</li>
+      <li>Arrav is optional. Any provider Achilles lists will run the agent.</li>
+      <li>You can change provider and model later in Settings.</li>
+    </ol>
+
+    <h2>First scan</h2>
+    <ol>
+      <li>Open <strong>Findings</strong> (Scan in the sidebar).</li>
+      <li>Choose a workspace (your repo). For a safe demo, use <code>examples/achilles-scan-fixture</code>.</li>
+      <li>Pick a depth: <strong>fast</strong> (engines only), <strong>investigate</strong>, or <strong>deep</strong> (engines, then an agent loop on ledger ids only).</li>
+      <li>Run the scan and triage cards. Repair is not an Achilles job — copy a brief or use Tools / MCP and patch in your editor.</li>
+    </ol>
+
+    <h2>Installers</h2>
+    <p class="note"><strong>Technical preview.</strong> Desktop installers from GitHub Releases are unsigned. Windows SmartScreen and macOS Gatekeeper warnings are expected. Prefer building from source if you do not want to bypass OS prompts.</p>
+
+    <h2>CLI</h2>
+    <p>The interactive product is desktop Findings. The CLI binary is still named <code>goose</code>:</p>
+    <pre><code>goose appsec scan --path examples/achilles-scan-fixture
+goose appsec query --path examples/achilles-scan-fixture</code></pre>
+    <p><code>quick</code> (default) walks the tree. <code>--mode diff</code> limits secrets/SAST/surfaces to git-changed files; SCA still reads lockfiles.</p>
+  </main>
+</body>
+</html>

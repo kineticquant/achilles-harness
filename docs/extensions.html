@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Achilles extensions</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <strong>Achilles</strong>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="quickstart.html">Quickstart</a>
+        <a href="extensions.html">Extensions</a>
+        <a href="hints.html">Project hints</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="troubleshooting.html">Troubleshooting</a>
+      </nav>
+    </header>
+    <h1>Extensions</h1>
+    <p class="lead">Extensions are tools the agent can call: built-in platform extensions, and MCP servers you add.</p>
+
+    <h2>Built in</h2>
+    <p>Open <strong>Extensions</strong> in the sidebar or Settings. Toggle what you want for the session. Developer is required for file tools and for <a href="hints.html"><code>.goosehints</code></a>. AppSec is what Findings uses to scan and query the local ledger.</p>
+    <p class="note">Some goose-era builtins (tutorial, computer controller, auto visualiser) are hidden in Achilles and are not offered in Settings.</p>
+
+    <h2>Add a custom extension</h2>
+    <ol>
+      <li>Click <strong>Add custom extension</strong>.</li>
+      <li>Choose stdio (a local command) or SSE/HTTP (a URL).</li>
+      <li>Fill name, command or endpoint, and any env vars.</li>
+      <li>Save, then enable it. Start a new chat if tools do not appear.</li>
+    </ol>
+    <p>There is no separate Achilles extension marketplace yet. Use MCP servers you already trust, or ship them with a recipe.</p>
+
+    <h2>MCP from Findings</h2>
+    <p>Findings can expose Achilles as an MCP server to Cursor, Claude Code, Codex, and OpenCode so those apps pull findings and mark them fixed. Use the connect snippet on the Findings rail — they apply the patch; you rescan here.</p>
+  </main>
+</body>
+</html>

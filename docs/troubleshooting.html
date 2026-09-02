@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Achilles troubleshooting</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <main>
+    <header>
+      <strong>Achilles</strong>
+      <nav>
+        <a href="index.html">Home</a>
+        <a href="quickstart.html">Quickstart</a>
+        <a href="extensions.html">Extensions</a>
+        <a href="hints.html">Project hints</a>
+        <a href="recipes.html">Recipes</a>
+        <a href="troubleshooting.html">Troubleshooting</a>
+      </nav>
+    </header>
+    <h1>Troubleshooting</h1>
+    <p class="lead">Preview software. Check these before filing an issue.</p>
+
+    <h2>Unsigned desktop builds</h2>
+    <p>GitHub Release installers are unsigned. Windows SmartScreen and macOS Gatekeeper will warn. That is expected. Build from source with <code>./start-desktop.sh</code> if you do not want to bypass those prompts.</p>
+
+    <h2>App will not start</h2>
+    <ul>
+      <li>Confirm the CLI built: <code>cargo build --release -p goose-cli --bin goose</code></li>
+      <li>On Windows, use Git Bash for Hermit / <code>start-desktop.sh</code>, and MSVC Build Tools for Rust</li>
+      <li>pnpm version must match <code>ui/desktop/package.json</code> <code>engines</code></li>
+    </ul>
+
+    <h2 id="diagnostics">Diagnostics</h2>
+    <p>In an active chat, use the diagnostics control in the toolbar. Download the JSON bundle (<code>diagnostics_{session_id}.json</code>). It includes OS, app version, enabled extensions, provider/model, and recent logs. Attach that file when you report a bug.</p>
+    <p>CLI:</p>
+    <pre><code>goose session diagnostics --session-id &lt;session_id&gt;</code></pre>
+
+    <h2 id="keychain">Keychain / secrets</h2>
+    <p>If <code>goose configure</code> cannot store API keys, your OS keyring may be unavailable. Set provider keys as environment variables instead (for example <code>OPENAI_API_KEY</code>, <code>ANTHROPIC_API_KEY</code>) and run configure again, or use <code>GOOSE_PATH_ROOT</code> to isolate config for testing.</p>
+
+    <h2>Report a bug</h2>
+    <p>Settings → App → Help &amp; feedback, or the diagnostics modal → file on GitHub. Issues: <a href="https://github.com/kineticquant/achilles-harness/issues">kineticquant/achilles-harness</a>. Include OS, Achilles version, extensions, provider/model, and the diagnostics JSON.</p>
+  </main>
+</body>
+</html>
