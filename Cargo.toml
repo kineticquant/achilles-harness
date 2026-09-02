@@ -11,7 +11,7 @@ edition = "2021"
 version = "1.45.0"
 rust-version = "1.94.1"
 authors = ["Kineticquant"]
-license = "SEE LICENSE IN LICENSE"
+license = "Apache-2.0"
 repository = "https://github.com/kineticquant/achilles-harness"
 description = "Achilles — agent harness for Arrav"
 

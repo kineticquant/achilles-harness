@@ -1,4 +1,32 @@
-//! First-pass engines (secrets regex + lockfile SCA). Proprietary — `LICENSE-ACHILLES`.
+//! First-pass engines. Outbound intel URLs live in [`crate::public_sources`].
 
+pub mod abort;
+pub mod agent;
+mod agent_loop;
+pub mod boot;
+pub mod budget;
+pub mod delta;
+pub mod depth;
+pub mod fingerprint;
+pub mod fresh;
+pub mod graph;
+pub mod harden;
+pub mod history;
+pub mod hygiene;
+pub mod intel;
+pub mod investigate;
+pub mod literals;
+pub mod pinning;
+pub mod playbook;
+pub mod policy;
+pub mod sast;
+pub mod sbom;
 pub mod sca;
+pub mod scope;
+pub mod scorecard;
 pub mod secrets;
+pub mod socket;
+pub mod surfaces;
+pub mod units;
+pub mod utils;
+pub mod walk;
