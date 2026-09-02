@@ -126,10 +126,10 @@ Write-Host ""
 # Done
 Write-Host "=== Build Complete ===" -ForegroundColor Cyan
 Write-Host ""
-Write-Host "Packaged app:  ui\desktop\out\Goose-win32-x64\Goose.exe" -ForegroundColor Green
+Write-Host "Packaged app:  ui\desktop\out\Achilles-win32-x64\Achilles.exe" -ForegroundColor Green
 Write-Host "Installer:     ui\desktop\out\make\" -ForegroundColor Green
 Write-Host ""
 Write-Host "To run the app directly:" -ForegroundColor Yellow
-Write-Host "  .\ui\desktop\out\Goose-win32-x64\Goose.exe"
+Write-Host "  .\ui\desktop\out\Achilles-win32-x64\Achilles.exe"
 Write-Host ""
 Write-Host "To install, find the .exe installer in ui\desktop\out\make\"

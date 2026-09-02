@@ -1,5 +1,5 @@
 {
-  "name": "goose-app",
+  "name": "achilles-app",
   "productName": "Achilles",
   "version": "1.45.0",
   "description": "Achilles — agent harness for Arrav",
@@ -19,9 +19,9 @@
     "start:test-error": "GOOSE_TEST_ERROR=true electron-forge start",
     "package": "pnpm run build-goose-sdk && pnpm run i18n:compile && electron-forge package",
     "make": "pnpm run build-goose-sdk && pnpm run i18n:compile && electron-forge make",
-    "bundle:default": "node scripts/prepare-platform-binaries.js && pnpm run make && BUNDLE_NAME=\"${GOOSE_BUNDLE_NAME:-Goose}\" && APP_DIR=\"out/${BUNDLE_NAME}-darwin-arm64\" && APP_BUNDLE=\"${APP_DIR}/${BUNDLE_NAME}.app\" && (cd \"$APP_DIR\" && ditto -c -k --sequesterRsrc --keepParent \"${BUNDLE_NAME}.app\" \"${BUNDLE_NAME}.zip\")",
-    "bundle:intel": "node scripts/prepare-platform-binaries.js && pnpm run make --arch=x64 && BUNDLE_NAME=\"${GOOSE_BUNDLE_NAME:-Goose}\" && APP_DIR=\"out/${BUNDLE_NAME}-darwin-x64\" && APP_BUNDLE=\"${APP_DIR}/${BUNDLE_NAME}.app\" && (cd \"$APP_DIR\" && ditto -c -k --sequesterRsrc --keepParent \"${BUNDLE_NAME}.app\" \"${BUNDLE_NAME}_intel_mac.zip\")",
-    "debug": "echo 'run --remote-debugging-port=8315' && BUNDLE_NAME=\"${GOOSE_BUNDLE_NAME:-Goose}\" && lldb \"out/${BUNDLE_NAME}-darwin-arm64/${BUNDLE_NAME}.app\"",
+    "bundle:default": "node scripts/prepare-platform-binaries.js && pnpm run make && BUNDLE_NAME=\"${GOOSE_BUNDLE_NAME:-Achilles}\" && APP_DIR=\"out/${BUNDLE_NAME}-darwin-arm64\" && APP_BUNDLE=\"${APP_DIR}/${BUNDLE_NAME}.app\" && (cd \"$APP_DIR\" && ditto -c -k --sequesterRsrc --keepParent \"${BUNDLE_NAME}.app\" \"${BUNDLE_NAME}.zip\")",
+    "bundle:intel": "node scripts/prepare-platform-binaries.js && pnpm run make --arch=x64 && BUNDLE_NAME=\"${GOOSE_BUNDLE_NAME:-Achilles}\" && APP_DIR=\"out/${BUNDLE_NAME}-darwin-x64\" && APP_BUNDLE=\"${APP_DIR}/${BUNDLE_NAME}.app\" && (cd \"$APP_DIR\" && ditto -c -k --sequesterRsrc --keepParent \"${BUNDLE_NAME}.app\" \"${BUNDLE_NAME}_intel_mac.zip\")",
+    "debug": "echo 'run --remote-debugging-port=8315' && BUNDLE_NAME=\"${GOOSE_BUNDLE_NAME:-Achilles}\" && lldb \"out/${BUNDLE_NAME}-darwin-arm64/${BUNDLE_NAME}.app\"",
     "test-e2e": "playwright test",
     "test-e2e:dev": "playwright test --reporter=list --retries=0 --max-failures=1",
     "test-e2e:ui": "playwright test --ui",
@@ -53,6 +53,7 @@
     "@agentclientprotocol/sdk": "^0.19.0",
     "@mcp-ui/client": "6.1.0",
     "@modelcontextprotocol/ext-apps": "^1.1.1",
+    "@monaco-editor/react": "^4.7.0",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-avatar": "^1.1.11",
     "@radix-ui/react-dialog": "^1.1.15",
@@ -65,6 +66,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/themes": "^3.3.0",
     "@tanstack/react-form": "1.28.3",
+    "@xyflow/react": "^12.11.6",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "compare-versions": "^6.1.1",
@@ -81,6 +83,7 @@
     "katex": "^0.16.33",
     "lodash": "^4.17.23",
     "lucide-react": "^0.575.0",
+    "monaco-editor": "^0.56.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-icons": "^5.5.0",
@@ -108,6 +111,7 @@
   "devDependencies": {
     "@electron-forge/cli": "^7.11.1",
     "@electron-forge/maker-deb": "^7.11.1",
+    "@electron-forge/maker-dmg": "^7.11.2",
     "@electron-forge/maker-flatpak": "^7.11.1",
     "@electron-forge/maker-rpm": "^7.11.1",
     "@electron-forge/maker-squirrel": "^7.11.1",
@@ -158,5 +162,13 @@
     "vitest": "^4.0.18"
   },
   "keywords": [],
+  "homepage": "https://achilles.sh",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kineticquant/achilles-harness.git"
+  },
+  "bugs": {
+    "url": "https://github.com/kineticquant/achilles-harness/issues"
+  },
   "license": "Apache-2.0"
 }

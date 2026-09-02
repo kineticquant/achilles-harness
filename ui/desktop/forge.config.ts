@@ -3,24 +3,32 @@ const { FuseV1Options, FuseVersion } = require('@electron/fuses');
 const { resolve } = require('path');
 
 const isLinuxVulkanBuild = process.env.GOOSE_DESKTOP_LINUX_VARIANT === 'vulkan';
+const windowsSetupExe =
+  process.env.ACHILLES_SETUP_EXE ||
+  (process.env.GOOSE_WINDOWS_VARIANT === 'cuda' ? 'AchillesSetup-cuda.exe' : 'AchillesSetup.exe');
+const macDmgName = process.env.ACHILLES_DMG_NAME || 'Achilles';
 
 let cfg = {
   asar: true,
   extraResource: ['src/bin', 'src/images', 'src/app-update.yml'],
   icon: 'src/images/icon',
-  // Windows specific configuration
+  // Windows specific configuration (cert fields only when a cert is present)
   win32: {
     icon: 'src/images/icon.ico',
-    certificateFile: process.env.WINDOWS_CERTIFICATE_FILE,
-    signingRole: process.env.WINDOW_SIGNING_ROLE,
-    rfc3161TimeStampServer: 'http://timestamp.digicert.com',
-    signWithParams: '/fd sha256 /tr http://timestamp.digicert.com /td sha256',
+    ...(process.env.WINDOWS_CERTIFICATE_FILE
+      ? {
+          certificateFile: process.env.WINDOWS_CERTIFICATE_FILE,
+          signingRole: process.env.WINDOW_SIGNING_ROLE,
+          rfc3161TimeStampServer: 'http://timestamp.digicert.com',
+          signWithParams: '/fd sha256 /tr http://timestamp.digicert.com /td sha256',
+        }
+      : {}),
   },
   // Protocol registration
   protocols: [
     {
       name: 'AchillesProtocol',
-      schemes: ['goose'],
+      schemes: ['achilles', 'goose'],
     },
   ],
   // macOS Info.plist extensions for drag-and-drop support
@@ -75,13 +83,23 @@ module.exports = {
   ],
   makers: [
     {
-      name: '@electron-forge/maker-zip',
-      platforms: ['darwin', 'win32', 'linux'],
+      name: '@electron-forge/maker-squirrel',
+      platforms: ['win32'],
       config: {
-        arch: process.env.ELECTRON_ARCH === 'x64' ? ['x64'] : ['arm64'],
-        options: {
-          icon: 'src/images/icon.ico',
-        },
+        name: 'Achilles',
+        authors: 'Achilles',
+        description: 'Achilles — agent harness',
+        setupIcon: resolve(__dirname, 'src/images/icon.ico'),
+        setupExe: windowsSetupExe,
+      },
+    },
+    {
+      name: '@electron-forge/maker-dmg',
+      platforms: ['darwin'],
+      config: {
+        name: macDmgName,
+        title: 'Achilles',
+        icon: resolve(__dirname, 'src/images/icon.icns'),
       },
     },
     {
@@ -127,10 +145,10 @@ module.exports = {
             scalable: 'src/images/icon.svg',
             '512x512': 'src/images/icon-512.png',
           },
-          homepage: 'https://goose-docs.ai/',
+          homepage: 'https://achilles.sh',
           runtimeVersion: '25.08',
           baseVersion: '25.08',
-          bin: 'Goose',
+          bin: 'Achilles',
           modules: [
             {
               name: 'libbz2-shim',

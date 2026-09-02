@@ -196,6 +196,29 @@ function cleanBinDirectory(targetPlatform) {
     });
 }
 
+function ensureAchillesCliAlias(targetPlatform) {
+    if (!fs.existsSync(srcBinDir)) {
+        return;
+    }
+
+    const gooseName = targetPlatform === 'win32' ? 'goose.exe' : 'goose';
+    const achillesName = targetPlatform === 'win32' ? 'achilles.exe' : 'achilles';
+    const goosePath = path.join(srcBinDir, gooseName);
+    const achillesPath = path.join(srcBinDir, achillesName);
+
+    if (!fs.existsSync(goosePath) || !fs.statSync(goosePath).isFile()) {
+        return;
+    }
+
+    fs.copyFileSync(goosePath, achillesPath);
+    try {
+        fs.chmodSync(achillesPath, 0o755);
+    } catch {
+        /* windows */
+    }
+    console.log(`Copied ${gooseName} → ${achillesName} for user-facing MCP snippets`);
+}
+
 // Helper function to copy platform-specific files
 async function copyPlatformFiles(targetPlatform) {
     if (targetPlatform === 'win32') {
@@ -252,7 +275,8 @@ async function preparePlatformBinaries() {
     
     // Then clean up cross-platform files
     cleanBinDirectory(targetPlatform);
-    
+    ensureAchillesCliAlias(targetPlatform);
+
     console.log('Platform binary preparation complete');
 }
 

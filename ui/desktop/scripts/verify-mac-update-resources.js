@@ -19,12 +19,12 @@ if (!fs.existsSync(updateConfigPath)) {
 }
 
 const updateConfig = fs.readFileSync(updateConfigPath, 'utf8');
-const requiredLines = [
-  'provider: github',
-  'owner: aaif-goose',
-  'repo: goose',
-  'updaterCacheDirName: goose-updater',
-];
+  const requiredLines = [
+    'provider: github',
+    'owner: kineticquant',
+    'repo: achilles-harness',
+    'updaterCacheDirName: achilles-updater',
+  ];
 
 for (const line of requiredLines) {
   if (!updateConfig.split(/\r?\n/).includes(line)) {

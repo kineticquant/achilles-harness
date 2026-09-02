@@ -14,7 +14,12 @@ export default defineConfig({
   // Excluding it makes Vite always read the latest ui/sdk/dist build.
   // Dev-server only — release builds ignore optimizeDeps.
   optimizeDeps: {
-    exclude: ['@aaif/goose-sdk'],
+    exclude: ['@aaif/goose-sdk', 'monaco-editor'],
+    include: ['@monaco-editor/react'],
+  },
+
+  worker: {
+    format: 'es',
   },
 
   build: {

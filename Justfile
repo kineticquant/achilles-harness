@@ -44,6 +44,7 @@ copy-binary BUILD_MODE="release":
         echo "Copying goose CLI binary from target/{{BUILD_MODE}}..."; \
         rm -f ./ui/desktop/src/bin/goose; \
         cp -p ./target/{{BUILD_MODE}}/goose ./ui/desktop/src/bin/; \
+        cp -p ./ui/desktop/src/bin/goose ./ui/desktop/src/bin/achilles; \
     else \
         echo "goose CLI binary not found in target/{{BUILD_MODE}}"; \
         exit 1; \
@@ -56,6 +57,7 @@ copy-binary-intel:
         echo "Copying Intel goose CLI binary to ui/desktop/src/bin..."; \
         rm -f ./ui/desktop/src/bin/goose; \
         cp -p ./target/x86_64-apple-darwin/release/goose ./ui/desktop/src/bin/; \
+        cp -p ./ui/desktop/src/bin/goose ./ui/desktop/src/bin/achilles; \
     else \
         echo "Intel goose CLI binary not found."; \
         exit 1; \
@@ -74,6 +76,7 @@ copy-binary-windows:
         New-Item -ItemType Directory -Force "./ui/desktop/src/bin" | Out-Null; \
         Remove-Item -Path "./ui/desktop/src/bin/goosed.exe" -Force -ErrorAction SilentlyContinue; \
         Copy-Item -Path "./target/x86_64-pc-windows-msvc/release/goose.exe" -Destination "./ui/desktop/src/bin/" -Force; \
+        Copy-Item -Path "./ui/desktop/src/bin/goose.exe" -Destination "./ui/desktop/src/bin/achilles.exe" -Force; \
     } else { \
         Write-Host "Windows binary not found." -ForegroundColor Red; \
         exit 1; \
