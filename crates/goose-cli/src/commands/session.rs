@@ -7,8 +7,8 @@ use goose::config::Config;
 #[cfg(feature = "nostr")]
 use goose::session::nostr_share;
 use goose::session::{
-    export_session_to_markdown, generate_diagnostics, DiagnosticsLevel, Session, SessionManager,
-    SessionType,
+    DiagnosticsLevel, Session, SessionManager, SessionType, export_session_to_markdown,
+    generate_diagnostics,
 };
 use goose::utils::safe_truncate;
 use regex::Regex;

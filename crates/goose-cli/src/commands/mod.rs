@@ -1,3 +1,5 @@
+pub mod analyze;
+pub mod appsec;
 pub mod configure;
 pub mod doctor;
 pub mod gateway;

@@ -125,7 +125,7 @@ pub async fn run_checks_in_parallel(
         let (idx, check, result, quiet) = match joined {
             Ok(v) => v,
             Err(e) => {
-                eprintln!("goose review: check task panicked: {e}");
+                eprintln!("Achilles review: check task panicked: {e}");
                 continue;
             }
         };
@@ -134,7 +134,7 @@ pub async fn run_checks_in_parallel(
             Ok(findings) => {
                 if !quiet {
                     eprintln!(
-                        "goose review: check '{}' completed: {} finding(s)",
+                        "Achilles review: check '{}' completed: {} finding(s)",
                         check.name,
                         findings.len()
                     );
@@ -144,7 +144,7 @@ pub async fn run_checks_in_parallel(
             Err(e) => {
                 // Per-check failure must never abort the review — emit a
                 // warning and continue with empty findings for this check.
-                eprintln!("goose review: check '{}' failed: {e}", check.name);
+                eprintln!("Achilles review: check '{}' failed: {e}", check.name);
                 results[idx] = Vec::new();
             }
         }
@@ -359,7 +359,7 @@ pub async fn run_main_pass_in_parallel(
         let (idx, path, result, quiet) = match joined {
             Ok(v) => v,
             Err(e) => {
-                eprintln!("goose review: main-pass task panicked: {e}");
+                eprintln!("Achilles review: main-pass task panicked: {e}");
                 continue;
             }
         };
@@ -378,7 +378,7 @@ pub async fn run_main_pass_in_parallel(
                     .collect();
                 if !quiet {
                     eprintln!(
-                        "goose review: main pass on '{}' completed: {} finding(s)",
+                        "Achilles review: main pass on '{}' completed: {} finding(s)",
                         path,
                         findings.len()
                     );
@@ -388,7 +388,7 @@ pub async fn run_main_pass_in_parallel(
             Err(e) => {
                 // A single broken file must not abort the entire main
                 // pass; surface a warning and continue.
-                eprintln!("goose review: main pass on '{}' failed: {e}", path);
+                eprintln!("Achilles review: main pass on '{}' failed: {e}", path);
                 per_file_results[idx] = Vec::new();
             }
         }

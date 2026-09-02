@@ -598,7 +598,7 @@ pub async fn build_session(session_config: SessionBuilderConfig) -> CliSession {
                         "Error {}.\n\
                         Please check your system keychain and run 'goose configure' again.\n\
                         If your system is unable to use the keyring, please try setting secret key(s) via environment variables.\n\
-                        For more info, see: https://goose-docs.ai/docs/troubleshooting/#keychainkeyring-errors",
+                        For more info, see: https://github.com/kineticquant/achilles-harness/blob/main/docs/troubleshooting.html#keychain",
                         e2
                     ));
                         process::exit(1);
@@ -610,7 +610,7 @@ pub async fn build_session(session_config: SessionBuilderConfig) -> CliSession {
                 "Error {}.\n\
                 Please check your system keychain and run 'goose configure' again.\n\
                 If your system is unable to use the keyring, please try setting secret key(s) via environment variables.\n\
-                For more info, see: https://goose-docs.ai/docs/troubleshooting/#keychainkeyring-errors",
+                For more info, see: https://github.com/kineticquant/achilles-harness/blob/main/docs/troubleshooting.html#keychain",
                 e
             ));
                 process::exit(1);

@@ -1,6 +1,6 @@
 use anyhow::Result;
 use clap::{Args, CommandFactory, Parser, Subcommand};
-use clap_complete::{generate, Shell as ClapShell};
+use clap_complete::{Shell as ClapShell, generate};
 use clap_complete_nushell::Nushell as ClapNushell;
 use goose::agents::GoosePlatform;
 use goose::builtin_extension::register_builtin_extensions;
@@ -9,7 +9,7 @@ use goose::config::{Config, GooseMode};
 use goose::posthog::get_telemetry_choice;
 use goose::recipe::Recipe;
 use goose::source_roots::SourceRoot;
-use goose_mcp::mcp_server_runner::{serve, McpCommand};
+use goose_mcp::mcp_server_runner::{McpCommand, serve};
 use goose_mcp::{AutoVisualiserRouter, ComputerControllerServer, MemoryServer, TutorialServer};
 
 #[cfg(feature = "telemetry")]
@@ -19,7 +19,7 @@ use crate::commands::info::handle_info;
 use crate::commands::plugin::{handle_plugin_install, handle_plugin_update};
 use crate::commands::recipe::{handle_deeplink, handle_list, handle_open, handle_validate};
 use crate::commands::term::{
-    handle_term_info, handle_term_init, handle_term_log, handle_term_run, Shell,
+    Shell, handle_term_info, handle_term_init, handle_term_log, handle_term_run,
 };
 
 use crate::commands::schedule::{
@@ -31,10 +31,10 @@ use crate::commands::session::{handle_session_list, handle_session_remove};
 use crate::commands::skills::handle_skills_list;
 use crate::recipes::extract_from_cli::extract_recipe_info_from_cli;
 use crate::recipes::recipe::{explain_recipe, render_recipe_as_yaml};
-use crate::session::{build_session, SessionBuilderConfig};
+use crate::session::{SessionBuilderConfig, build_session};
 use goose::agents::Container;
-use goose::session::session_manager::SessionType;
 use goose::session::SessionManager;
+use goose::session::session_manager::SessionType;
 use std::io::Read;
 use std::path::PathBuf;
 const GOOSE_SERVER_SECRET_KEY_ENV: &str = "GOOSE_SERVER__SECRET_KEY";
@@ -760,7 +760,7 @@ enum RecipeCommand {
     },
 
     /// Open a recipe in Goose Desktop
-    #[command(about = "Open a recipe in Goose Desktop")]
+    #[command(about = "Open a recipe in Achilles Desktop")]
     Open {
         /// Recipe name to get recipe file to open
         #[arg(help = "recipe name or full path to the recipe file")]
@@ -813,13 +813,46 @@ enum Command {
         check: bool,
     },
 
-    #[command(about = "Check that your Goose setup is working")]
+    #[command(about = "Check that your Achilles setup is working")]
     Doctor {},
 
+    /// Focused function/class call graph. JSON is what the desktop inspector pane uses.
+    #[command(about = "Focused call graph (use --json --focus for the inspector pane)")]
+    Analyze {
+        #[arg(long, help = "File or directory (default: current directory)")]
+        path: Option<PathBuf>,
+        #[arg(long, help = "Symbol to inspect (required with --json)")]
+        focus: Option<String>,
+        #[arg(
+            long,
+            default_value_t = 3,
+            help = "Directory walk depth (0 treated as 3)"
+        )]
+        depth: u32,
+        #[arg(
+            long,
+            default_value_t = 2,
+            help = "Call-graph follow depth (capped at 3)"
+        )]
+        follow: u32,
+        #[arg(long, help = "Print the neighborhood as JSON")]
+        json: bool,
+    },
+
+    /// Achilles AppSec. Interactive product is desktop Findings; this CLI is CI/headless.
+    #[command(about = "CI/headless AppSec ledger. Interactive product is desktop Findings.")]
+    Appsec {
+        #[command(subcommand)]
+        command: crate::commands::appsec::AppsecCommand,
+    },
+
     /// Manage system prompts and behaviors
-    #[command(about = "Run one of the mcp servers bundled with goose")]
+    #[command(about = "Run a bundled MCP server (Achilles MCP: achilles mcp)")]
     Mcp {
-        #[arg(value_parser = clap::value_parser!(McpCommand))]
+        #[arg(
+            value_parser = clap::value_parser!(McpCommand),
+            default_value = "achilles"
+        )]
         server: McpCommand,
     },
 
@@ -1089,7 +1122,7 @@ enum Command {
     /// `**/.agents/REVIEW.md` scoped prompt overrides, builds a review
     /// request from the working tree (or an explicit diff range), and
     /// runs the review through goose.
-    #[command(about = "Review the current diff using goose")]
+    #[command(about = "Review the current diff (Achilles; uses the goose review engine)")]
     Review {
         /// Diff range to review (e.g. "main...HEAD"). Defaults to the working
         /// tree vs HEAD.
@@ -1333,6 +1366,8 @@ fn get_command_name(command: &Option<Command>) -> &'static str {
     match command {
         Some(Command::Configure {}) => "configure",
         Some(Command::Doctor {}) => "doctor",
+        Some(Command::Analyze { .. }) => "analyze",
+        Some(Command::Appsec { .. }) => "appsec",
         Some(Command::Info { .. }) => "info",
         Some(Command::Mcp { .. }) => "mcp",
         Some(Command::Acp { .. }) => "acp",
@@ -1366,6 +1401,9 @@ async fn handle_mcp_command(server: McpCommand) -> Result<()> {
         McpCommand::ComputerController => serve(ComputerControllerServer::new()).await?,
         McpCommand::Memory => serve(MemoryServer::new()).await?,
         McpCommand::Tutorial => serve(TutorialServer::new()).await?,
+        McpCommand::Achilles => {
+            goose::agents::platform_extensions::appsec_mcp::serve_stdio().await?
+        }
     }
     Ok(())
 }
@@ -1468,7 +1506,9 @@ async fn handle_serve_command(args: ServeCommandArgs) -> Result<()> {
         .collect::<Result<Vec<_>>>()?;
     let secret_key = env_secret.unwrap_or_else(generate_serve_secret_key);
     if let Err(error) = server.start_scheduler().await {
-        warn!("Scheduler failed to start; scheduled jobs will not run until a client connects: {error}");
+        warn!(
+            "Scheduler failed to start; scheduled jobs will not run until a client connects: {error}"
+        );
     }
     let router = create_router(
         server,
@@ -2230,6 +2270,14 @@ pub async fn cli() -> anyhow::Result<()> {
         }
         Some(Command::Configure {}) => handle_configure().await,
         Some(Command::Doctor {}) => crate::commands::doctor::handle_doctor().await,
+        Some(Command::Analyze {
+            path,
+            focus,
+            depth,
+            follow,
+            json,
+        }) => crate::commands::analyze::handle_analyze(path, focus, depth, follow, json),
+        Some(Command::Appsec { command }) => crate::commands::appsec::handle_appsec(command).await,
         Some(Command::Info { verbose, check }) => handle_info(verbose, check).await,
         Some(Command::Mcp { server }) => handle_mcp_command(server).await,
         Some(Command::Acp {
@@ -2342,7 +2390,7 @@ pub async fn cli() -> anyhow::Result<()> {
             summary_only,
             severity,
         }) => {
-            use crate::commands::review::{handle_review, ReviewOptions};
+            use crate::commands::review::{ReviewOptions, handle_review};
             handle_review(ReviewOptions {
                 range,
                 prompt_file: prompt,
@@ -2553,6 +2601,36 @@ mod tests {
                 assert_eq!(severity, "low");
             }
             _ => panic!("expected review command"),
+        }
+    }
+
+    #[test]
+    fn analyze_command_parses_json_focus() {
+        let cli = Cli::try_parse_from([
+            "goose",
+            "analyze",
+            "--json",
+            "--focus",
+            "process",
+            "--path",
+            "crates/goose",
+            "--follow",
+            "2",
+        ])
+        .expect("parse failed");
+
+        match cli.command {
+            Some(Command::Analyze {
+                focus,
+                json,
+                follow,
+                ..
+            }) => {
+                assert_eq!(focus.as_deref(), Some("process"));
+                assert!(json);
+                assert_eq!(follow, 2);
+            }
+            _ => panic!("expected analyze command"),
         }
     }
 
