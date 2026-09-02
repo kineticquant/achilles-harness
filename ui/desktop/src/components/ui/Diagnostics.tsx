@@ -4,6 +4,10 @@ import { Button } from './button';
 import { toastError } from '../../toasts';
 import { defineMessages, useIntl } from '../../i18n';
 import { getDiagnosticsReport } from '../../acp/diagnostics';
+import {
+  ACHILLES_DOCS_DIAGNOSTICS,
+  ACHILLES_DOCS_TROUBLESHOOTING,
+} from '../../utils/achillesLinks';
 
 const i18n = defineMessages({
   reportProblem: {
@@ -141,10 +145,10 @@ export const DiagnosticsModal: React.FC<DiagnosticsModalProps> = ({
       const body = `**Describe the bug**
 
 💡 Before filing, please check common issues:  
-https://goose-docs.ai/docs/troubleshooting  
+${ACHILLES_DOCS_TROUBLESHOOTING}
 
 📦 To help us debug faster, attach your **diagnostics JSON report** if possible.  
-👉 How to capture it: https://goose-docs.ai/docs/troubleshooting/diagnostics-and-reporting/
+👉 How to capture it: ${ACHILLES_DOCS_DIAGNOSTICS}
 
 A clear and concise description of what the bug is.
 

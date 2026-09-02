@@ -3,7 +3,7 @@ import { Input } from '../../ui/input';
 import { Button } from '../../ui/button';
 import { useConfig } from '../../ConfigContext';
 import { cn } from '../../../utils';
-import { Save, RotateCcw, FileText, Settings } from 'lucide-react';
+import { Save, RotateCcw, FileText, Settings, Lock } from 'lucide-react';
 import { toastSuccess, toastError } from '../../../toasts';
 import { getUiNames, providerPrefixes } from '../../../utils/configUtils';
 import type { ConfigData, ConfigValue } from '../../../types/config';
@@ -20,6 +20,8 @@ import {
 import { errorMessage } from '../../../utils/conversionUtils';
 import { defineMessages, useIntl } from '../../../i18n';
 
+const TELEMETRY_CONFIG_KEY = 'GOOSE_TELEMETRY_ENABLED';
+
 const i18n = defineMessages({
   title: {
     id: 'configSettings.title',
@@ -27,11 +29,11 @@ const i18n = defineMessages({
   },
   description: {
     id: 'configSettings.description',
-    defaultMessage: 'Edit your goose configuration settings',
+    defaultMessage: 'Edit your Achilles configuration settings',
   },
   descriptionWithProvider: {
     id: 'configSettings.descriptionWithProvider',
-    defaultMessage: 'Edit your goose configuration settings (current settings for {provider})',
+    defaultMessage: 'Edit your Achilles configuration settings (current settings for {provider})',
   },
   editConfiguration: {
     id: 'configSettings.editConfiguration',
@@ -60,6 +62,14 @@ const i18n = defineMessages({
   done: {
     id: 'configSettings.done',
     defaultMessage: 'Done',
+  },
+  telemetryForced: {
+    id: 'configSettings.telemetryForced',
+    defaultMessage: 'Disabled — force disabled',
+  },
+  telemetryForcedHint: {
+    id: 'configSettings.telemetryForcedHint',
+    defaultMessage: 'Achilles does not collect telemetry.',
   },
   configUpdated: {
     id: 'configSettings.configUpdated',
@@ -116,6 +126,14 @@ export default function ConfigSettings() {
       return prevOrder;
     });
   }, [typedConfig]);
+
+  useEffect(() => {
+    if (typedConfig[TELEMETRY_CONFIG_KEY] !== false) {
+      void upsert(TELEMETRY_CONFIG_KEY, false, false).catch((error) => {
+        console.error('Failed to force-disable telemetry:', error);
+      });
+    }
+  }, [typedConfig, upsert]);
 
   const handleChange = (key: string, value: string) => {
     setConfigValues((prev: ConfigData) => ({
@@ -250,20 +268,45 @@ export default function ConfigSettings() {
                 {configEntries.length === 0 ? (
                   <p className="text-text-secondary">{intl.formatMessage(i18n.noSettings)}</p>
                 ) : (
-                  configEntries.map(([key, _value]) => (
+                  configEntries.map(([key, _value]) => {
+                    const isTelemetry = key === TELEMETRY_CONFIG_KEY;
+                    return (
                     <div key={key} className="grid grid-cols-[200px_1fr_auto] gap-3 items-center">
-                      <label className="text-sm font-medium text-text-primary" title={key}>
+                      <label
+                        className="text-sm font-medium text-text-primary"
+                        title={isTelemetry ? intl.formatMessage(i18n.telemetryForcedHint) : key}
+                      >
                         {getUiNames(key)}
                       </label>
                       <Input
-                        value={String(configValues[key] || '')}
-                        onChange={(e) => handleChange(key, e.target.value)}
+                        value={
+                          isTelemetry
+                            ? intl.formatMessage(i18n.telemetryForced)
+                            : String(configValues[key] || '')
+                        }
+                        onChange={(e) => {
+                          if (!isTelemetry) handleChange(key, e.target.value);
+                        }}
+                        disabled={isTelemetry}
+                        readOnly={isTelemetry}
                         className={cn(
                           'text-text-primary border-border-primary hover:border-border-primary transition-colors',
                           modifiedKeys.has(key) && 'border-blue-500 focus:ring-blue-500/20'
                         )}
                         placeholder={intl.formatMessage(i18n.enterValue, { name: getUiNames(key) })}
                       />
+                      {isTelemetry ? (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="min-w-[60px]"
+                          disabled
+                          title={intl.formatMessage(i18n.telemetryForcedHint)}
+                          aria-label={intl.formatMessage(i18n.telemetryForcedHint)}
+                        >
+                          <Lock className="h-4 w-4" />
+                        </Button>
+                      ) : (
                       <Button
                         onClick={() => handleSave(key)}
                         disabled={!modifiedKeys.has(key) || saving === key}
@@ -277,8 +320,10 @@ export default function ConfigSettings() {
                           <Save className="h-4 w-4" />
                         )}
                       </Button>
+                      )}
                     </div>
-                  ))
+                    );
+                  })
                 )}
               </div>
             </div>

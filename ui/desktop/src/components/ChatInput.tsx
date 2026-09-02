@@ -146,6 +146,10 @@ const i18n = defineMessages({
     id: 'chatInput.waitingForCancellation',
     defaultMessage: 'Waiting for cancellation to finish',
   },
+  sendWillQueue: {
+    id: 'chatInput.sendWillQueue',
+    defaultMessage: 'Stop is finishing — this message will send next',
+  },
   failedToReadImage: {
     id: 'chatInput.failedToReadImage',
     defaultMessage: 'Failed to read image file',
@@ -189,6 +193,7 @@ interface ChatInputProps {
   latestInference?: Message['metadata']['inference'] | null;
   nextChatExtensionDraft?: NextChatExtensionDraft;
   onNextChatExtensionDraftChange?: (draft: NextChatExtensionDraft) => void;
+  autoFocus?: boolean;
 }
 
 export default function ChatInput({
@@ -224,6 +229,7 @@ export default function ChatInput({
   latestInference,
   nextChatExtensionDraft,
   onNextChatExtensionDraftChange,
+  autoFocus = true,
 }: ChatInputProps) {
   const [_value, setValue] = useState(initialValue);
   const [displayValue, setDisplayValue] = useState(initialValue); // For immediate visual feedback
@@ -1031,7 +1037,7 @@ export default function ChatInput({
   };
 
   const handleInterruptionAndQueue = () => {
-    if (!isLoading || !hasSubmittableContent) {
+    if ((!isLoading && !queueProcessingBlocked) || !hasSubmittableContent) {
       return false;
     }
 
@@ -1200,6 +1206,9 @@ export default function ChatInput({
   const onFormSubmit = (e: React.FormEvent | React.MouseEvent) => {
     e.preventDefault();
     if (queueProcessingBlocked) {
+      if (hasSubmittableContent) {
+        handleInterruptionAndQueue();
+      }
       return;
     }
     if (isLoading && hasSubmittableContent) {
@@ -1327,11 +1336,14 @@ export default function ChatInput({
     isAnyDroppedFileLoading ||
     isRecording ||
     isTranscribing ||
-    queueProcessingBlocked ||
     chatState === ChatState.RestartingAgent;
 
   const getSubmitButtonTooltip = (): string => {
-    if (queueProcessingBlocked) return intl.formatMessage(i18n.waitingForCancellation);
+    if (queueProcessingBlocked) {
+      return hasSubmittableContent
+        ? intl.formatMessage(i18n.sendWillQueue)
+        : intl.formatMessage(i18n.waitingForCancellation);
+    }
     if (isAnyImageLoading) return intl.formatMessage(i18n.waitingForImages);
     if (isAnyDroppedFileLoading) return intl.formatMessage(i18n.processingDroppedFiles);
     if (isRecording) return intl.formatMessage(i18n.recording);
@@ -1500,7 +1512,7 @@ export default function ChatInput({
         <div className="relative">
           <textarea
             data-testid="chat-input"
-            autoFocus
+            autoFocus={autoFocus}
             id="dynamic-textarea"
             placeholder={isRecording ? '' : getNavigationShortcutText(intl)}
             value={displayValue}

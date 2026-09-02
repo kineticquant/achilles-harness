@@ -206,6 +206,43 @@ describe('acpChatSessionController.stop', () => {
     );
     expect(acpCancelPrompt).toHaveBeenCalledWith(SESSION_ID);
   });
+
+  it('unblocks send immediately if cancel RPC fails', async () => {
+    vi.mocked(acpChatSessionStore.getSnapshot).mockReturnValue(
+      snapshotWithActivePrompt('attempt-1')
+    );
+    vi.mocked(acpCancelPrompt).mockRejectedValue(new Error('offline'));
+
+    acpChatSessionController.stop(SESSION_ID);
+
+    await vi.waitFor(() => {
+      expect(acpChatSessionActions.clearPromptCancellation).toHaveBeenCalledWith(
+        SESSION_ID,
+        'attempt-1'
+      );
+    });
+  });
+
+  it('unblocks send if cancel RPC hangs past the drain timeout', async () => {
+    vi.useFakeTimers();
+    vi.mocked(acpChatSessionStore.getSnapshot).mockReturnValue(
+      snapshotWithActivePrompt('attempt-1')
+    );
+    vi.mocked(acpCancelPrompt).mockReturnValue(new Promise(() => {}));
+
+    try {
+      acpChatSessionController.stop(SESSION_ID);
+      expect(acpChatSessionActions.clearPromptCancellation).not.toHaveBeenCalled();
+
+      await vi.advanceTimersByTimeAsync(3_000);
+      expect(acpChatSessionActions.clearPromptCancellation).toHaveBeenCalledWith(
+        SESSION_ID,
+        'attempt-1'
+      );
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
 
 describe('acpChatSessionController.submitMessage', () => {
@@ -394,5 +431,105 @@ describe('acpChatSessionController.updateMessage', () => {
       SESSION_ID,
       'attempt-1'
     );
+  });
+});
+
+describe('acpChatSessionController.deleteMessage', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(acpTruncateSessionConversation).mockResolvedValue(undefined as never);
+    vi.mocked(acpChatSessionStore.getSnapshot).mockReturnValue(snapshotWithActivePrompt(null));
+    vi.mocked(acpChatSessionActions.waitForPromptCancellation).mockResolvedValue(undefined);
+  });
+
+  it('truncates from the message without resubmitting', async () => {
+    const first = userMessage();
+    const later: Message & { id: string } = {
+      ...first,
+      id: 'message-2',
+      created: 456,
+      role: 'assistant',
+      content: [{ type: 'text', text: 'Reply' }],
+    };
+    const currentSnapshot: AcpChatSessionSnapshot = {
+      ...snapshotWithActivePrompt(null),
+      messages: [first, later],
+    };
+
+    await acpChatSessionController.deleteMessage(SESSION_ID, first.id, {
+      getCurrentSnapshot: () => currentSnapshot,
+    });
+
+    expect(acpTruncateSessionConversation).toHaveBeenCalledWith(SESSION_ID, first.created);
+    expect(acpChatSessionActions.setMessages).toHaveBeenCalledWith(SESSION_ID, []);
+    expect(acpChatSessionActions.setChatState).toHaveBeenCalledWith(SESSION_ID, ChatState.Idle);
+    expect(acpPromptSession).not.toHaveBeenCalled();
+  });
+
+  it('keeps earlier messages when deleting from the middle', async () => {
+    const earlier: Message & { id: string } = {
+      ...userMessage(),
+      id: 'message-0',
+      created: 100,
+    };
+    const target = userMessage();
+    const later: Message & { id: string } = {
+      ...userMessage(),
+      id: 'message-2',
+      created: 456,
+    };
+    const currentSnapshot: AcpChatSessionSnapshot = {
+      ...snapshotWithActivePrompt(null),
+      messages: [earlier, target, later],
+    };
+
+    await acpChatSessionController.deleteMessage(SESSION_ID, target.id, {
+      getCurrentSnapshot: () => currentSnapshot,
+    });
+
+    expect(acpTruncateSessionConversation).toHaveBeenCalledWith(SESSION_ID, target.created);
+    expect(acpChatSessionActions.setMessages).toHaveBeenCalledWith(SESSION_ID, [earlier]);
+    expect(acpPromptSession).not.toHaveBeenCalled();
+  });
+
+  it('rejects deletes while cancellation is pending', async () => {
+    vi.mocked(acpChatSessionStore.getSnapshot).mockReturnValue({
+      ...snapshotWithActivePrompt(null),
+      pendingCancelPromptAttemptId: 'attempt-1',
+    });
+    const existingMessage = userMessage();
+    const currentSnapshot: AcpChatSessionSnapshot = {
+      ...snapshotWithActivePrompt(null),
+      messages: [existingMessage],
+    };
+
+    await expect(
+      acpChatSessionController.deleteMessage(SESSION_ID, existingMessage.id, {
+        getCurrentSnapshot: () => currentSnapshot,
+      })
+    ).rejects.toThrow('Cannot submit while prompt cancellation is pending');
+
+    expect(acpTruncateSessionConversation).not.toHaveBeenCalled();
+    expect(acpChatSessionActions.setMessages).not.toHaveBeenCalled();
+  });
+
+  it('ignores deletes while a prompt is active', async () => {
+    vi.mocked(acpChatSessionStore.getSnapshot).mockReturnValue(
+      snapshotWithActivePrompt('attempt-1')
+    );
+    const existingMessage = userMessage();
+    const currentSnapshot: AcpChatSessionSnapshot = {
+      ...snapshotWithActivePrompt('attempt-1'),
+      messages: [existingMessage],
+    };
+
+    await expect(
+      acpChatSessionController.deleteMessage(SESSION_ID, existingMessage.id, {
+        getCurrentSnapshot: () => currentSnapshot,
+      })
+    ).resolves.toBeUndefined();
+
+    expect(acpTruncateSessionConversation).not.toHaveBeenCalled();
+    expect(acpChatSessionActions.setMessages).not.toHaveBeenCalled();
   });
 });

@@ -19,6 +19,7 @@ const customOneDarkTheme = {
     ...oneDark['pre[class*="language-"]'],
     color: '#e6e6e6',
     fontSize: '14px',
+    background: '#181818',
   },
   comment: { ...oneDark.comment, color: '#a0a0a0', fontStyle: 'italic' },
   prolog: { ...oneDark.prolog, color: '#a0a0a0' },
@@ -127,7 +128,7 @@ const CodeBlock = memo(function CodeBlock({
         language={language}
         PreTag="div"
         customStyle={{
-          background: 'var(--code-block-background, #282c34)',
+          background: 'var(--code-block-background, #181818)',
           margin: 0,
           width: '100%',
           maxWidth: '100%',

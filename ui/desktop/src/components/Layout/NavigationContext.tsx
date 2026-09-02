@@ -10,9 +10,10 @@ import React, {
 import { NAV_DIMENSIONS } from './constants';
 
 /**
- * When the window is narrower than this many CSS pixels, we auto-collapse
- * the sidebar. The user can re-expand it via the menu button; it will only
- * auto-collapse again if they go below the threshold from above.
+ * When the window shrinks below this many CSS pixels, collapse the sidebar.
+ * First load always stays expanded — we only collapse on a downward resize
+ * crossing. The user can re-expand via the menu button without us fighting
+ * further resizes until they go below the threshold from above again.
  */
 const NARROW_WINDOW_THRESHOLD = 700;
 
@@ -45,15 +46,7 @@ interface NavigationProviderProps {
 }
 
 export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children }) => {
-  const [isNavExpanded, setIsNavExpandedState] = useState<boolean>(() => {
-    const stored = localStorage.getItem('navigation_expanded');
-    return stored !== 'false';
-  });
-
-  const setIsNavExpanded = useCallback((expanded: boolean) => {
-    setIsNavExpandedState(expanded);
-    localStorage.setItem('navigation_expanded', String(expanded));
-  }, []);
+  const [isNavExpanded, setIsNavExpanded] = useState(true);
 
   const [navWidth, setNavWidthState] = useState<number>(() => {
     const stored = localStorage.getItem('navigation_width');
@@ -87,14 +80,8 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
     };
   }, [setIsNavExpanded]);
 
-  // Auto-collapse the sidebar when the window becomes narrow. Track the
-  // previous width so we only fire on the downward crossing — the user can
-  // re-expand it manually without us fighting them on the next resize.
   useEffect(() => {
     let lastWidth = window.innerWidth;
-    if (lastWidth < NARROW_WINDOW_THRESHOLD && isNavExpandedRef.current) {
-      setIsNavExpanded(false);
-    }
     const onResize = () => {
       const width = window.innerWidth;
       if (
@@ -108,7 +95,7 @@ export const NavigationProvider: React.FC<NavigationProviderProps> = ({ children
     };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
-  }, [setIsNavExpanded]);
+  }, []);
 
   const value: NavigationContextValue = {
     isNavExpanded,

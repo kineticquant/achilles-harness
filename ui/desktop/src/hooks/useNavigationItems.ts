@@ -7,6 +7,7 @@ import {
   Puzzle,
   Settings,
   ShieldAlert,
+  Wrench,
   Zap,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -24,12 +25,13 @@ export interface NavItem {
 /** Top-level nav items (excluding Settings which is pinned to the bottom). */
 export const NAV_ITEMS: NavItem[] = [
   { id: 'home', path: '/', label: 'New Chat', icon: MessageSquarePlus },
-  { id: 'findings', path: '/findings', label: 'Findings', icon: ShieldAlert },
+  { id: 'findings', path: '/findings', label: 'Scan', icon: ShieldAlert },
   { id: 'recipes', path: '/recipes', label: 'Recipes', icon: FileText },
   { id: 'skills', path: '/skills', label: 'Skills', icon: Zap },
   { id: 'apps', path: '/apps', label: 'Apps', icon: AppWindow },
   { id: 'scheduler', path: '/schedules', label: 'Scheduler', icon: Clock },
   { id: 'extensions', path: '/extensions', label: 'Extensions', icon: Puzzle },
+  { id: 'tools', path: '/tools', label: 'Utils', icon: Wrench },
   { id: 'sessions', path: '/sessions', label: 'Session History', icon: History },
 ];
 
@@ -50,7 +52,11 @@ const navItemMessages = defineMessages({
   },
   findings: {
     id: 'navigation.itemFindings',
-    defaultMessage: 'Findings',
+    defaultMessage: 'Scan',
+  },
+  tools: {
+    id: 'navigation.itemTools',
+    defaultMessage: 'Utils',
   },
   recipes: {
     id: 'navigation.itemRecipes',

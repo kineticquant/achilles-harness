@@ -31,7 +31,7 @@ import {
 } from '../types/message';
 import { substituteParameters } from '../utils/parameterSubstitution';
 import { useAutoSubmit } from '../hooks/useAutoSubmit';
-import { Goose } from './icons';
+import { AchillesWordmark } from './icons';
 import EnvironmentBadge from './GooseSidebar/EnvironmentBadge';
 import SessionActionsHeader from './SessionActionsHeader';
 import { isAcpRecovering, subscribeToAcpRecovery } from '../acp/acpConnection';
@@ -112,6 +112,7 @@ export default function BaseChat({
     pauseQueueOnStop,
     queueProcessingBlocked,
     onMessageUpdate,
+    onMessageDelete,
   } = useChatSession({
     sessionId,
     onStreamFinish,
@@ -414,18 +415,10 @@ export default function BaseChat({
         <div className="flex flex-col flex-1 min-h-0 relative">
           {/* Goose watermark - top right */}
           <div className="absolute top-[14px] right-4 z-[60] flex flex-row items-center gap-1">
-            <a
-              href="https://goose-docs.ai"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="no-drag flex flex-row items-center gap-1 hover:opacity-80 transition-opacity"
-            >
-              <Goose className="size-5 goose-icon-animation" />
-              <span className="text-sm leading-none text-text-secondary -translate-y-px">
-                goose
-              </span>
-            </a>
-            <EnvironmentBadge className="translate-y-px" />
+            <div className="flex flex-row items-center gap-1 text-text-secondary">
+              <AchillesWordmark className="text-[13px]" />
+            </div>
+            <EnvironmentBadge />
           </div>
 
           <SessionActionsHeader session={session} onSessionChange={updateSession} />
@@ -469,6 +462,7 @@ export default function BaseChat({
                     isStreamingMessage={chatState !== ChatState.Idle}
                     onRenderingComplete={handleRenderingComplete}
                     onMessageUpdate={onMessageUpdate}
+                    onMessageDelete={onMessageDelete}
                     submitElicitationResponse={submitElicitationResponse}
                   />
                 </SearchView>
@@ -499,6 +493,7 @@ export default function BaseChat({
         >
           <ChatInput
             inputRef={chatInputRef}
+            autoFocus={isActiveSession}
             sessionId={sessionId}
             handleSubmit={chatInputSubmit}
             chatState={chatState}

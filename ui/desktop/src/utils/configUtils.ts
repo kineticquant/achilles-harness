@@ -11,6 +11,7 @@ export const configLabels: Record<string, string> = {
   GOOSE_CLI_MIN_PRIORITY: 'CLI Min Priority',
   GOOSE_ALLOWLIST: 'Allow List',
   GOOSE_RECIPE_GITHUB_REPO: 'Recipe GitHub Repo',
+  GOOSE_TELEMETRY_ENABLED: 'Achilles Telemetry',
 
   // security settings
   SECURITY_PROMPT_ENABLED: 'Prompt Injection Detection Enabled',

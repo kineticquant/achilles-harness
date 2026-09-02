@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router';
+import { useLocation, useSearchParams } from 'react-router';
 import BaseChat from './BaseChat';
 import { ChatType } from '../types/chat';
 import { UserInput } from '../types/message';
@@ -24,8 +24,13 @@ export default function ChatSessionsContainer({
   setChat,
   activeSessions,
 }: ChatSessionsContainerProps) {
+  const location = useLocation();
   const [searchParams] = useSearchParams();
-  const currentSessionId = searchParams.get('resumeSessionId') ?? undefined;
+  // Findings reuses resumeSessionId so a scan can load its ACP thread. Pair chat
+  // must not treat that as the visible session or its autofocused input steals
+  // the Findings composer after a scan.
+  const currentSessionId =
+    location.pathname === '/pair' ? (searchParams.get('resumeSessionId') ?? undefined) : undefined;
 
   // Build the list of sessions to render
   let sessionsToRender = activeSessions;

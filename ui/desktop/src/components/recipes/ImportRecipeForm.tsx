@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { Download } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
-import { Recipe, parseDeeplink, parseRecipeFromFile } from '../../recipe';
+import { Recipe, isRecipeDeeplink, parseDeeplink, parseRecipeFromFile } from '../../recipe';
 import { toastSuccess, toastError } from '../../toasts';
 import { useEscapeKey } from '../../hooks/useEscapeKey';
 import { getRecipeJsonSchema } from '../../recipe/validation';
@@ -23,11 +23,11 @@ const i18n = defineMessages({
   },
   deeplinkPlaceholder: {
     id: 'importRecipeForm.deeplinkPlaceholder',
-    defaultMessage: 'Paste your goose://recipe?config=... deeplink here',
+    defaultMessage: 'Paste your achilles://recipe?config=... deeplink here',
   },
   deeplinkHint: {
     id: 'importRecipeForm.deeplinkHint',
-    defaultMessage: 'Paste a recipe deeplink starting with "goose://recipe?config="',
+    defaultMessage: 'Paste a recipe deeplink starting with "achilles://recipe?config="',
   },
   or: {
     id: 'importRecipeForm.or',
@@ -47,7 +47,7 @@ const i18n = defineMessages({
   },
   reviewWarning: {
     id: 'importRecipeForm.reviewWarning',
-    defaultMessage: 'Ensure you review contents of recipe files before adding them to your goose interface.',
+    defaultMessage: 'Ensure you review contents of recipe files before adding them to your Achilles interface.',
   },
   cancel: {
     id: 'importRecipeForm.cancel',
@@ -83,8 +83,8 @@ const importRecipeSchema = z
     deeplink: z
       .string()
       .refine(
-        (value) => !value || value.trim().startsWith('goose://recipe?config='),
-        'Invalid deeplink format. Expected: goose://recipe?config=...'
+        (value) => !value || isRecipeDeeplink(value),
+        'Invalid deeplink format. Expected: achilles://recipe?config=...'
       ),
     recipeUploadFile: z
       .instanceof(File)

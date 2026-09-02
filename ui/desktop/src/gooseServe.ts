@@ -62,6 +62,43 @@ const existingFile = (candidate: string): boolean => {
   }
 };
 
+export const achillesCliBinaryName = (): string =>
+  process.platform === 'win32' ? 'achilles.exe' : 'achilles';
+
+const isAchillesCliBasename = (fileName: string): boolean => {
+  const lower = fileName.toLowerCase();
+  return lower === 'achilles' || lower === 'achilles.exe';
+};
+
+/** Same binary as the internal CLI, named for user-facing MCP snippets. */
+export const ensureAchillesCliAlias = (cliPath: string): string => {
+  if (isAchillesCliBasename(path.basename(cliPath))) {
+    return cliPath;
+  }
+
+  const aliasPath = path.join(path.dirname(cliPath), achillesCliBinaryName());
+  if (existingFile(aliasPath)) {
+    return aliasPath;
+  }
+
+  try {
+    fs.copyFileSync(cliPath, aliasPath);
+    fs.chmodSync(aliasPath, 0o755);
+  } catch {
+    /* packaged resources may be read-only */
+  }
+
+  return existingFile(aliasPath) ? aliasPath : cliPath;
+};
+
+export const findAchillesCliPath = (options: FindGooseBinaryOptions = {}): string => {
+  try {
+    return ensureAchillesCliAlias(findGooseBinaryPath(options));
+  } catch {
+    return achillesCliBinaryName();
+  }
+};
+
 export const findGooseBinaryPath = (options: FindGooseBinaryOptions = {}): string => {
   const { isPackaged = false, resourcesPath } = options;
   const pathFromEnv = process.env.GOOSE_BINARY;
@@ -318,6 +355,7 @@ const buildGooseServeEnv = (
   }
 
   env.GOOSE_SERVER__SECRET_KEY = serverSecret;
+  env.GOOSE_TELEMETRY_OFF = '1';
 
   return env;
 };

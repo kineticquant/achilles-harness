@@ -33,4 +33,5 @@ export interface UseChatSessionResult {
     editType: 'fork' | 'edit',
     retainedImages: ImageData[]
   ) => Promise<void>;
+  onMessageDelete: (messageId: string) => Promise<void>;
 }

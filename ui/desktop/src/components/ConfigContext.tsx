@@ -174,10 +174,11 @@ export const ConfigProvider: React.FC<ConfigProviderProps> = ({ children }) => {
 
         // Always sync bundled extensions from bundled-extensions.json
         // This ensures:
-        // 1. Fresh installs get the default extensions (developer, computercontroller, etc.)
+        // 1. Fresh installs get the remaining bundled MCP builtins (developer, memory)
         // 2. Existing users get NEW bundled extensions added in subsequent releases
+        // 3. Goose-era packs (tutorial, autovisualiser, computercontroller) are pruned
         // The syncBundledExtensions function skips extensions that already exist and are marked as bundled
-        // Platform extensions (code_execution, todo, etc.) are handled by the backend
+        // Platform extensions (appsec, todo, etc.) are handled by the backend
         const addExtensionForSync = async (
           _name: string,
           config: ExtensionConfig,

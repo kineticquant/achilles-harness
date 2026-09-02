@@ -12,13 +12,13 @@ import {
   DropdownMenuTrigger,
 } from '../../ui/dropdown-menu';
 import UpdateSection from './UpdateSection';
+import SocketSettings from './SocketSettings';
 
 import { COST_TRACKING_ENABLED, UPDATES_ENABLED } from '../../../updates';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../ui/card';
 import ThemeSelector from '../../GooseSidebar/ThemeSelector';
 import BlockLogoBlack from './icons/block-lockup_black.png';
 import BlockLogoWhite from './icons/block-lockup_white.png';
-import TelemetrySettings from './TelemetrySettings';
 import { trackSettingToggled } from '../../../utils/analytics';
 import type { LanguageSetting } from '../../../utils/settings';
 
@@ -26,7 +26,7 @@ const i18n = defineMessages({
   appearanceTitle: { id: 'settings.appearance.title', defaultMessage: 'Appearance' },
   appearanceDesc: {
     id: 'settings.appearance.description',
-    defaultMessage: 'Configure how goose appears on your system',
+    defaultMessage: 'Configure how Achilles appears on your system',
   },
   notifications: { id: 'settings.notifications.title', defaultMessage: 'Notifications' },
   notificationsDesc: {
@@ -46,15 +46,15 @@ const i18n = defineMessages({
   menuBarIcon: { id: 'settings.menuBarIcon.title', defaultMessage: 'Menu bar icon' },
   menuBarIconDesc: {
     id: 'settings.menuBarIcon.description',
-    defaultMessage: 'Show goose in the menu bar',
+    defaultMessage: 'Show Achilles in the menu bar',
   },
   dockIcon: { id: 'settings.dockIcon.title', defaultMessage: 'Dock icon' },
-  dockIconDesc: { id: 'settings.dockIcon.description', defaultMessage: 'Show goose in the dock' },
+  dockIconDesc: { id: 'settings.dockIcon.description', defaultMessage: 'Show Achilles in the dock' },
   preventSleep: { id: 'settings.preventSleep.title', defaultMessage: 'Prevent Sleep' },
   preventSleepDesc: {
     id: 'settings.preventSleep.description',
     defaultMessage:
-      'Keep your computer awake while goose is running a task (screen can still lock)',
+      'Keep your computer awake while Achilles is running a task (screen can still lock)',
   },
   costTracking: { id: 'settings.costTracking.title', defaultMessage: 'Cost Tracking' },
   costTrackingDesc: {
@@ -64,12 +64,12 @@ const i18n = defineMessages({
   themeTitle: { id: 'settings.theme.title', defaultMessage: 'Theme' },
   themeDesc: {
     id: 'settings.theme.description',
-    defaultMessage: 'Customize the look and feel of goose',
+    defaultMessage: 'Customize the look and feel of Achilles',
   },
   languageTitle: { id: 'settings.language.title', defaultMessage: 'Language' },
   languageDesc: {
     id: 'settings.language.description',
-    defaultMessage: 'Choose the display language for goose',
+    defaultMessage: 'Choose the display language for Achilles',
   },
   languageSystem: { id: 'settings.language.systemDefault', defaultMessage: 'System Default' },
   languageEnglish: { id: 'settings.language.english', defaultMessage: 'English' },
@@ -97,7 +97,7 @@ const i18n = defineMessages({
   helpTitle: { id: 'settings.help.title', defaultMessage: 'Help & feedback' },
   helpDesc: {
     id: 'settings.help.description',
-    defaultMessage: 'Help us improve goose by reporting issues or requesting new features',
+    defaultMessage: 'Help us improve Achilles by reporting issues or requesting new features',
   },
   reportBug: { id: 'settings.help.reportBug', defaultMessage: 'Report a Bug' },
   requestFeature: { id: 'settings.help.requestFeature', defaultMessage: 'Request a Feature' },
@@ -105,7 +105,7 @@ const i18n = defineMessages({
   updatesTitle: { id: 'settings.updates.title', defaultMessage: 'Updates' },
   updatesDesc: {
     id: 'settings.updates.description',
-    defaultMessage: 'Check for and install updates to keep goose running at its best',
+    defaultMessage: 'Check for and install updates to keep Achilles running at its best',
   },
   notificationsModalTitle: {
     id: 'settings.notifications.modal.title',
@@ -125,7 +125,7 @@ const i18n = defineMessages({
   },
   notificationsMacStep3: {
     id: 'settings.notifications.modal.macStep3',
-    defaultMessage: 'Find and select goose in the application list',
+    defaultMessage: 'Find and select Achilles in the application list'
   },
   notificationsMacStep4: {
     id: 'settings.notifications.modal.macStep4',
@@ -145,7 +145,7 @@ const i18n = defineMessages({
   },
   notificationsWinStep3: {
     id: 'settings.notifications.modal.winStep3',
-    defaultMessage: 'Find and select goose in the application list',
+    defaultMessage: 'Find and select Achilles in the application list'
   },
   notificationsWinStep4: {
     id: 'settings.notifications.modal.winStep4',
@@ -190,6 +190,7 @@ export default function AppSettingsSection({ scrollToSection }: AppSettingsSecti
   const [language, setLanguage] = useState<LanguageSetting>('system');
   const [isDarkMode, setIsDarkMode] = useState(false);
   const updateSectionRef = useRef<HTMLDivElement>(null);
+  const socketSectionRef = useRef<HTMLDivElement>(null);
   const shouldShowUpdates = !window.appConfig.get('GOOSE_VERSION');
 
   useEffect(() => {
@@ -221,6 +222,11 @@ export default function AppSettingsSection({ scrollToSection }: AppSettingsSecti
     if (scrollToSection === 'update' && updateSectionRef.current) {
       setTimeout(() => {
         updateSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    }
+    if (scrollToSection === 'socket' && socketSectionRef.current) {
+      setTimeout(() => {
+        socketSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
     }
   }, [scrollToSection]);
@@ -499,7 +505,10 @@ export default function AppSettingsSection({ scrollToSection }: AppSettingsSecti
           </DropdownMenu>
         </CardContent>
       </Card>
-      <TelemetrySettings />
+
+      <div ref={socketSectionRef}>
+        <SocketSettings />
+      </div>
 
       <Card className="rounded-lg">
         <CardHeader className="pb-0">

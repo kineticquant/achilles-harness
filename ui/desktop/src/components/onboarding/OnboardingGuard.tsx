@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router';
 import { useConfig } from '../ConfigContext';
 import { useModelAndProvider } from '../ModelAndProviderContext';
 import { acpListProviderDetails, acpReadDefaults, acpSaveDefaults } from '../../acp/providers';
-import { Goose } from '../icons';
+import { AchillesWordmark } from '../icons';
 import { Button } from '../ui/button';
 import ProviderSelector from './ProviderSelector';
 import OnboardingSuccess from './OnboardingSuccess';
@@ -19,11 +19,11 @@ import { defineMessages, useIntl } from '../../i18n';
 const i18n = defineMessages({
   welcomeTitle: {
     id: 'onboardingGuard.welcomeTitle',
-    defaultMessage: 'Welcome to goose',
+    defaultMessage: 'Welcome to Achilles',
   },
   welcomeDescription: {
     id: 'onboardingGuard.welcomeDescription',
-    defaultMessage: 'Your local AI agent. Connect an AI model provider to get started.',
+    defaultMessage: 'Your AppSec pair programmer. Connect a model provider to get started.',
   },
   checkProviderErrorTitle: {
     id: 'onboardingGuard.checkProviderErrorTitle',
@@ -124,18 +124,16 @@ export default function OnboardingGuard({ children }: OnboardingGuardProps) {
     setConfiguredProviderDisplayName(matchedProvider?.metadata.display_name || providerName);
   };
 
-  const finishOnboarding = async (telemetryEnabled: boolean) => {
+  const finishOnboarding = async () => {
     try {
-      await upsert(TELEMETRY_CONFIG_KEY, telemetryEnabled, false);
+      await upsert(TELEMETRY_CONFIG_KEY, false, false);
     } catch (error) {
       console.error('Failed to save telemetry preference:', error);
     }
-    trackTelemetryPreference(telemetryEnabled, 'onboarding');
+    trackTelemetryPreference(false, 'onboarding');
+    setAnalyticsTelemetryEnabled(false);
     if (configuredProvider) {
       trackOnboardingCompleted(configuredProvider, configuredModel ?? undefined);
-    }
-    if (!telemetryEnabled) {
-      setAnalyticsTelemetryEnabled(false);
     }
     navigate('/', { replace: true });
     setHasProvider(true);
@@ -150,7 +148,7 @@ export default function OnboardingGuard({ children }: OnboardingGuardProps) {
       <div className="h-screen w-full bg-background-default flex flex-col items-center justify-center">
         <div className="text-center max-w-md">
           <div className="mb-4">
-            <Goose className="size-8 mx-auto" />
+            <AchillesWordmark className="mx-auto text-2xl text-text-primary" />
           </div>
           <h1 className="text-xl font-light mb-3">{intl.formatMessage(i18n.checkProviderErrorTitle)}</h1>
           <p className="text-text-muted mb-6">{intl.formatMessage(i18n.checkProviderErrorDescription)}</p>
@@ -183,7 +181,7 @@ export default function OnboardingGuard({ children }: OnboardingGuardProps) {
               className={`text-left transition-all duration-500 ease-in-out overflow-hidden ${hasSelection ? 'max-h-0 opacity-0 mb-0' : 'max-h-60 opacity-100 mb-8'}`}
             >
               <div className="mb-4">
-                <Goose className="size-8" />
+                <AchillesWordmark className="text-3xl text-text-primary" />
               </div>
               <h1 className="text-2xl sm:text-4xl font-light mb-3">{intl.formatMessage(i18n.welcomeTitle)}</h1>
               <p className="text-text-muted text-base sm:text-lg">

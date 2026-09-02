@@ -1,8 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useLocation } from 'react-router';
-import { ChevronDown, ChevronRight } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { useLocation, useNavigate } from 'react-router';
+import { ChevronDown, ChevronRight, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { toast } from 'react-toastify';
 import { useNavigationContext } from './NavigationContext';
+import { Z_INDEX } from './constants';
 import { useConfig } from '../ConfigContext';
 import { useNavigationSessions } from '../../hooks/useNavigationSessions';
 import {
@@ -14,9 +17,16 @@ import {
 import { AppEvents } from '../../constants/events';
 import { InlineEditText } from '../common/InlineEditText';
 import { SessionIndicators } from '../SessionIndicators';
-import { acpRenameSession, type SessionListItem } from '../../acp/sessions';
+import { acpDeleteSession, acpRenameSession, type SessionListItem } from '../../acp/sessions';
+import { acpChatSessionActions } from '../../acp/chatSessionStore';
+import { cancelAcpPermissionRequestsForSession } from '../../acp/permissionRequests';
+import { cancelAcpElicitationRequestsForSession } from '../../acp/elicitationRequests';
+import { acpCancelAssessment } from '../../acp/achilles';
+import { assessmentIdForScanSession, forgetScanSession } from '../findings/startScanSession';
 import { Tooltip, TooltipContent, TooltipTrigger } from '../ui/Tooltip';
+import { ConfirmationModal } from '../ui/ConfirmationModal';
 import { formatMessageTimestamp } from '../../utils/timeUtils';
+import { errorMessage } from '../../utils/conversionUtils';
 import { cn } from '../../utils';
 import type { ProjectGroup } from '../../utils/projectSessions';
 import { defineMessages, useIntl } from '../../i18n';
@@ -32,6 +42,10 @@ const i18n = defineMessages({
   chats: {
     id: 'navigationPanel.chats',
     defaultMessage: 'Chats',
+  },
+  scans: {
+    id: 'navigationPanel.scans',
+    defaultMessage: 'Scan history',
   },
   noChats: {
     id: 'navigationPanel.noChats',
@@ -77,6 +91,38 @@ const i18n = defineMessages({
     id: 'navigationPanel.statusIdle',
     defaultMessage: 'Idle',
   },
+  delete: {
+    id: 'navigationPanel.delete',
+    defaultMessage: 'Delete',
+  },
+  deleteChatTitle: {
+    id: 'navigationPanel.deleteChat.title',
+    defaultMessage: 'Delete chat',
+  },
+  deleteScanTitle: {
+    id: 'navigationPanel.deleteScan.title',
+    defaultMessage: 'Delete scan',
+  },
+  deleteChatMessage: {
+    id: 'navigationPanel.deleteChat.message',
+    defaultMessage: 'Are you sure you want to delete "{name}"? This cannot be undone.',
+  },
+  deleteScanMessage: {
+    id: 'navigationPanel.deleteScan.message',
+    defaultMessage: 'Are you sure you want to delete the scan "{name}"? This cannot be undone.',
+  },
+  cancel: {
+    id: 'navigationPanel.cancel',
+    defaultMessage: 'Cancel',
+  },
+  deleteSuccess: {
+    id: 'navigationPanel.toast.deleted',
+    defaultMessage: 'Deleted',
+  },
+  deleteFailed: {
+    id: 'navigationPanel.toast.deleteFailed',
+    defaultMessage: 'Could not delete "{name}": {error}',
+  },
 });
 
 const navItemClass = (active: boolean) =>
@@ -114,6 +160,7 @@ interface SessionRowProps {
   status: SessionStatus | undefined;
   onClick: () => void;
   onRenamed: () => void;
+  onContextMenu: (event: React.MouseEvent) => void;
 }
 
 const formatTimestamp = (value?: string): string | null => {
@@ -163,7 +210,14 @@ const SessionTooltipContent: React.FC<SessionTooltipContentProps> = ({ session, 
   );
 };
 
-const SessionRow: React.FC<SessionRowProps> = ({ session, active, status, onClick, onRenamed }) => {
+const SessionRow: React.FC<SessionRowProps> = ({
+  session,
+  active,
+  status,
+  onClick,
+  onRenamed,
+  onContextMenu,
+}) => {
   const intl = useIntl();
   const [isEditing, setIsEditing] = useState(false);
   const [tooltipOpen, setTooltipOpen] = useState(false);
@@ -183,10 +237,35 @@ const SessionRow: React.FC<SessionRowProps> = ({ session, active, status, onClic
     <Tooltip open={tooltipOpen && !isEditing} onOpenChange={setTooltipOpen} delayDuration={400}>
       <TooltipTrigger asChild>
         <div
+          tabIndex={0}
           onClick={() => !isEditing && onClick()}
+          onKeyDown={(event) => {
+            if (isEditing) return;
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault();
+              onClick();
+            }
+            if (event.key === 'ContextMenu' || (event.shiftKey && event.key === 'F10')) {
+              event.preventDefault();
+              const rect = event.currentTarget.getBoundingClientRect();
+              onContextMenu({
+                preventDefault() {},
+                stopPropagation() {},
+                clientX: rect.right,
+                clientY: rect.top,
+              } as React.MouseEvent);
+            }
+          }}
+          onContextMenu={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            setTooltipOpen(false);
+            onContextMenu(event);
+          }}
           className={cn(
             'flex items-center gap-2 px-3 py-1.5 rounded-full cursor-pointer text-sm',
-            'hover:bg-background-tertiary/60 transition-colors',
+            'hover:bg-background-tertiary/60 transition-colors outline-none',
+            'focus-visible:ring-1 focus-visible:ring-border-active',
             active && 'bg-background-tertiary'
           )}
         >
@@ -219,8 +298,171 @@ const SessionRow: React.FC<SessionRowProps> = ({ session, active, status, onClic
   );
 };
 
+interface SessionContextMenuProps {
+  x: number;
+  y: number;
+  onDelete: () => void;
+  onClose: () => void;
+}
+
+const SessionContextMenu: React.FC<SessionContextMenuProps> = ({ x, y, onDelete, onClose }) => {
+  const intl = useIntl();
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onPointerDown = (event: MouseEvent) => {
+      if (!menuRef.current?.contains(event.target as Node)) {
+        onClose();
+      }
+    };
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        onClose();
+      }
+    };
+    window.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.removeEventListener('mousedown', onPointerDown);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onClose]);
+
+  useEffect(() => {
+    const menu = menuRef.current;
+    if (!menu) return;
+    const rect = menu.getBoundingClientRect();
+    const nextX = Math.min(x, window.innerWidth - rect.width - 8);
+    const nextY = Math.min(y, window.innerHeight - rect.height - 8);
+    menu.style.left = `${Math.max(8, nextX)}px`;
+    menu.style.top = `${Math.max(8, nextY)}px`;
+  }, [x, y]);
+
+  return createPortal(
+    <div
+      ref={menuRef}
+      role="menu"
+      className="fixed min-w-[10rem] rounded-xl border border-border-primary bg-background-primary p-1 shadow-lg"
+      style={{ left: x, top: y, zIndex: Z_INDEX.DROPDOWN_ABOVE_OVERLAY }}
+    >
+      <button
+        type="button"
+        role="menuitem"
+        className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-text-danger hover:bg-background-danger/10 outline-none focus-visible:ring-1 focus-visible:ring-border-active"
+        onClick={onDelete}
+      >
+        <Trash2 className="size-4" />
+        {intl.formatMessage(i18n.delete)}
+      </button>
+    </div>,
+    document.body
+  );
+};
+
+interface SessionSectionProps {
+  title: string;
+  expanded: boolean;
+  onToggle: () => void;
+  emptyLabel?: string;
+  sessions: SessionListItem[];
+  sessionsByProject: ProjectGroup[];
+  activeSessionId?: string;
+  sessionStatuses: Map<string, SessionStatus>;
+  onSessionClick: (session: SessionListItem) => void;
+  onRenamed: () => void;
+  onContextMenu: (session: SessionListItem, event: React.MouseEvent) => void;
+}
+
+const SessionSection: React.FC<SessionSectionProps> = ({
+  title,
+  expanded,
+  onToggle,
+  emptyLabel,
+  sessions,
+  sessionsByProject,
+  activeSessionId,
+  sessionStatuses,
+  onSessionClick,
+  onRenamed,
+  onContextMenu,
+}) => {
+  const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
+
+  const toggleProjectCollapsed = useCallback((path: string) => {
+    setCollapsedProjects((prev) => {
+      const next = new Set(prev);
+      if (next.has(path)) {
+        next.delete(path);
+      } else {
+        next.add(path);
+      }
+      return next;
+    });
+  }, []);
+
+  const renderRow = (session: SessionListItem) => (
+    <SessionRow
+      key={session.id}
+      session={session}
+      active={session.id === activeSessionId}
+      status={sessionStatuses.get(session.id)}
+      onClick={() => onSessionClick(session)}
+      onRenamed={onRenamed}
+      onContextMenu={(event) => onContextMenu(session, event)}
+    />
+  );
+
+  return (
+    <div className="flex flex-col min-h-0">
+      <button
+        type="button"
+        onClick={onToggle}
+        className="flex items-center gap-1 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-text-secondary hover:text-text-primary transition-colors self-start"
+      >
+        {expanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+        <span>{title}</span>
+      </button>
+      {expanded && (
+        <div className="px-2 pb-2 mt-1">
+          {sessions.length === 0 ? (
+            emptyLabel ? (
+              <div className="px-3 py-2 text-xs text-text-secondary">{emptyLabel}</div>
+            ) : null
+          ) : sessionsByProject.length > 1 ? (
+            sessionsByProject.map((group: ProjectGroup) => {
+              const isCollapsed = collapsedProjects.has(group.path);
+              return (
+                <React.Fragment key={group.path}>
+                  <button
+                    type="button"
+                    onClick={() => toggleProjectCollapsed(group.path)}
+                    aria-expanded={!isCollapsed}
+                    className="flex items-center gap-1 w-full px-3 pt-2 pb-0.5 text-[10px] uppercase tracking-wider text-text-tertiary hover:text-text-secondary transition-colors"
+                    title={group.path}
+                  >
+                    {isCollapsed ? (
+                      <ChevronRight className="w-3 h-3 flex-shrink-0" />
+                    ) : (
+                      <ChevronDown className="w-3 h-3 flex-shrink-0" />
+                    )}
+                    <span className="truncate">{group.label}</span>
+                  </button>
+                  {!isCollapsed && group.sessions.map(renderRow)}
+                </React.Fragment>
+              );
+            })
+          ) : (
+            sessions.map(renderRow)
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const Navigation: React.FC<{ className?: string }> = ({ className }) => {
   const intl = useIntl();
+  const navigate = useNavigate();
   const { isNavExpanded } = useNavigationContext();
   const location = useLocation();
   const { extensionsList } = useConfig();
@@ -237,8 +479,10 @@ export const Navigation: React.FC<{ className?: string }> = ({ className }) => {
   const isActive = useCallback((path: string) => location.pathname === path, [location.pathname]);
 
   const {
-    recentSessions,
+    recentChatSessions,
+    recentScanSessions,
     recentSessionsByProject,
+    recentScanSessionsByProject,
     activeSessionId,
     fetchSessions,
     handleNavClick,
@@ -246,6 +490,19 @@ export const Navigation: React.FC<{ className?: string }> = ({ className }) => {
   } = useNavigationSessions();
 
   const [sessionStatuses, setSessionStatuses] = useState<Map<string, SessionStatus>>(new Map());
+  const [isChatsExpanded, setIsChatsExpanded] = useState(true);
+  const [isScansExpanded, setIsScansExpanded] = useState(true);
+  const [contextMenu, setContextMenu] = useState<{
+    session: SessionListItem;
+    isScan: boolean;
+    x: number;
+    y: number;
+  } | null>(null);
+  const [sessionToDelete, setSessionToDelete] = useState<{
+    session: SessionListItem;
+    isScan: boolean;
+  } | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const handleStatusUpdate = (event: Event) => {
@@ -287,20 +544,50 @@ export const Navigation: React.FC<{ className?: string }> = ({ className }) => {
     }
   }, [isNavExpanded, fetchSessions]);
 
-  const [isChatsExpanded, setIsChatsExpanded] = useState(true);
-  const [collapsedProjects, setCollapsedProjects] = useState<Set<string>>(new Set());
+  const openContextMenu = useCallback(
+    (session: SessionListItem, isScan: boolean, event: React.MouseEvent) => {
+      setContextMenu({ session, isScan, x: event.clientX, y: event.clientY });
+    },
+    []
+  );
 
-  const toggleProjectCollapsed = useCallback((path: string) => {
-    setCollapsedProjects((prev) => {
-      const next = new Set(prev);
-      if (next.has(path)) {
-        next.delete(path);
-      } else {
-        next.add(path);
+  const handleConfirmDelete = useCallback(async () => {
+    if (!sessionToDelete) return;
+    const { session, isScan } = sessionToDelete;
+    setIsDeleting(true);
+    try {
+      const assessmentId = assessmentIdForScanSession(session.id);
+      if (assessmentId) {
+        try {
+          await acpCancelAssessment(assessmentId);
+        } catch {
+          // Scan may already have finished.
+        }
       }
-      return next;
-    });
-  }, []);
+      await acpDeleteSession(session.id);
+      forgetScanSession(session.id);
+      cancelAcpPermissionRequestsForSession(session.id);
+      cancelAcpElicitationRequestsForSession(session.id);
+      acpChatSessionActions.deleteSnapshot(session.id);
+      window.dispatchEvent(
+        new CustomEvent(AppEvents.SESSION_DELETED, { detail: { sessionId: session.id } })
+      );
+      if (activeSessionId === session.id) {
+        navigate(isScan || location.pathname === '/findings' ? '/findings' : '/');
+      }
+      toast.success(intl.formatMessage(i18n.deleteSuccess));
+      setSessionToDelete(null);
+    } catch (error) {
+      toast.error(
+        intl.formatMessage(i18n.deleteFailed, {
+          name: session.name,
+          error: errorMessage(error, 'Unknown error'),
+        })
+      );
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [sessionToDelete, activeSessionId, navigate, location.pathname, intl]);
 
   if (!isNavExpanded) return null;
 
@@ -327,75 +614,39 @@ export const Navigation: React.FC<{ className?: string }> = ({ className }) => {
         ))}
       </div>
 
-      <div className="flex-1 min-h-0 flex flex-col mt-3">
-        <button
-          onClick={() => setIsChatsExpanded((v) => !v)}
-          className="flex items-center gap-1 px-4 py-1 text-xs font-semibold uppercase tracking-wider text-text-secondary hover:text-text-primary transition-colors self-start"
-        >
-          {isChatsExpanded ? (
-            <ChevronDown className="w-3 h-3" />
-          ) : (
-            <ChevronRight className="w-3 h-3" />
-          )}
-          <span>{intl.formatMessage(i18n.chats)}</span>
-        </button>
-        {isChatsExpanded && (
-          <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-2 mt-1">
-            {recentSessions.length === 0 ? (
-              <div className="px-3 py-2 text-xs text-text-secondary">
-                {intl.formatMessage(i18n.noChats)}
-              </div>
-            ) : recentSessionsByProject.length > 1 ? (
-              recentSessionsByProject.map((group: ProjectGroup) => {
-                const isCollapsed = collapsedProjects.has(group.path);
-                return (
-                  <React.Fragment key={group.path}>
-                    <button
-                      onClick={() => toggleProjectCollapsed(group.path)}
-                      aria-expanded={!isCollapsed}
-                      className="flex items-center gap-1 w-full px-3 pt-2 pb-0.5 text-[10px] uppercase tracking-wider text-text-tertiary hover:text-text-secondary transition-colors"
-                      title={group.path}
-                    >
-                      {isCollapsed ? (
-                        <ChevronRight className="w-3 h-3 flex-shrink-0" />
-                      ) : (
-                        <ChevronDown className="w-3 h-3 flex-shrink-0" />
-                      )}
-                      <span className="truncate">{group.label}</span>
-                    </button>
-                    {!isCollapsed &&
-                      group.sessions.map((session) => (
-                        <SessionRow
-                          key={session.id}
-                          session={session}
-                          active={session.id === activeSessionId}
-                          status={sessionStatuses.get(session.id)}
-                          onClick={() => {
-                            clearUnread(session.id);
-                            handleSessionClick(session.id);
-                          }}
-                          onRenamed={fetchSessions}
-                        />
-                      ))}
-                  </React.Fragment>
-                );
-              })
-            ) : (
-              recentSessions.map((session) => (
-                <SessionRow
-                  key={session.id}
-                  session={session}
-                  active={session.id === activeSessionId}
-                  status={sessionStatuses.get(session.id)}
-                  onClick={() => {
-                    clearUnread(session.id);
-                    handleSessionClick(session.id);
-                  }}
-                  onRenamed={fetchSessions}
-                />
-              ))
-            )}
-          </div>
+      <div className="flex-1 min-h-0 flex flex-col mt-3 overflow-y-auto">
+        <SessionSection
+          title={intl.formatMessage(i18n.chats)}
+          expanded={isChatsExpanded}
+          onToggle={() => setIsChatsExpanded((value) => !value)}
+          emptyLabel={intl.formatMessage(i18n.noChats)}
+          sessions={recentChatSessions}
+          sessionsByProject={recentSessionsByProject}
+          activeSessionId={activeSessionId}
+          sessionStatuses={sessionStatuses}
+          onSessionClick={(session) => {
+            clearUnread(session.id);
+            handleSessionClick(session.id);
+          }}
+          onRenamed={fetchSessions}
+          onContextMenu={(session, event) => openContextMenu(session, false, event)}
+        />
+        {recentScanSessions.length > 0 && (
+          <SessionSection
+            title={intl.formatMessage(i18n.scans)}
+            expanded={isScansExpanded}
+            onToggle={() => setIsScansExpanded((value) => !value)}
+            sessions={recentScanSessions}
+            sessionsByProject={recentScanSessionsByProject}
+            activeSessionId={activeSessionId}
+            sessionStatuses={sessionStatuses}
+            onSessionClick={(session) => {
+              clearUnread(session.id);
+              handleSessionClick(session.id);
+            }}
+            onRenamed={fetchSessions}
+            onContextMenu={(session, event) => openContextMenu(session, true, event)}
+          />
         )}
       </div>
 
@@ -406,6 +657,39 @@ export const Navigation: React.FC<{ className?: string }> = ({ className }) => {
           onClick={() => handleNavClick(SETTINGS_NAV_ITEM.path)}
         />
       </div>
+
+      {contextMenu && (
+        <SessionContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          onClose={() => setContextMenu(null)}
+          onDelete={() => {
+            setSessionToDelete({ session: contextMenu.session, isScan: contextMenu.isScan });
+            setContextMenu(null);
+          }}
+        />
+      )}
+
+      <ConfirmationModal
+        isOpen={sessionToDelete !== null}
+        title={intl.formatMessage(
+          sessionToDelete?.isScan ? i18n.deleteScanTitle : i18n.deleteChatTitle
+        )}
+        message={intl.formatMessage(
+          sessionToDelete?.isScan ? i18n.deleteScanMessage : i18n.deleteChatMessage,
+          { name: sessionToDelete?.session.name ?? '' }
+        )}
+        confirmLabel={intl.formatMessage(i18n.delete)}
+        cancelLabel={intl.formatMessage(i18n.cancel)}
+        confirmVariant="destructive"
+        isSubmitting={isDeleting}
+        onConfirm={() => {
+          void handleConfirmDelete();
+        }}
+        onCancel={() => {
+          if (!isDeleting) setSessionToDelete(null);
+        }}
+      />
     </motion.div>
   );
 };

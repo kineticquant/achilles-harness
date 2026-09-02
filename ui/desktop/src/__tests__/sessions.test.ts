@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getSessionDisplayName } from '../sessions';
-import { prependUnique } from '../hooks/useNavigationSessions';
+import { prependUnique, mergeWithEmptyLocals } from '../hooks/useNavigationSessions';
 import type { SessionListItem } from '../acp/sessions';
 import type { Session } from '../types/session';
 
@@ -74,10 +74,26 @@ describe('prependUnique', () => {
     expect(result).toBe(prev);
   });
 
-  it('caps the list at 25 sessions', () => {
-    const prev = Array.from({ length: 25 }, (_, i) => makeListItem({ id: `s-${i}` }));
+  it('caps the list at 80 sessions', () => {
+    const prev = Array.from({ length: 80 }, (_, i) => makeListItem({ id: `s-${i}` }));
     const result = prependUnique(prev, makeListItem({ id: 'new' }));
-    expect(result).toHaveLength(25);
+    expect(result).toHaveLength(80);
     expect(result[0].id).toBe('new');
+  });
+});
+
+describe('mergeWithEmptyLocals', () => {
+  it('keeps empty local sessions that the server list omitted', () => {
+    const local = makeListItem({ id: 'scan', name: 'Scan · repo', messageCount: 0 });
+    const listed = [makeListItem({ id: 'chat', messageCount: 2 })];
+    expect(mergeWithEmptyLocals([local], listed).map((s) => s.id)).toEqual(['scan', 'chat']);
+  });
+
+  it('prefers the server copy once a local empty session appears in the list', () => {
+    const local = makeListItem({ id: 'scan', name: 'Scan · repo', messageCount: 0 });
+    const listed = [makeListItem({ id: 'scan', name: 'Scan · repo', messageCount: 1 })];
+    const result = mergeWithEmptyLocals([local], listed);
+    expect(result).toHaveLength(1);
+    expect(result[0].messageCount).toBe(1);
   });
 });

@@ -11,11 +11,11 @@ import {
   MenuItemConstructorOptions,
   Notification,
 } from 'electron';
-import * as path from 'path';
 import * as fs from 'fs/promises';
 import log from './logger';
 import { githubUpdater } from './githubUpdater';
 import { loadRecentDirs } from './recentDirs';
+import { resolveTrayIcon } from './desktopIcons';
 import { errorMessage } from './conversionUtils';
 import {
   trackUpdateCheckStarted,
@@ -295,7 +295,7 @@ export function registerUpdateIpcHandlers() {
           type: 'info',
           title: 'Update Ready to Install',
           message: `Version ${githubUpdateInfo.latestVersion} is ready to install.`,
-          detail: `The update has been downloaded and extracted. To complete the installation:\n\n1. Click "Open Folder" to view the new Goose.app\n2. Quit Goose (this app will close)\n3. Drag the new Goose.app to your Applications folder\n4. Replace the existing app when prompted\n\nThe update will be available the next time you launch Goose.`,
+          detail: `The update has been downloaded and extracted. To complete the installation:\n\n1. Click "Open Folder" to view the new Achilles.app\n2. Quit Achilles (this app will close)\n3. Drag the new Achilles.app to your Applications folder\n4. Replace the existing app when prompted\n\nThe update will be available the next time you launch Achilles.`,
           buttons: ['Open Folder & Quit', 'Open Folder Only', 'Cancel'],
           defaultId: 0,
           cancelId: 2,
@@ -371,8 +371,8 @@ export function setupAutoUpdater(tray?: Tray) {
   // Set the feed URL for GitHub releases
   const feedConfig = {
     provider: 'github' as const,
-    owner: 'aaif-goose',
-    repo: 'goose',
+    owner: process.env.GITHUB_OWNER || 'kineticquant',
+    repo: process.env.GITHUB_REPO || 'achilles-harness',
     releaseType: 'release' as const,
   };
 
@@ -675,7 +675,7 @@ export function setupAutoUpdater(tray?: Tray) {
     // Show native notification
     const notification = new Notification({
       title: 'Update Ready',
-      body: `Version ${info.version} will be installed when you quit Goose. Click to install now.`,
+      body: `Version ${info.version} will be installed when you quit Achilles. Click to install now.`,
     });
     notification.show();
 
@@ -756,26 +756,12 @@ function updateTrayIcon(hasUpdate: boolean) {
     hasUpdate = false;
   }
 
-  const isDev = !app.isPackaged;
-  let iconPath: string;
-
-  if (hasUpdate) {
-    // Use icon with update indicator
-    if (isDev) {
-      iconPath = path.join(process.cwd(), 'src', 'images', 'iconTemplateUpdate.png');
-    } else {
-      iconPath = path.join(process.resourcesPath, 'images', 'iconTemplateUpdate.png');
-    }
-    trayRef.setToolTip('Goose - Update Available');
-  } else {
-    // Use normal icon
-    if (isDev) {
-      iconPath = path.join(process.cwd(), 'src', 'images', 'iconTemplate.png');
-    } else {
-      iconPath = path.join(process.resourcesPath, 'images', 'iconTemplate.png');
-    }
-    trayRef.setToolTip('Goose');
+  const iconPath = resolveTrayIcon(hasUpdate);
+  if (!iconPath) {
+    return;
   }
+
+  trayRef.setToolTip(hasUpdate ? 'Achilles - Update Available' : 'Achilles');
 
   const icon = nativeImage.createFromPath(iconPath);
   if (process.platform === 'darwin') {

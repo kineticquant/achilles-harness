@@ -18,6 +18,7 @@ export type View =
   | 'recipes'
   | 'skills'
   | 'findings'
+  | 'tools'
   | 'permission';
 
 export type ViewOptions = {
@@ -73,10 +74,16 @@ export const createNavigationHandler = (navigate: NavigateFunction) => {
         if (options?.assessmentId) {
           searchParams.set('assessmentId', options.assessmentId);
         }
+        if (options?.resumeSessionId) {
+          searchParams.set('resumeSessionId', options.resumeSessionId);
+        }
         const url = searchParams.toString() ? `/findings?${searchParams.toString()}` : '/findings';
         navigate(url, { state: options });
         break;
       }
+      case 'tools':
+        navigate('/tools', { state: options });
+        break;
       case 'permission':
         navigate('/permission', { state: options });
         break;

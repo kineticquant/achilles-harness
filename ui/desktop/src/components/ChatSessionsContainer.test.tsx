@@ -1,11 +1,17 @@
-import { render } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import ChatSessionsContainer from './ChatSessionsContainer';
 import { subscribeToAcpRecovery } from '../acp/acpConnection';
 import { acpChatSessionController } from '../acp/chatSessionController';
 
+const route = vi.hoisted(() => ({
+  pathname: '/pair',
+  search: 'resumeSessionId=session-1',
+}));
+
 vi.mock('react-router', () => ({
-  useSearchParams: () => [new URLSearchParams('resumeSessionId=session-1')],
+  useSearchParams: () => [new URLSearchParams(route.search)],
+  useLocation: () => ({ pathname: route.pathname }),
 }));
 
 vi.mock('./BaseChat', () => ({
@@ -25,6 +31,8 @@ vi.mock('../acp/chatSessionController', () => ({
 describe('ChatSessionsContainer', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    route.pathname = '/pair';
+    route.search = 'resumeSessionId=session-1';
   });
 
   it('restores active chat sessions after ACP reconnects', () => {
@@ -46,5 +54,17 @@ describe('ChatSessionsContainer', () => {
     expect(acpChatSessionController.restoreSession).toHaveBeenCalledTimes(2);
     expect(acpChatSessionController.restoreSession).toHaveBeenCalledWith('session-1');
     expect(acpChatSessionController.restoreSession).toHaveBeenCalledWith('session-2');
+  });
+
+  it('does not mount a Pair chat for resumeSessionId on Findings', () => {
+    route.pathname = '/findings';
+    route.search = 'resumeSessionId=session-scan';
+
+    const { container } = render(
+      <ChatSessionsContainer setChat={vi.fn()} activeSessions={[]} />
+    );
+
+    expect(container).toBeEmptyDOMElement();
+    expect(screen.queryByText('session-scan')).not.toBeInTheDocument();
   });
 });

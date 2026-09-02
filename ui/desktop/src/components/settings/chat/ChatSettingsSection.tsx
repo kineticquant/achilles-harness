@@ -15,7 +15,7 @@ const i18n = defineMessages({
   modeDescription: {
     id: 'chatSettings.modeDescription',
     defaultMessage:
-      'Choose the default mode Goose uses for new sessions. Existing sessions keep their current mode.',
+      'Choose the default mode Achilles uses for new sessions. Existing sessions keep their current mode.',
   },
   responseStylesTitle: {
     id: 'chatSettings.responseStylesTitle',

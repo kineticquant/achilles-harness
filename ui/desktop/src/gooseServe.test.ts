@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildLocalServeUrls, findGooseBinaryPath, startGooseServe } from './gooseServe';
+import { buildLocalServeUrls, ensureAchillesCliAlias, findGooseBinaryPath, startGooseServe } from './gooseServe';
 
 const binaryName = process.platform === 'win32' ? 'goose.exe' : 'goose';
 const tempDirs: string[] = [];
@@ -92,6 +92,36 @@ describe('findGooseBinaryPath', () => {
     const bundledPath = makeFile(path.join(resourcesPath, 'bin', binaryName));
 
     expect(findGooseBinaryPath({ isPackaged: true, resourcesPath })).toBe(bundledPath);
+  });
+});
+
+describe('ensureAchillesCliAlias', () => {
+  afterEach(() => {
+    while (tempDirs.length > 0) {
+      const tempDir = tempDirs.pop();
+      if (tempDir) {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      }
+    }
+  });
+
+  it('copies goose next to an achilles-named binary', () => {
+    const tempDir = makeTempDir();
+    const goosePath = makeFile(path.join(tempDir, binaryName));
+    const aliasPath = ensureAchillesCliAlias(goosePath);
+    const expected = path.join(tempDir, process.platform === 'win32' ? 'achilles.exe' : 'achilles');
+
+    expect(aliasPath).toBe(expected);
+    expect(fs.existsSync(aliasPath)).toBe(true);
+  });
+
+  it('returns an existing achilles path unchanged', () => {
+    const tempDir = makeTempDir();
+    const achillesPath = makeFile(
+      path.join(tempDir, process.platform === 'win32' ? 'achilles.exe' : 'achilles')
+    );
+
+    expect(ensureAchillesCliAlias(achillesPath)).toBe(achillesPath);
   });
 });
 

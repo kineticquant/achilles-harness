@@ -11,6 +11,7 @@ import {
 } from '../../ui/dialog';
 import { errorMessage } from '../../../utils/conversionUtils';
 import { defineMessages, useIntl } from '../../../i18n';
+import { ACHILLES_DOCS_HINTS } from '../../../utils/achillesLinks';
 
 const i18n = defineMessages({
   dialogTitle: {
@@ -20,12 +21,12 @@ const i18n = defineMessages({
   dialogDescription: {
     id: 'goosehintsModal.dialogDescription',
     defaultMessage:
-      'Provide additional context about your project to improve communication with Goose',
+      'Provide additional context about your project to improve communication with Achilles',
   },
   helpText1: {
     id: 'goosehintsModal.helpText1',
     defaultMessage:
-      '.goosehints is a text file used to provide additional context about your project and improve the communication with Goose.',
+      '.goosehints is a text file used to provide additional context about your project and improve the communication with Achilles.',
   },
   helpText2: {
     id: 'goosehintsModal.helpText2',
@@ -103,12 +104,7 @@ const HelpText = () => {
             <Button
               variant="link"
               className="text-blue-500 hover:text-blue-600 p-0 h-auto"
-              onClick={() =>
-                window.open(
-                  'https://goose-docs.ai/docs/guides/using-goosehints/',
-                  '_blank'
-                )
-              }
+              onClick={() => window.open(ACHILLES_DOCS_HINTS, '_blank')}
             >
               {intl.formatMessage(i18n.helpTextLink)}
             </Button>

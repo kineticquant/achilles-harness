@@ -9,9 +9,16 @@ import {
   acpListRecentSessions,
   type SessionListItem,
 } from '../acp/sessions';
-import { groupSessionsByProject } from '../utils/projectSessions';
+import { collapseScanHistorySessions, groupSessionsByProject } from '../utils/projectSessions';
+import { acpListAssessments } from '../acp/achilles';
+import {
+  forgetScanSession,
+  isScanHistorySession,
+  rememberAssessments,
+  destinationForHistorySession,
+} from '../components/findings/startScanSession';
 
-const MAX_RECENT_SESSIONS = 25;
+const MAX_RECENT_SESSIONS = 80;
 
 export function prependUnique(
   prev: SessionListItem[],
@@ -21,7 +28,7 @@ export function prependUnique(
   return [session, ...prev].slice(0, MAX_RECENT_SESSIONS);
 }
 
-function mergeWithEmptyLocals(
+export function mergeWithEmptyLocals(
   prev: SessionListItem[],
   listed: SessionListItem[]
 ): SessionListItem[] {
@@ -56,15 +63,32 @@ export function useNavigationSessions() {
   const chatContext = useChatContext();
 
   const [recentSessions, setRecentSessions] = useState<SessionListItem[]>([]);
-  const recentSessionsByProject = useMemo(
-    () => groupSessionsByProject(recentSessions),
-    [recentSessions]
-  );
   const lastSessionIdRef = useRef<string | null>(null);
 
   const activeSessionId = searchParams.get('resumeSessionId') ?? undefined;
   const currentSessionId =
     location.pathname === '/pair' ? searchParams.get('resumeSessionId') : null;
+
+  const recentChatSessions = useMemo(
+    () => recentSessions.filter((session) => !isScanHistorySession(session)),
+    [recentSessions]
+  );
+  const recentScanSessions = useMemo(
+    () =>
+      collapseScanHistorySessions(
+        recentSessions.filter((session) => isScanHistorySession(session)),
+        activeSessionId
+      ),
+    [activeSessionId, recentSessions]
+  );
+  const recentSessionsByProject = useMemo(
+    () => groupSessionsByProject(recentChatSessions),
+    [recentChatSessions]
+  );
+  const recentScanSessionsByProject = useMemo(
+    () => groupSessionsByProject(recentScanSessions),
+    [recentScanSessions]
+  );
 
   useEffect(() => {
     if (currentSessionId) {
@@ -74,8 +98,15 @@ export function useNavigationSessions() {
 
   const fetchSessions = useCallback(async () => {
     try {
-      const sessions = await acpListRecentSessions(MAX_RECENT_SESSIONS);
-      setRecentSessions(sessions);
+      const [listed, assessments] = await Promise.all([
+        acpListRecentSessions(MAX_RECENT_SESSIONS),
+        acpListAssessments().catch((error) => {
+          console.error('Failed to fetch assessments:', error);
+          return [];
+        }),
+      ]);
+      rememberAssessments(assessments);
+      setRecentSessions((prev) => mergeWithEmptyLocals(prev, listed));
     } catch (error) {
       console.error('Failed to fetch sessions:', error);
     }
@@ -144,6 +175,7 @@ export function useNavigationSessions() {
 
     const handleSessionDeleted = (event: Event) => {
       const { sessionId } = (event as CustomEvent<{ sessionId: string }>).detail;
+      forgetScanSession(sessionId);
 
       setRecentSessions((prev) => prev.filter((session) => session.id !== sessionId));
 
@@ -201,14 +233,31 @@ export function useNavigationSessions() {
 
   const handleSessionClick = useCallback(
     (sessionId: string) => {
-      navigate(`/pair?resumeSessionId=${sessionId}`);
+      const fromList = recentSessions.find((session) => session.id === sessionId);
+      void destinationForHistorySession({
+        id: sessionId,
+        name: fromList?.name ?? '',
+        workingDir: fromList?.workingDir,
+      }).then(({ view, assessmentId }) => {
+        if (view === 'findings') {
+          const params = new URLSearchParams();
+          if (assessmentId) params.set('assessmentId', assessmentId);
+          params.set('resumeSessionId', sessionId);
+          navigate(`/findings?${params.toString()}`);
+          return;
+        }
+        navigate(`/pair?resumeSessionId=${sessionId}`);
+      });
     },
-    [navigate]
+    [navigate, recentSessions]
   );
 
   return {
     recentSessions,
+    recentChatSessions,
+    recentScanSessions,
     recentSessionsByProject,
+    recentScanSessionsByProject,
     activeSessionId,
     fetchSessions,
     handleNavClick,

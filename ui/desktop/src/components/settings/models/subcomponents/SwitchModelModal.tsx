@@ -11,7 +11,7 @@ import {
   DialogTitle,
 } from '../../../ui/dialog';
 import { Button } from '../../../ui/button';
-import { QUICKSTART_GUIDE_URL } from '../../providers/modal/constants';
+import { ACHILLES_DOCS_QUICKSTART as QUICKSTART_GUIDE_URL } from '../../../../utils/achillesLinks';
 import { Input } from '../../../ui/input';
 import { Select } from '../../../ui/Select';
 import {

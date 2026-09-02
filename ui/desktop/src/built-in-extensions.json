@@ -9,38 +9,12 @@
     "timeout": 300
   },
   {
-    "id": "computercontroller",
-    "name": "Computer Controller",
-    "description": "General computer control tools that don't require you to be a developer or engineer.",
-    "enabled": false,
-    "type": "builtin",
-    "env_keys": [],
-    "timeout": 300
-  },
-  {
-    "id": "autovisualiser",
-    "name": "Auto Visualiser",
-    "description": "Automatically see your data with this UI generation extension.",
-    "enabled": false,
-    "type": "builtin",
-    "env_keys": [],
-    "timeout": 300
-  },
-  {
     "id": "memory",
     "name": "Memory",
-    "description": "Teach goose your preferences as you go.",
+    "description": "Teach Achilles your preferences as you go.",
     "enabled": false,
     "type": "builtin",
     "env_keys": [],
     "timeout": 300
-  },
-  {
-    "id": "tutorial",
-    "name": "Tutorial",
-    "description": "Access interactive tutorials and guides",
-    "enabled": false,
-    "type": "builtin",
-    "env_keys": []
   }
 ]

@@ -3,7 +3,7 @@ import { useForm } from '@tanstack/react-form';
 import { generateDeepLink } from '../../recipe';
 import type { Recipe, Parameter, RecipeExtension, RecipeSettings } from '../../recipe';
 import { Check, ExternalLink, Play, Save, X } from 'lucide-react';
-import { Geese } from '../icons/Geese';
+import { AchillesWordmark } from '../icons';
 import Copy from '../icons/Copy';
 import { Button } from '../ui/button';
 
@@ -13,6 +13,7 @@ import { toastSuccess, toastError } from '../../toasts';
 import { saveRecipe } from '../../recipe/recipe_management';
 import { errorMessage } from '../../utils/conversionUtils';
 import { defineMessages, useIntl } from '../../i18n';
+import { ACHILLES_DOCS_RECIPES } from '../../utils/achillesLinks';
 
 const i18n = defineMessages({
   createRecipeTitle: {
@@ -495,7 +496,7 @@ export default function CreateEditRecipeModal({
         <div className="flex items-center justify-between p-6 border-b border-border-primary">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-background-primary rounded-full flex items-center justify-center">
-              <Geese className="w-6 h-6 text-iconProminent" />
+              <AchillesWordmark markOnly className="w-6 h-6 text-iconProminent" />
             </div>
             <div>
               <h1 className="text-xl font-medium text-text-primary">
@@ -508,7 +509,7 @@ export default function CreateEditRecipeModal({
                   ? intl.formatMessage(i18n.createSubtitle)
                   : intl.formatMessage(i18n.editSubtitle)}{' '}
                 <a
-                  href="https://goose-docs.ai/docs/guides/recipes/"
+                  href={ACHILLES_DOCS_RECIPES}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-1 text-blue-500 hover:text-blue-600 hover:underline"

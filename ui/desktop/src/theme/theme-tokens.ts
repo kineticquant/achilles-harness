@@ -148,56 +148,54 @@ const lightColorTokens: ColorTokens = {
 // Dark theme — colors & shadows
 // ---------------------------------------------------------------------------
 const darkColorTokens: ColorTokens = {
-  // Backgrounds
-  '--color-background-primary': '#22252a',
-  '--color-background-secondary': '#3f434b',
-  '--color-background-tertiary': '#474e57',
-  '--color-background-inverse': '#cbd1d6',
+  // Near-black ladder — charcoal canvas, not crushed OLED and not mid-gray.
+  '--color-background-primary': '#111111',
+  '--color-background-secondary': '#1a1a1a',
+  '--color-background-tertiary': '#242424',
+  '--color-background-inverse': '#e6e6e6',
   '--color-background-ghost': 'transparent',
   '--color-background-info': '#7cacff',
   '--color-background-danger': '#ff6b6b',
   '--color-background-success': '#a3d795',
   '--color-background-warning': '#ffd966',
-  '--color-background-disabled': '#474e57',
+  '--color-background-disabled': '#242424',
 
-  // Text
-  '--color-text-primary': '#ffffff',
-  '--color-text-secondary': '#878787',
-  '--color-text-tertiary': '#606c7a',
+  // Off-white body text — pure white on near-black is harsh.
+  '--color-text-primary': '#e6e6e6',
+  '--color-text-secondary': '#8a8a8a',
+  '--color-text-tertiary': '#5c5c5c',
   '--color-text-inverse': '#000000',
-  '--color-text-ghost': '#878787',
+  '--color-text-ghost': '#8a8a8a',
   '--color-text-info': '#7cacff',
   '--color-text-danger': '#ff6b6b',
   '--color-text-success': '#a3d795',
   '--color-text-warning': '#ffd966',
-  '--color-text-disabled': '#525b68',
+  '--color-text-disabled': '#3d3d3d',
 
-  // Borders
-  '--color-border-primary': '#3f434b',
-  '--color-border-secondary': '#525b68',
-  '--color-border-tertiary': '#474e57',
-  '--color-border-inverse': '#ffffff',
+  '--color-border-primary': '#2c2c2c',
+  '--color-border-secondary': '#3a3a3a',
+  '--color-border-tertiary': '#242424',
+  '--color-border-inverse': '#e6e6e6',
   '--color-border-ghost': 'transparent',
   '--color-border-info': '#7cacff',
   '--color-border-danger': '#ff6b6b',
   '--color-border-success': '#a3d795',
   '--color-border-warning': '#ffd966',
-  '--color-border-disabled': '#3f434b',
+  '--color-border-disabled': '#2c2c2c',
 
-  // Rings
-  '--color-ring-primary': '#525b68',
-  '--color-ring-secondary': '#474e57',
+  '--color-ring-primary': '#3a3a3a',
+  '--color-ring-secondary': '#2c2c2c',
   '--color-ring-inverse': '#000000',
   '--color-ring-info': '#7cacff',
   '--color-ring-danger': '#ff6b6b',
   '--color-ring-success': '#a3d795',
   '--color-ring-warning': '#ffd966',
 
-  // Shadows (darker for dark mode)
-  '--shadow-hairline': '0 0 0 1px rgba(0, 0, 0, 0.2)',
-  '--shadow-sm': '0 1px 2px 0 rgba(0, 0, 0, 0.2)',
-  '--shadow-md': '0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2)',
-  '--shadow-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2)',
+  // Black drop-shadows vanish on #000; hairlines use a faint light edge.
+  '--shadow-hairline': '0 0 0 1px rgba(255, 255, 255, 0.07)',
+  '--shadow-sm': '0 1px 2px 0 rgba(0, 0, 0, 0.55)',
+  '--shadow-md': '0 4px 6px -1px rgba(0, 0, 0, 0.65), 0 2px 4px -2px rgba(0, 0, 0, 0.45)',
+  '--shadow-lg': '0 10px 15px -3px rgba(0, 0, 0, 0.7), 0 4px 6px -4px rgba(0, 0, 0, 0.5)',
 };
 
 // ---------------------------------------------------------------------------

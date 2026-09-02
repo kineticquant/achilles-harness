@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { getProjectLabel, groupSessionsByProject } from '../utils/projectSessions';
+import { collapseScanHistorySessions, getProjectLabel, groupSessionsByProject } from '../utils/projectSessions';
 import type { SessionListItem } from '../acp/sessions';
 
 function makeSession(overrides: Partial<SessionListItem> = {}): SessionListItem {
@@ -85,6 +85,71 @@ describe('groupSessionsByProject', () => {
     ]);
 
     expect(groups.map((group) => group.label).sort()).toEqual(['forks/goose', 'work/goose']);
+  });
+
+  it('treats Windows slash and drive-letter variants as one project', () => {
+    const groups = groupSessionsByProject([
+      makeSession({
+        id: 'a',
+        workingDir: 'H:\\Arrav\\village\\village-chat',
+      }),
+      makeSession({
+        id: 'b',
+        workingDir: 'H:/Arrav/village/village-chat/',
+      }),
+      makeSession({
+        id: 'c',
+        workingDir: 'h:\\arrav\\village\\village-chat',
+      }),
+    ]);
+
+    expect(groups).toHaveLength(1);
+    expect(groups[0].sessions.map((session) => session.id).sort()).toEqual(['a', 'b', 'c']);
+  });
+
+  it('treats Windows extended paths as the same folder', () => {
+    const groups = groupSessionsByProject([
+      makeSession({ id: 'ext', workingDir: '\\\\?\\H:\\village\\village-chat' }),
+      makeSession({ id: 'plain', workingDir: 'H:\\village\\village-chat' }),
+    ]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].sessions.map((session) => session.id).sort()).toEqual(['ext', 'plain']);
+  });
+
+  it('treats Git Bash and Windows paths as one project', () => {
+    const groups = groupSessionsByProject([
+      makeSession({ id: 'win', workingDir: 'H:\\Arrav\\village\\village-chat' }),
+      makeSession({ id: 'bash', workingDir: '/h/Arrav/village/village-chat' }),
+      makeSession({ id: 'cyg', workingDir: '/cygdrive/h/Arrav/village/village-chat' }),
+    ]);
+    expect(groups).toHaveLength(1);
+    expect(groups[0].sessions.map((session) => session.id).sort()).toEqual(['bash', 'cyg', 'win']);
+  });
+});
+
+describe('collapseScanHistorySessions', () => {
+  it('keeps the newest scan per workspace and drops same-titled leftovers', () => {
+    const collapsed = collapseScanHistorySessions([
+      makeSession({
+        id: 'old',
+        name: 'Scan · village-chat',
+        workingDir: 'H:\\Arrav\\village\\village-chat',
+        updatedAt: '2026-01-01T00:00:00.000Z',
+      }),
+      makeSession({
+        id: 'new',
+        name: 'Scan · village-chat',
+        workingDir: '/h/Arrav/village/village-chat',
+        updatedAt: '2026-01-03T00:00:00.000Z',
+      }),
+      makeSession({
+        id: 'other-path',
+        name: 'Scan · village-chat',
+        workingDir: 'H:/Arrav/village/village-chat',
+        updatedAt: '2026-01-02T00:00:00.000Z',
+      }),
+    ]);
+    expect(collapsed.map((session) => session.id)).toEqual(['new']);
   });
 });
 

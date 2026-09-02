@@ -15,7 +15,7 @@ const i18n = defineMessages({
   description: {
     id: 'externalBackendSection.description',
     defaultMessage:
-      'By default Goose starts a local backend. Use this to connect to an external ACP-compatible backend.',
+      'By default Achilles starts a local backend. Use this to connect to an external ACP-compatible backend.',
   },
   useExternalServer: {
     id: 'externalBackendSection.useExternalServer',
@@ -32,7 +32,7 @@ const i18n = defineMessages({
   serverUrlHelp: {
     id: 'externalBackendSection.serverUrlHelp',
     defaultMessage:
-      'Enter the HTTP(S) base URL. Goose checks /status and connects to /acp under this base.',
+      'Enter the HTTP(S) base URL. Achilles checks /status and connects to /acp under this base.',
   },
   secretKey: {
     id: 'externalBackendSection.secretKey',

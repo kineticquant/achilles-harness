@@ -28,7 +28,7 @@ export default function ThinkingContent({ content, isExpanded }: ThinkingContent
         <span className="italic">Thinking</span>
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <div className="mt-1 ml-[18px] text-xs text-text-secondary italic">
+        <div className="mt-1 ml-[18px] text-xs text-text-secondary italic [&_.prose]:!text-text-secondary [&_.prose_p]:!text-inherit [&_.prose_li]:!text-inherit [&_.prose_strong]:!text-inherit">
           <MarkdownContent content={content} />
         </div>
       </CollapsibleContent>

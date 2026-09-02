@@ -8,7 +8,7 @@ import { defineMessages, useIntl } from '../i18n';
 const i18n = defineMessages({
   heading: {
     id: 'errorBoundary.heading',
-    defaultMessage: 'Honk!',
+    defaultMessage: "That's it?",
   },
   errorWithVersion: {
     id: 'errorBoundary.errorWithVersion',

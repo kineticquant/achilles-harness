@@ -84,7 +84,7 @@ class ToastService {
 
     const toastId = 'extension-loading';
     const hasErrors = extensions.some((ext) => ext.status === 'error');
-    const autoClose = isComplete && !hasErrors ? 5000 : false;
+    const autoClose = isComplete ? (hasErrors ? 8000 : 4000) : false;
 
     // Check if toast already exists
     if (toast.isActive(toastId)) {
@@ -100,6 +100,8 @@ class ToastService {
         autoClose,
         closeButton: true,
         closeOnClick: false,
+        isLoading: false,
+        type: isComplete ? (hasErrors ? 'warning' : 'success') : 'default',
       });
     } else {
       // Create new toast
@@ -115,6 +117,7 @@ class ToastService {
           autoClose,
           closeButton: true,
           closeOnClick: false, // Prevent closing when clicking to expand/collapse
+          type: isComplete ? (hasErrors ? 'warning' : 'success') : 'default',
         }
       );
     }
@@ -145,7 +148,7 @@ export type { ExtensionLoadingStatus };
 const commonToastOptions: ToastOptions = {
   position: 'top-right',
   closeButton: true,
-  hideProgressBar: true,
+  hideProgressBar: false,
   closeOnClick: true,
   pauseOnHover: true,
   draggable: true,
@@ -199,7 +202,7 @@ function ToastErrorContent({
       <div className="flex-none flex items-center gap-2">
         {showRecovery && (
           <Button onClick={() => startNewSession(recoverHints, setView, getInitialWorkingDir())}>
-            Ask goose
+            Ask Achilles
           </Button>
         )}
         {hasBoth && (

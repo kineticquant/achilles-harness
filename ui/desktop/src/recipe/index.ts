@@ -25,6 +25,10 @@ export type RecipeManifest = Omit<RecipeListEntryDto, 'recipe'> & {
   recipe: Recipe;
 };
 
+export function isShippedRecipe(manifest: { file_path: string }): boolean {
+  return manifest.file_path.replace(/\\/g, '/').includes('/shipped-recipes/');
+}
+
 export async function encodeRecipe(recipe: Recipe): Promise<string> {
   try {
     return await acpEncodeRecipe(recipe);
@@ -52,9 +56,29 @@ export async function scanRecipe(recipe: Recipe): Promise<{ has_security_warning
   }
 }
 
+export const RECIPE_DEEPLINK_PREFIX = 'achilles://recipe?config=';
+const LEGACY_RECIPE_DEEPLINK_PREFIX = 'goose://recipe?config=';
+
+export function isRecipeDeeplink(value: string): boolean {
+  const trimmed = value.trim();
+  return (
+    trimmed.startsWith(RECIPE_DEEPLINK_PREFIX) ||
+    trimmed.startsWith(LEGACY_RECIPE_DEEPLINK_PREFIX)
+  );
+}
+
+function recipeConfigFromDeeplink(cleanLink: string): string | null {
+  for (const prefix of [RECIPE_DEEPLINK_PREFIX, LEGACY_RECIPE_DEEPLINK_PREFIX]) {
+    if (cleanLink.startsWith(prefix)) {
+      return cleanLink.slice(prefix.length);
+    }
+  }
+  return null;
+}
+
 export async function generateDeepLink(recipe: Recipe): Promise<string> {
   const encoded = await encodeRecipe(recipe);
-  return `goose://recipe?config=${encoded}`;
+  return `${RECIPE_DEEPLINK_PREFIX}${encoded}`;
 }
 
 /**
@@ -94,11 +118,10 @@ export async function parseDeeplink(deeplink: string): Promise<Recipe | null> {
   try {
     const cleanLink = deeplink.trim();
 
-    if (!cleanLink.startsWith('goose://recipe?config=')) {
-      throw new Error('Invalid deeplink format. Expected: goose://recipe?config=...');
+    const recipeEncoded = recipeConfigFromDeeplink(cleanLink);
+    if (recipeEncoded === null) {
+      throw new Error(`Invalid deeplink format. Expected: ${RECIPE_DEEPLINK_PREFIX}...`);
     }
-
-    const recipeEncoded = cleanLink.replace('goose://recipe?config=', '');
 
     if (!recipeEncoded) {
       throw new Error('No recipe configuration found in deeplink');

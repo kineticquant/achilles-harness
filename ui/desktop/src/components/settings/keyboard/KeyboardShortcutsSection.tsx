@@ -145,7 +145,7 @@ const i18n = defineMessages({
   restartDescription: {
     id: 'keyboardShortcuts.restartDescription',
     defaultMessage:
-      'Changes to application shortcuts (like New Chat, Settings, etc.) require restarting Goose to take effect. Global shortcuts (Focus Window, Quick Launcher) work immediately.',
+      'Changes to application shortcuts (like New Chat, Settings, etc.) require restarting Achilles to take effect. Global shortcuts (Focus Window, Quick Launcher) work immediately.',
   },
   dismiss: {
     id: 'keyboardShortcuts.dismiss',

@@ -5,7 +5,8 @@ import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { CronPicker } from './CronPicker';
 import { Recipe, parseDeeplink, parseRecipeFromFile } from '../../recipe';
-import { getStorageDirectory } from '../../recipe/recipe_management';
+import type { RecipeManifest } from '../../recipe';
+import { getStorageDirectory, listSavedRecipes } from '../../recipe/recipe_management';
 import ClockIcon from '../../assets/clock-icon.svg';
 import { defineMessages, useIntl } from '../../i18n';
 
@@ -15,11 +16,14 @@ const i18n = defineMessages({
   nameLabel: { id: 'scheduleModal.nameLabel', defaultMessage: 'Name:' },
   namePlaceholder: { id: 'scheduleModal.namePlaceholder', defaultMessage: 'e.g., daily-summary-job' },
   sourceLabel: { id: 'scheduleModal.sourceLabel', defaultMessage: 'Source:' },
+  library: { id: 'scheduleModal.library', defaultMessage: 'Library' },
   yaml: { id: 'scheduleModal.yaml', defaultMessage: 'YAML' },
   deepLink: { id: 'scheduleModal.deepLink', defaultMessage: 'Deep link' },
   browseYaml: { id: 'scheduleModal.browseYaml', defaultMessage: 'Browse for YAML file...' },
+  selectRecipe: { id: 'scheduleModal.selectRecipe', defaultMessage: 'Select a recipe...' },
+  noLibraryRecipes: { id: 'scheduleModal.noLibraryRecipes', defaultMessage: 'No recipes in the library yet.' },
   selected: { id: 'scheduleModal.selected', defaultMessage: 'Selected: {path}' },
-  deepLinkPlaceholder: { id: 'scheduleModal.deepLinkPlaceholder', defaultMessage: 'Paste goose://recipe link here...' },
+  deepLinkPlaceholder: { id: 'scheduleModal.deepLinkPlaceholder', defaultMessage: 'Paste achilles://recipe link here...' },
   recipeParsed: { id: 'scheduleModal.recipeParsed', defaultMessage: 'Recipe parsed successfully' },
   recipeTitle: { id: 'scheduleModal.recipeTitle', defaultMessage: 'Title: {title}' },
   recipeDescription: { id: 'scheduleModal.recipeDescription', defaultMessage: 'Description: {description}' },
@@ -29,7 +33,7 @@ const i18n = defineMessages({
   creating: { id: 'scheduleModal.creating', defaultMessage: 'Creating...' },
   updateSchedule: { id: 'scheduleModal.updateSchedule', defaultMessage: 'Update Schedule' },
   createSchedule: { id: 'scheduleModal.createSchedule', defaultMessage: 'Create Schedule' },
-  invalidDeepLink: { id: 'scheduleModal.invalidDeepLink', defaultMessage: 'Invalid deep link. Please use a goose://recipe link.' },
+  invalidDeepLink: { id: 'scheduleModal.invalidDeepLink', defaultMessage: 'Invalid deep link. Please use an achilles://recipe link.' },
   failedReadFile: { id: 'scheduleModal.failedReadFile', defaultMessage: 'Failed to read the selected file.' },
   failedParseRecipe: { id: 'scheduleModal.failedParseRecipe', defaultMessage: 'Failed to parse recipe from file.' },
   invalidFileType: { id: 'scheduleModal.invalidFileType', defaultMessage: 'Invalid file type: Please select a YAML file (.yaml or .yml)' },
@@ -53,7 +57,7 @@ interface ScheduleModalProps {
   initialDeepLink: string | null;
 }
 
-type SourceType = 'file' | 'deeplink';
+type SourceType = 'library' | 'file' | 'deeplink';
 
 const modalLabelClassName = 'block text-sm font-medium text-text-primary mb-1';
 
@@ -70,10 +74,12 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
   const isEditMode = !!schedule;
 
   const [scheduleId, setScheduleId] = useState<string>('');
-  const [sourceType, setSourceType] = useState<SourceType>('file');
+  const [sourceType, setSourceType] = useState<SourceType>('library');
   const [recipeSourcePath, setRecipeSourcePath] = useState<string>('');
   const [deepLinkInput, setDeepLinkInput] = useState<string>('');
   const [parsedRecipe, setParsedRecipe] = useState<Recipe | null>(null);
+  const [libraryRecipes, setLibraryRecipes] = useState<RecipeManifest[]>([]);
+  const [libraryRecipeId, setLibraryRecipeId] = useState<string>('');
   const [cronExpression, setCronExpression] = useState<string>('0 0 14 * * *');
   const [internalValidationError, setInternalValidationError] = useState<string | null>(null);
   const [isValid, setIsValid] = useState(true);
@@ -115,10 +121,11 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
         setCronExpression(schedule.cron);
       } else {
         setScheduleId('');
-        setSourceType('file');
+        setSourceType('library');
         setRecipeSourcePath('');
         setDeepLinkInput('');
         setParsedRecipe(null);
+        setLibraryRecipeId('');
         setCronExpression('0 0 14 * * *');
         if (initialDeepLink) {
           setSourceType('deeplink');
@@ -127,6 +134,41 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
       }
     }
   }, [isOpen, schedule, initialDeepLink, handleDeepLinkChange]);
+
+  useEffect(() => {
+    if (!isOpen || isEditMode) {
+      return;
+    }
+    let cancelled = false;
+    listSavedRecipes()
+      .then((recipes) => {
+        if (!cancelled) {
+          setLibraryRecipes(recipes);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setLibraryRecipes([]);
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, isEditMode]);
+
+  const handleSelectLibraryRecipe = (id: string) => {
+    setLibraryRecipeId(id);
+    setInternalValidationError(null);
+    const manifest = libraryRecipes.find((recipe) => recipe.id === id);
+    if (!manifest) {
+      setParsedRecipe(null);
+      return;
+    }
+    setParsedRecipe(manifest.recipe);
+    if (manifest.recipe.title) {
+      setScheduleIdFromTitle(manifest.recipe.title);
+    }
+  };
 
   const handleBrowseFile = async () => {
     const defaultPath = getStorageDirectory(true);
@@ -246,8 +288,19 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
                   <div className="flex bg-gray-100 dark:bg-gray-700 rounded-full p-1">
                     <button
                       type="button"
+                      onClick={() => setSourceType('library')}
+                      className={`flex-1 px-3 py-2 text-sm font-medium rounded-full transition-all ${
+                        sourceType === 'library'
+                          ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
+                          : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                      }`}
+                    >
+                      {intl.formatMessage(i18n.library)}
+                    </button>
+                    <button
+                      type="button"
                       onClick={() => setSourceType('file')}
-                      className={`flex-1 px-4 py-2 text-sm font-medium rounded-full transition-all ${
+                      className={`flex-1 px-3 py-2 text-sm font-medium rounded-full transition-all ${
                         sourceType === 'file'
                           ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
                           : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -258,7 +311,7 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
                     <button
                       type="button"
                       onClick={() => setSourceType('deeplink')}
-                      className={`flex-1 px-4 py-2 text-sm font-medium rounded-full transition-all ${
+                      className={`flex-1 px-3 py-2 text-sm font-medium rounded-full transition-all ${
                         sourceType === 'deeplink'
                           ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-sm'
                           : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
@@ -267,6 +320,45 @@ export const ScheduleModal: React.FC<ScheduleModalProps> = ({
                       {intl.formatMessage(i18n.deepLink)}
                     </button>
                   </div>
+
+                  {sourceType === 'library' && (
+                    <div>
+                      {libraryRecipes.length === 0 ? (
+                        <p className="text-xs text-text-secondary">
+                          {intl.formatMessage(i18n.noLibraryRecipes)}
+                        </p>
+                      ) : (
+                        <select
+                          aria-label={intl.formatMessage(i18n.selectRecipe)}
+                          value={libraryRecipeId}
+                          onChange={(e) => handleSelectLibraryRecipe(e.target.value)}
+                          className="w-full rounded-full border border-border-primary bg-background-primary px-3 py-2 text-sm text-text-primary"
+                        >
+                          <option value="">{intl.formatMessage(i18n.selectRecipe)}</option>
+                          {libraryRecipes.map((manifest) => (
+                            <option key={manifest.id} value={manifest.id}>
+                              {manifest.recipe.title}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                      {parsedRecipe && libraryRecipeId && (
+                        <div className="mt-2 p-2 bg-green-100 dark:bg-green-900/30 rounded-md border border-green-500/50">
+                          <p className="text-xs text-green-700 dark:text-green-300 font-medium">
+                            ✓ {intl.formatMessage(i18n.recipeParsed)}
+                          </p>
+                          <p className="text-xs text-green-600 dark:text-green-400">
+                            {intl.formatMessage(i18n.recipeTitle, { title: parsedRecipe.title })}
+                          </p>
+                          <p className="text-xs text-green-600 dark:text-green-400">
+                            {intl.formatMessage(i18n.recipeDescription, {
+                              description: parsedRecipe.description,
+                            })}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  )}
 
                   {sourceType === 'file' && (
                     <div>

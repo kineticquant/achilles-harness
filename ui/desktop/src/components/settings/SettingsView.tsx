@@ -104,6 +104,7 @@ export default function SettingsView({
         styles: 'chat',
         tools: 'chat',
         app: 'app',
+        socket: 'app',
         chat: 'chat',
         prompts: 'prompts',
         keyboard: 'keyboard',

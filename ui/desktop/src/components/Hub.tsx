@@ -23,7 +23,7 @@ import { UserInput } from '../types/message';
 import { Button } from './ui/button';
 import { ShieldAlert } from 'lucide-react';
 import { toast } from 'react-toastify';
-import { acpStartAssessment } from '../acp/achilles';
+import { startScanSession } from './findings/startScanSession';
 import {
   createNextChatExtensionDraft,
   selectNextChatExtensions,
@@ -136,8 +136,17 @@ export default function Hub({
     }
     setIsScanning(true);
     try {
-      const assessment = await acpStartAssessment(workingDir);
-      setView('findings', { assessmentId: assessment.id });
+      const started = await startScanSession({
+        workingDir,
+        mode: 'quick',
+        includeVendor: false,
+        depth: 'fast',
+        extensionsList,
+      });
+      setView('findings', {
+        assessmentId: started.assessment.id,
+        resumeSessionId: started.sessionId,
+      });
     } catch (error) {
       toast.error(
         intl.formatMessage(i18n.scanFailed, {

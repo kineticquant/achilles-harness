@@ -55,6 +55,7 @@ import { acpChatSessionActions } from '../../acp/chatSessionStore';
 import { cancelAcpPermissionRequestsForSession } from '../../acp/permissionRequests';
 import { cancelAcpElicitationRequestsForSession } from '../../acp/elicitationRequests';
 import { getSearchShortcutText } from '../../utils/keyboardShortcuts';
+import { destinationForHistorySession } from '../findings/startScanSession';
 
 const i18n = defineMessages({
   editSessionTitle: { id: 'sessions.edit.title', defaultMessage: 'Edit Session Description' },
@@ -300,7 +301,7 @@ function useDebounce<T>(value: T, delay: number): T {
 }
 
 interface SessionListViewProps {
-  onSelectSession: (sessionId: string) => void;
+  onSelectSession: (sessionId: string, session: SessionListItem) => void;
 }
 
 const SessionListView: React.FC<SessionListViewProps> = React.memo(({ onSelectSession }) => {
@@ -701,10 +702,13 @@ const SessionListView: React.FC<SessionListViewProps> = React.memo(({ onSelectSe
 
   const handleOpenInNewWindow = useCallback((session: SessionListItem, e: React.MouseEvent) => {
     e.stopPropagation();
-    window.electron.createChatWindow({
-      dir: session.workingDir,
-      resumeSessionId: session.id,
-      viewType: 'pair',
+    void destinationForHistorySession(session).then(({ view, assessmentId }) => {
+      window.electron.createChatWindow({
+        dir: session.workingDir,
+        resumeSessionId: session.id,
+        viewType: view,
+        assessmentId,
+      });
     });
   }, []);
 
@@ -752,8 +756,8 @@ const SessionListView: React.FC<SessionListViewProps> = React.memo(({ onSelectSe
     );
 
     const handleCardClick = useCallback(() => {
-      onSelectSession(session.id);
-    }, [session.id]);
+      onSelectSession(session.id, session);
+    }, [onSelectSession, session]);
 
     const handleExportSelect = useCallback(
       (format: SessionExportFormat) => {

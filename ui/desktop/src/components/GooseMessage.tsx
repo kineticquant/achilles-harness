@@ -23,7 +23,11 @@ import ElicitationRequest from './ElicitationRequest';
 import MessageCopyLink from './MessageCopyLink';
 import MessageUsageStats from './MessageUsageStats';
 import { cn } from '../utils';
-import { identifyConsecutiveToolCalls, shouldHideTimestamp } from '../utils/toolCallChaining';
+import {
+  identifyConsecutiveToolCalls,
+  isWorkingNote,
+  shouldHideTimestamp,
+} from '../utils/toolCallChaining';
 
 interface GooseMessageProps {
   sessionId: string;
@@ -57,9 +61,11 @@ export default function GooseMessage({
   const displayText = isOutputTokenLimitFallback ? '' : textContent;
   const imagePaths = isOutputTokenLimitFallback ? [] : allImagePaths;
   const thinkingContent = isOutputTokenLimitFallback ? null : getThinkingContent(message);
+  const toolRequests = getToolRequests(message);
+  const workingNote = !isOutputTokenLimitFallback && isWorkingNote(message);
+  const replyText = workingNote ? '' : displayText;
 
   const timestamp = useMemo(() => formatMessageTimestamp(message.created), [message.created]);
-  const toolRequests = getToolRequests(message);
   const messageIndex = messages.findIndex((msg) => msg.id === message.id);
   const toolConfirmationContent = getToolConfirmationContent(message);
   const elicitationContent = getElicitationContent(message);
@@ -77,8 +83,8 @@ export default function GooseMessage({
   };
   const toolCallChains = useMemo(() => identifyConsecutiveToolCalls(messages), [messages]);
   const hideTimestamp = useMemo(
-    () => shouldHideTimestamp(messageIndex, toolCallChains),
-    [messageIndex, toolCallChains]
+    () => workingNote || shouldHideTimestamp(messageIndex, toolCallChains),
+    [workingNote, messageIndex, toolCallChains]
   );
   const hasToolConfirmation = toolConfirmationContent !== undefined;
   const hasElicitation = elicitationContent !== undefined;
@@ -129,25 +135,35 @@ export default function GooseMessage({
   const pendingConfirmationIds = getPendingToolConfirmationIds(messages);
 
   return (
-    <div className="goose-message flex w-[90%] justify-start min-w-0">
+    <div
+      className="goose-message flex w-[90%] justify-start min-w-0"
+      data-working-note={workingNote ? 'true' : undefined}
+    >
       <div className="flex flex-col w-full min-w-0">
         {thinkingContent && (
           <ThinkingContent
             content={thinkingContent}
             isExpanded={
               isStreaming &&
-              !displayText.trim() &&
+              !replyText.trim() &&
+              !workingNote &&
               imagePaths.length === 0 &&
               toolRequests.length === 0
             }
           />
         )}
 
-        {(displayText.trim() || imagePaths.length > 0) && (
+        {workingNote && displayText.trim() && (
+          <div className="text-xs text-text-secondary italic leading-relaxed [&_.prose]:!text-text-secondary [&_.prose_p]:!text-inherit [&_.prose_p]:!mb-0 [&_.prose_p]:!leading-relaxed">
+            <MarkdownContent content={displayText} />
+          </div>
+        )}
+
+        {(replyText.trim() || imagePaths.length > 0) && (
           <div className="flex flex-col group">
-            {displayText.trim() && (
+            {replyText.trim() && (
               <div ref={contentRef} className="agent-message-bubble w-full">
-                <MarkdownContent content={displayText} />
+                <MarkdownContent content={replyText} />
               </div>
             )}
 
@@ -168,7 +184,7 @@ export default function GooseMessage({
                 )}
                 {message.content.every((content) => content.type === 'text') && !isStreaming && (
                   <div className="absolute left-0 pt-1">
-                    <MessageCopyLink text={displayText} contentRef={contentRef} />
+                    <MessageCopyLink text={replyText} contentRef={contentRef} />
                   </div>
                 )}
                 {!isStreaming && message.metadata.usage && (
@@ -182,7 +198,7 @@ export default function GooseMessage({
         )}
 
         {toolRequests.length > 0 && (
-          <div className={cn(displayText && 'mt-2')}>
+          <div className={cn((workingNote || replyText) && 'mt-2')}>
             <div className="relative flex flex-col w-full group">
               <div className="flex flex-col gap-3">
                 {toolRequests.map((toolRequest) => {
@@ -208,22 +224,24 @@ export default function GooseMessage({
                   );
                 })}
               </div>
-              <div className="flex items-center justify-between">
-                <div
-                  className={cn(
-                    'text-xs text-text-secondary pt-1',
-                    message.metadata.usage &&
-                      'transition-all duration-200 group-hover:-translate-y-4 group-hover:opacity-0'
-                  )}
-                >
-                  {!isStreaming && !hideTimestamp && timestamp}
-                </div>
-                {!isStreaming && message.metadata.usage && (
-                  <div className="pt-1 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-4 group-hover:translate-y-0">
-                    <MessageUsageStats usage={message.metadata.usage} />
+              {!isStreaming && (!hideTimestamp || Boolean(message.metadata.usage)) && (
+                <div className="flex items-center justify-between">
+                  <div
+                    className={cn(
+                      'text-xs text-text-secondary pt-1',
+                      message.metadata.usage &&
+                        'transition-all duration-200 group-hover:-translate-y-4 group-hover:opacity-0'
+                    )}
+                  >
+                    {!hideTimestamp && timestamp}
                   </div>
-                )}
-              </div>
+                  {message.metadata.usage && (
+                    <div className="pt-1 transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-4 group-hover:translate-y-0">
+                      <MessageUsageStats usage={message.metadata.usage} />
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         )}

@@ -19,6 +19,7 @@ import { Gavel } from './Gavel';
 import { GlassWater } from './GlassWater';
 import { Grape } from './Grape';
 import { Gear } from './Gear';
+import { Achilles, AchillesLambda, AchillesWordmark } from './Achilles';
 import { Goose } from './Goose';
 import { Microphone } from './Microphone';
 import { Watch0 } from './Watch0';
@@ -59,5 +60,8 @@ export {
   Watch4,
   Watch5,
   Watch6,
+  Achilles,
+  AchillesLambda,
+  AchillesWordmark,
   Goose,
 };

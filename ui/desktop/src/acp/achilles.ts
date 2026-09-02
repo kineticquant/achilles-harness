@@ -15,7 +15,13 @@ export type AchillesAssessment = {
   errorMessage?: string | null;
   trigger: string;
   parentAssessmentId?: string | null;
+  baseGitSha?: string | null;
+  headGitSha?: string | null;
+  contentFingerprint?: string | null;
+  modelClass?: string | null;
   openFindingCount: number;
+  newFindingCount?: number | null;
+  goneFindingCount?: number | null;
 };
 
 export type AchillesFinding = {
@@ -39,6 +45,7 @@ export type AchillesFinding = {
   evidence: Record<string, unknown>;
   firstSeenAt: string;
   lastSeenAt: string;
+  statusReason?: string | null;
 };
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -63,7 +70,19 @@ function mapAssessment(raw: Record<string, unknown>): AchillesAssessment {
     errorMessage: (raw.errorMessage as string | null) ?? null,
     trigger: String(raw.trigger ?? 'scan_cta'),
     parentAssessmentId: (raw.parentAssessmentId as string | null) ?? null,
+    baseGitSha: (raw.baseGitSha as string | null) ?? null,
+    headGitSha: (raw.headGitSha as string | null) ?? null,
+    contentFingerprint: (raw.contentFingerprint as string | null) ?? null,
+    modelClass: (raw.modelClass as string | null) ?? null,
     openFindingCount: Number(raw.openFindingCount ?? 0),
+    newFindingCount:
+      raw.newFindingCount == null || raw.newFindingCount === ''
+        ? null
+        : Number(raw.newFindingCount),
+    goneFindingCount:
+      raw.goneFindingCount == null || raw.goneFindingCount === ''
+        ? null
+        : Number(raw.goneFindingCount),
   };
 }
 
@@ -89,12 +108,24 @@ function mapFinding(raw: Record<string, unknown>): AchillesFinding {
     evidence: asRecord(raw.evidence),
     firstSeenAt: String(raw.firstSeenAt ?? ''),
     lastSeenAt: String(raw.lastSeenAt ?? ''),
+    statusReason: (raw.statusReason as string | null) ?? null,
   };
 }
 
 export async function acpStartAssessment(
   workingDir: string,
-  options?: { sessionId?: string; parentAssessmentId?: string }
+  options?: {
+    sessionId?: string;
+    parentAssessmentId?: string;
+    mode?: string;
+    includeVendor?: boolean;
+    scanLiterals?: boolean;
+    scanDelta?: boolean;
+    depth?: string;
+    resumeAssessmentId?: string;
+    maxDurationSecs?: number;
+    maxCostUsd?: number;
+  }
 ): Promise<AchillesAssessment> {
   const client = await getAcpClient();
   const raw = await client.extMethod('_achilles/unstable/assessments/start', {
@@ -103,7 +134,38 @@ export async function acpStartAssessment(
     ...(options?.parentAssessmentId
       ? { parentAssessmentId: options.parentAssessmentId }
       : {}),
-    mode: 'quick',
+    ...(options?.resumeAssessmentId
+      ? { resumeAssessmentId: options.resumeAssessmentId }
+      : {}),
+    ...(options?.maxDurationSecs != null
+      ? { maxDurationSecs: options.maxDurationSecs }
+      : {}),
+    ...(options?.maxCostUsd != null ? { maxCostUsd: options.maxCostUsd } : {}),
+    mode: options?.mode ?? 'quick',
+    includeVendor: options?.includeVendor ?? false,
+    scanLiterals: options?.scanLiterals ?? false,
+    scanDelta: options?.scanDelta ?? false,
+    depth: options?.depth ?? 'fast',
+  });
+  return mapAssessment(asRecord(raw.assessment));
+}
+
+export async function acpCancelAssessment(assessmentId: string): Promise<AchillesAssessment> {
+  const client = await getAcpClient();
+  const raw = await client.extMethod('_achilles/unstable/assessments/cancel', {
+    assessmentId,
+  });
+  return mapAssessment(asRecord(raw.assessment));
+}
+
+export async function acpPauseAssessment(
+  assessmentId: string,
+  paused: boolean
+): Promise<AchillesAssessment> {
+  const client = await getAcpClient();
+  const raw = await client.extMethod('_achilles/unstable/assessments/pause', {
+    assessmentId,
+    paused,
   });
   return mapAssessment(asRecord(raw.assessment));
 }
@@ -114,10 +176,14 @@ export async function acpGetAssessment(assessmentId: string): Promise<AchillesAs
   return mapAssessment(asRecord(raw.assessment));
 }
 
-export async function acpListAssessments(workingDir?: string): Promise<AchillesAssessment[]> {
+export async function acpListAssessments(options?: {
+  workingDir?: string;
+  sessionId?: string;
+}): Promise<AchillesAssessment[]> {
   const client = await getAcpClient();
   const raw = await client.extMethod('_achilles/unstable/assessments/list', {
-    ...(workingDir ? { workingDir } : {}),
+    ...(options?.workingDir ? { workingDir: options.workingDir } : {}),
+    ...(options?.sessionId ? { sessionId: options.sessionId } : {}),
   });
   const list = Array.isArray(raw.assessments) ? raw.assessments : [];
   return list.map((item) => mapAssessment(asRecord(item)));
@@ -134,4 +200,40 @@ export async function acpListFindings(options: {
   });
   const list = Array.isArray(raw.findings) ? raw.findings : [];
   return list.map((item) => mapFinding(asRecord(item)));
+}
+
+export async function acpSetFindingState(
+  findingId: string,
+  state: string,
+  reason?: string
+): Promise<AchillesFinding> {
+  const client = await getAcpClient();
+  const raw = await client.extMethod('_achilles/unstable/findings/setState', {
+    findingId,
+    state,
+    ...(reason ? { reason } : {}),
+  });
+  return mapFinding(asRecord(raw.finding));
+}
+
+export async function acpRunUtils(options: {
+  workingDir: string;
+  action: string;
+  path?: string;
+  text?: string;
+  passphrase?: string;
+  expected?: string;
+  confirm?: boolean;
+}): Promise<Record<string, unknown>> {
+  const client = await getAcpClient();
+  const raw = await client.extMethod('_achilles/unstable/utils/run', {
+    workingDir: options.workingDir,
+    action: options.action,
+    ...(options.path ? { path: options.path } : {}),
+    ...(options.text ? { text: options.text } : {}),
+    ...(options.passphrase ? { passphrase: options.passphrase } : {}),
+    ...(options.expected ? { expected: options.expected } : {}),
+    ...(options.confirm ? { confirm: true } : {}),
+  });
+  return asRecord(raw.result);
 }

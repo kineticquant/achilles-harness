@@ -8,6 +8,7 @@ import {
   setRecipeSlashCommand,
 } from '../../recipe/recipe_management';
 import type { RecipeManifest } from '../../recipe';
+import { isShippedRecipe } from '../../recipe';
 import {
   FileText,
   Edit,
@@ -256,6 +257,10 @@ const i18n = defineMessages({
     id: 'recipesView.recipesDescription',
     defaultMessage:
       'View and manage your saved recipes to quickly start new sessions with predefined configurations. {shortcut} to search.',
+  },
+  shippedBadge: {
+    id: 'recipesView.shippedBadge',
+    defaultMessage: 'Shipped',
   },
   searchRecipesPlaceholder: {
     id: 'recipesView.searchRecipesPlaceholder',
@@ -675,12 +680,19 @@ export default function RecipesView() {
     recipeManifestResponse: { recipe, last_modified: lastModified, schedule_cron, slash_command },
   }: {
     recipeManifestResponse: RecipeManifest;
-  }) => (
+  }) => {
+    const shipped = isShippedRecipe(recipeManifestResponse);
+    return (
     <Card className="py-2 px-4 mb-2 bg-background-primary border-none hover:bg-background-secondary transition-all duration-150">
       <div className="flex justify-between items-start gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
             <h3 className="text-base truncate max-w-[50vw]">{recipe.title}</h3>
+            {shipped && (
+              <span className="shrink-0 text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-background-secondary text-text-secondary">
+                {intl.formatMessage(i18n.shippedBadge)}
+              </span>
+            )}
           </div>
           <p className="text-text-secondary text-sm mb-2 line-clamp-2">{recipe.description}</p>
           <div className="flex flex-col gap-1 text-xs text-text-secondary">
@@ -803,6 +815,7 @@ export default function RecipesView() {
           >
             <Clock className="w-4 h-4" />
           </Button>
+          {!shipped && (
           <Button
             onClick={(e) => {
               e.stopPropagation();
@@ -815,10 +828,12 @@ export default function RecipesView() {
           >
             <Trash2 className="w-4 h-4" />
           </Button>
+          )}
         </div>
       </div>
     </Card>
   );
+  };
 
   const RecipeSkeleton = () => (
     <Card className="p-2 mb-2 bg-background-primary">
@@ -952,7 +967,7 @@ export default function RecipesView() {
           isOpen={showEditor}
           onClose={handleEditorClose}
           recipe={selectedRecipe.recipe}
-          recipeId={selectedRecipe.id}
+          recipeId={isShippedRecipe(selectedRecipe) ? null : selectedRecipe.id}
         />
       )}
 

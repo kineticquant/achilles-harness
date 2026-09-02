@@ -45,11 +45,11 @@ function isSlashCommand(message: string): boolean {
 const i18n = defineMessages({
   notificationTitle: {
     id: 'chat.notification.taskComplete.title',
-    defaultMessage: 'Goose finished the task.',
+    defaultMessage: 'Achilles finished the task.',
   },
   notificationBody: {
     id: 'chat.notification.taskComplete.body',
-    defaultMessage: 'Click here to bring Goose back into focus.',
+    defaultMessage: 'Click here to bring Achilles back into focus.',
   },
 });
 
@@ -72,7 +72,7 @@ export function useChatSession({
   snapshotRef.current = acpSnapshot;
 
   const getCurrentSnapshot = useCallback(
-    () => snapshotRef.current ?? acpChatSessionStore.getSnapshot(sessionId),
+    () => acpChatSessionStore.getSnapshot(sessionId) ?? snapshotRef.current,
     [sessionId]
   );
 
@@ -312,6 +312,25 @@ export function useChatSession({
     [getCurrentSnapshot, onFinish, sessionId]
   );
 
+  const onMessageDelete = useCallback(
+    async (messageId: string) => {
+      try {
+        await acpChatSessionController.deleteMessage(sessionId, messageId, {
+          getCurrentSnapshot,
+        });
+      } catch (error) {
+        const errorMsg = errorMessage(error);
+        console.error('Failed to delete message:', error);
+        const { toastError } = await import('../toasts');
+        toastError({
+          title: 'Failed to delete message',
+          msg: errorMsg,
+        });
+      }
+    },
+    [getCurrentSnapshot, sessionId]
+  );
+
   const updateSession = useCallback(
     (updater: (session: Session) => Session) => {
       const currentSession = getCurrentSnapshot()?.session;
@@ -349,5 +368,6 @@ export function useChatSession({
     pauseQueueOnStop: false,
     queueProcessingBlocked,
     onMessageUpdate,
+    onMessageDelete,
   };
 }

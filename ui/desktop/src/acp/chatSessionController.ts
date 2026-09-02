@@ -64,6 +64,11 @@ export interface AcpChatSessionController {
     retainedImages: ImageData[],
     options: AcpSubmitMessageOptions
   ): Promise<void>;
+  deleteMessage(
+    sessionId: string,
+    messageId: string,
+    options: AcpSnapshotOptions
+  ): Promise<void>;
 }
 
 function createAcpCreditsExhaustedMessage(error: AcpCreditsExhaustedError): Message {
@@ -220,6 +225,8 @@ async function submitMessage(
   }
 }
 
+const PROMPT_CANCEL_UNBLOCK_MS = 3_000;
+
 function stop(sessionId: string): void {
   const storedPromptAttemptId = acpChatSessionStore.getSnapshot(sessionId)?.activePromptAttemptId;
   const hasStoredAcpPrompt = storedPromptAttemptId !== null && storedPromptAttemptId !== undefined;
@@ -228,23 +235,46 @@ function stop(sessionId: string): void {
     acpChatSessionActions.startPromptCancellation(sessionId, storedPromptAttemptId);
     cancelAcpPermissionRequestsForSession(sessionId);
     cancelAcpElicitationRequestsForSession(sessionId);
-    acpCancelPrompt(sessionId).catch((error) => {
-      console.warn('Failed to cancel ACP prompt:', error);
-    });
+    void settlePromptCancellation(sessionId, storedPromptAttemptId);
     return;
   }
 
   acpChatSessionActions.setChatState(sessionId, ChatState.Idle);
 }
 
-async function updateMessage(
+async function settlePromptCancellation(
+  sessionId: string,
+  promptAttemptId: string
+): Promise<void> {
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  const timedOut = new Promise<'timeout'>((resolve) => {
+    timeoutId = setTimeout(() => resolve('timeout'), PROMPT_CANCEL_UNBLOCK_MS);
+  });
+
+  try {
+    const result = await Promise.race([
+      acpCancelPrompt(sessionId).then(() => 'cancelled' as const),
+      timedOut,
+    ]);
+    if (result === 'cancelled') {
+      await timedOut;
+    }
+  } catch (error) {
+    console.warn('Failed to cancel ACP prompt:', error);
+  } finally {
+    if (timeoutId !== undefined) {
+      clearTimeout(timeoutId);
+    }
+    acpChatSessionActions.clearPromptCancellation(sessionId, promptAttemptId);
+  }
+}
+
+async function prepareInPlaceConversationMutation(
   sessionId: string,
   messageId: string,
-  newContent: string,
-  editType: 'fork' | 'edit',
-  retainedImages: ImageData[],
-  options: AcpSubmitMessageOptions
-): Promise<void> {
+  options: AcpSnapshotOptions,
+  busyError: string
+): Promise<{ message: Message; currentMessages: Message[] } | null> {
   assertNoPendingPromptCancellation(sessionId);
 
   const currentSnapshot = options.getCurrentSnapshot();
@@ -257,11 +287,6 @@ async function updateMessage(
     throw new Error(`Message with id ${messageId} not found in current messages`);
   }
 
-  if (editType === 'fork') {
-    await forkSessionWithEditedMessage(sessionId, message, newContent, retainedImages);
-    return;
-  }
-
   const editSnapshot = currentSnapshot ?? storedSnapshot;
   const isPendingToolPermission =
     editSnapshot?.chatState === ChatState.WaitingForUserInput &&
@@ -270,10 +295,10 @@ async function updateMessage(
   const pendingToolPermissionPromptAttemptId = isPendingToolPermission
     ? activePromptAttemptId
     : undefined;
-  const canEditInPlace = isIdle || pendingToolPermissionPromptAttemptId != null;
+  const canMutateInPlace = isIdle || pendingToolPermissionPromptAttemptId != null;
 
-  if (!canEditInPlace) {
-    return;
+  if (!canMutateInPlace) {
+    return null;
   }
 
   if (pendingToolPermissionPromptAttemptId != null) {
@@ -282,7 +307,7 @@ async function updateMessage(
       pendingToolPermissionPromptAttemptId
     );
     if (!cancellation) {
-      throw new Error('Cannot update message while prompt is active');
+      throw new Error(busyError);
     }
 
     const promptCancellationSettled = acpChatSessionActions.waitForPromptCancellation(
@@ -297,7 +322,7 @@ async function updateMessage(
         sessionId,
         pendingToolPermissionPromptAttemptId
       );
-      throw new Error('Cannot update message because the active prompt could not be cancelled');
+      throw new Error(busyError);
     }
 
     cancelAcpPermissionRequestsForSession(sessionId);
@@ -305,18 +330,82 @@ async function updateMessage(
     await promptCancellationSettled;
   }
 
+  return { message, currentMessages };
+}
+
+async function updateMessage(
+  sessionId: string,
+  messageId: string,
+  newContent: string,
+  editType: 'fork' | 'edit',
+  retainedImages: ImageData[],
+  options: AcpSubmitMessageOptions
+): Promise<void> {
+  if (editType === 'fork') {
+    assertNoPendingPromptCancellation(sessionId);
+
+    const currentMessages = options.getCurrentSnapshot()?.messages ?? [];
+    const message = currentMessages.find((m) => m.id === messageId);
+    if (!message) {
+      throw new Error(`Message with id ${messageId} not found in current messages`);
+    }
+
+    await forkSessionWithEditedMessage(sessionId, message, newContent, retainedImages);
+    return;
+  }
+
+  const prepared = await prepareInPlaceConversationMutation(
+    sessionId,
+    messageId,
+    options,
+    'Cannot update message while prompt is active'
+  );
+  if (!prepared) {
+    return;
+  }
+
   acpChatSessionActions.setChatState(sessionId, ChatState.Thinking);
 
   try {
-    await acpTruncateSessionConversation(sessionId, message.created);
+    await acpTruncateSessionConversation(sessionId, prepared.message.created);
 
-    const truncatedMessages = currentMessages.filter((m) => m.created < message.created);
+    const truncatedMessages = prepared.currentMessages.filter(
+      (m) => m.created < prepared.message.created
+    );
     const updatedUserMessage = createUserMessage(newContent, retainedImages);
 
     const messagesForUI = [...truncatedMessages, updatedUserMessage];
     acpChatSessionActions.setMessages(sessionId, messagesForUI);
 
     await submitMessage(sessionId, updatedUserMessage, options);
+  } catch (error) {
+    acpChatSessionActions.setChatState(sessionId, ChatState.Idle);
+    throw error;
+  }
+}
+
+async function deleteMessage(
+  sessionId: string,
+  messageId: string,
+  options: AcpSnapshotOptions
+): Promise<void> {
+  const prepared = await prepareInPlaceConversationMutation(
+    sessionId,
+    messageId,
+    options,
+    'Cannot delete message while prompt is active'
+  );
+  if (!prepared) {
+    return;
+  }
+
+  try {
+    await acpTruncateSessionConversation(sessionId, prepared.message.created);
+    const truncatedMessages = prepared.currentMessages.filter(
+      (m) => m.created < prepared.message.created
+    );
+    acpChatSessionActions.setMessages(sessionId, truncatedMessages);
+    acpChatSessionActions.setChatState(sessionId, ChatState.Idle);
   } catch (error) {
     acpChatSessionActions.setChatState(sessionId, ChatState.Idle);
     throw error;
@@ -330,4 +419,5 @@ export const acpChatSessionController: AcpChatSessionController = {
   submitMessage,
   stop,
   updateMessage,
+  deleteMessage,
 };

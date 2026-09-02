@@ -32,7 +32,7 @@ const i18n = defineMessages({
   },
   askGoose: {
     id: 'groupedExtensionLoadingToast.askGoose',
-    defaultMessage: 'Ask goose',
+    defaultMessage: 'Ask Achilles',
   },
   copied: {
     id: 'groupedExtensionLoadingToast.copied',
@@ -144,7 +144,7 @@ export function GroupedExtensionLoadingToast({
 
           {/* Expanded details section */}
           <CollapsibleContent className="overflow-hidden">
-            <div className="mt-3 pt-3 border-t border-white/20">
+            <div className="mt-3 pt-3 border-t border-border-primary">
               <div className="space-y-3 max-h-64 overflow-y-auto pr-2 pl-1">
                 {extensions.map((ext) => {
                   const friendlyName = formatExtensionName(ext.name);

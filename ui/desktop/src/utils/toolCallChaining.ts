@@ -5,6 +5,15 @@ import {
   type Message,
 } from '../types/message';
 
+/** Preamble text on a tool-calling turn — a working note, not the reply. */
+export function isWorkingNote(message: Message): boolean {
+  if (message.role !== 'assistant') {
+    return false;
+  }
+  const { textContent } = getTextAndImageContent(message);
+  return textContent.trim().length > 0 && getToolRequests(message).length > 0;
+}
+
 export function identifyConsecutiveToolCalls(messages: Message[]): number[][] {
   const chains: number[][] = [];
   let currentChain: number[] = [];
@@ -21,16 +30,8 @@ export function identifyConsecutiveToolCalls(messages: Message[]): number[][] {
     }
 
     if (toolRequests.length > 0) {
-      if (hasText) {
-        if (currentChain.length > 0) {
-          if (currentChain.length > 1) {
-            chains.push([...currentChain]);
-          }
-        }
-        currentChain = [i];
-      } else {
-        currentChain.push(i);
-      }
+      // Preamble text on a tool turn is a thought, not a new spoken message.
+      currentChain.push(i);
     } else if (hasText) {
       if (currentChain.length > 1) {
         chains.push([...currentChain]);

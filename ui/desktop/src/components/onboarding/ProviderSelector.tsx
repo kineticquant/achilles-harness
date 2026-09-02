@@ -11,11 +11,16 @@ import { defineMessages, useIntl } from '../../i18n';
 const i18n = defineMessages({
   useLocalModel: {
     id: 'providerSelector.useLocalModel',
-    defaultMessage: 'Use Arrav locally',
+    defaultMessage: 'Use Arrav Locally',
   },
   localModelDescription: {
     id: 'providerSelector.localModelDescription',
     defaultMessage: 'Run Arrav on this device. No API key or account needed.',
+  },
+  localModelDetail: {
+    id: 'providerSelector.localModelDetail',
+    defaultMessage:
+      'A free on-device model from Achilles.sh and Eastlake Labs, built on Liquid AI. Little RAM, no GPU, everything stays on this machine. Strong at tool-calling and RAG — local cybersecurity tooling, no usage cap.',
   },
   comingSoon: {
     id: 'providerSelector.comingSoon',
@@ -27,7 +32,7 @@ const i18n = defineMessages({
   },
   connectProviderDescription: {
     id: 'providerSelector.connectProviderDescription',
-    defaultMessage: 'Connect OpenAI, Anthropic, Google, etc',
+    defaultMessage: 'Connect OpenAI, Anthropic, OpenCode, Google, etc',
   },
   selectProvider: {
     id: 'providerSelector.selectProvider',
@@ -125,29 +130,34 @@ export default function ProviderSelector({
 
   return (
     <div>
-      <div className="grid grid-cols-2 gap-3 mb-6">
+      <div className="grid grid-cols-2 gap-3 mb-6 items-stretch">
         <div
           aria-disabled="true"
-          className="relative p-4 border rounded-xl border-border-default bg-background-muted opacity-60 cursor-not-allowed select-none"
+          className="relative flex h-full flex-col rounded-xl border border-white/25 bg-background-muted cursor-not-allowed select-none"
         >
-          <span className="absolute top-3 right-3 text-[11px] font-medium uppercase tracking-wide text-text-muted">
+          <span className="absolute top-3 right-3 z-10 text-[11px] font-medium uppercase tracking-wide text-text-muted">
             {intl.formatMessage(i18n.comingSoon)}
           </span>
-          <HardDrive size={20} className="text-text-muted mb-2" />
-          <span className="font-medium text-text-default text-base block pr-20">
-            {intl.formatMessage(i18n.useLocalModel)}
-          </span>
-          <p className="text-text-muted text-sm mt-1">
-            {intl.formatMessage(i18n.localModelDescription)}
-          </p>
+          <div className="flex flex-1 flex-col p-4 opacity-60">
+            <HardDrive size={20} className="text-text-muted mb-2" />
+            <span className="font-medium text-text-default text-base block pr-20">
+              {intl.formatMessage(i18n.useLocalModel)}
+            </span>
+            <p className="text-text-muted text-sm mt-1">
+              {intl.formatMessage(i18n.localModelDescription)}
+            </p>
+            <p className="text-text-muted text-[11px] leading-snug mt-2">
+              {intl.formatMessage(i18n.localModelDetail)}
+            </p>
+          </div>
         </div>
 
         <div
           onClick={handleOwnProviderClick}
-          className={`p-4 border rounded-xl transition-all duration-200 cursor-pointer group ${
+          className={`flex h-full flex-col p-4 rounded-xl border bg-background-muted transition-all duration-200 cursor-pointer group ${
             selectedPath === OWN_PROVIDER
-              ? 'border-blue-400 bg-background-muted'
-              : 'border-border-default bg-background-muted hover:border-blue-400'
+              ? 'border-blue-400'
+              : 'border-white/25 hover:border-blue-400'
           }`}
         >
           <Key size={20} className="text-text-muted mb-2" />

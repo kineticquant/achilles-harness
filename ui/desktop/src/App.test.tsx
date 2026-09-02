@@ -9,6 +9,7 @@ import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { AppInner, resolveSessionInitialMessage } from './App';
 import { IntlTestWrapper } from './i18n/test-utils';
 import { FeaturesProvider } from './contexts/FeaturesContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import { reconnectAcpAfterSystemResume } from './acp/acpConnection';
 
 // Set up globals for jsdom
@@ -195,7 +196,9 @@ Object.defineProperty(window, 'matchMedia', {
 function AppInnerTestWrapper({ children }: { children: React.ReactNode }) {
   return (
     <IntlTestWrapper>
-      <FeaturesProvider>{children}</FeaturesProvider>
+      <ThemeProvider>
+        <FeaturesProvider>{children}</FeaturesProvider>
+      </ThemeProvider>
     </IntlTestWrapper>
   );
 }
@@ -262,7 +265,7 @@ describe('App Component - Brand New State', () => {
       expect(mockElectron.reactReady).toHaveBeenCalled();
     });
 
-    expect(screen.getByText(/^Welcome to goose/)).toBeInTheDocument();
+    expect(screen.getByText(/^Welcome to Achilles/)).toBeInTheDocument();
   });
 
   it('should not redirect when provider is configured', async () => {

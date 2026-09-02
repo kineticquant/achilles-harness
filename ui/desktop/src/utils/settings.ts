@@ -48,6 +48,8 @@ export interface Settings {
   responseStyle: string;
   showPricing: boolean;
   seenAnnouncementIds: string[];
+  /** Findings file pane starts in edit mode when true. */
+  findingsFileEdit: boolean;
 }
 
 export type SettingKey = keyof Settings;
@@ -88,6 +90,7 @@ export const defaultSettings: Settings = {
   responseStyle: 'concise',
   showPricing: true,
   seenAnnouncementIds: [],
+  findingsFileEdit: false,
 };
 
 export function getKeyboardShortcuts(settings: Settings): KeyboardShortcuts {

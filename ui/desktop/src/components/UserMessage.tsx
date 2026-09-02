@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ImagePreview from './ImagePreview';
 import MarkdownContent from './MarkdownContent';
 import {
@@ -11,8 +11,18 @@ import MessageCopyLink from './MessageCopyLink';
 import { formatMessageTimestamp } from '../utils/timeUtils';
 import Close from './icons/Close';
 import Edit from './icons/Edit';
+import { RefreshCw, Trash2 } from 'lucide-react';
 import { Button } from './ui/button';
+import { ConfirmationModal } from './ui/ConfirmationModal';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './ui/collapsible';
+import Expand from './ui/Expand';
 import { defineMessages, useIntl } from '../i18n';
+import { cn } from '../utils';
+import {
+  composeFindingChatPayload,
+  findingContextTitle,
+  splitFindingChatPayload,
+} from './findings/findingChat';
 
 const i18n = defineMessages({
   editPlaceholder: {
@@ -26,6 +36,14 @@ const i18n = defineMessages({
   emptyError: {
     id: 'userMessage.emptyError',
     defaultMessage: 'Message cannot be empty',
+  },
+  findingContext: {
+    id: 'userMessage.findingContext',
+    defaultMessage: 'Finding context',
+  },
+  findingContextWithTitle: {
+    id: 'userMessage.findingContextWithTitle',
+    defaultMessage: 'Finding · {title}',
   },
   editInPlaceDescription: {
     id: 'userMessage.editInPlaceDescription',
@@ -84,6 +102,46 @@ const i18n = defineMessages({
     id: 'userMessage.editImagesHeading',
     defaultMessage: 'Attached images:',
   },
+  resendButton: {
+    id: 'userMessage.resendButton',
+    defaultMessage: 'Resend',
+  },
+  resendAriaLabel: {
+    id: 'userMessage.resendAriaLabel',
+    defaultMessage: 'Resend message: {preview}',
+  },
+  resendTitle: {
+    id: 'userMessage.resendTitle',
+    defaultMessage: 'Send this message again',
+  },
+  deleteButton: {
+    id: 'userMessage.deleteButton',
+    defaultMessage: 'Delete',
+  },
+  deleteAriaLabel: {
+    id: 'userMessage.deleteAriaLabel',
+    defaultMessage: 'Delete message: {preview}',
+  },
+  deleteTitle: {
+    id: 'userMessage.deleteTitle',
+    defaultMessage: 'Delete this message',
+  },
+  deleteConfirmTitle: {
+    id: 'userMessage.deleteConfirmTitle',
+    defaultMessage: 'Delete message',
+  },
+  deleteConfirmMessage: {
+    id: 'userMessage.deleteConfirmMessage',
+    defaultMessage: 'This will remove this message and everything after it from the session.',
+  },
+  deleteConfirmAction: {
+    id: 'userMessage.deleteConfirmAction',
+    defaultMessage: 'Delete',
+  },
+  deleteCancel: {
+    id: 'userMessage.deleteCancel',
+    defaultMessage: 'Cancel',
+  },
 });
 
 interface UserMessageProps {
@@ -94,35 +152,55 @@ interface UserMessageProps {
     editType: 'fork' | 'edit',
     retainedImages: ImageData[]
   ) => void;
+  onMessageDelete?: (messageId: string) => void | Promise<void>;
 }
 
-export default function UserMessage({ message, onMessageUpdate }: UserMessageProps) {
+const actionButtonClass =
+  'flex items-center gap-1 text-xs text-text-secondary hover:cursor-pointer hover:text-text-primary transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-4 group-hover:translate-y-0 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 focus-visible:opacity-100 focus-visible:translate-y-0 rounded';
+
+export default function UserMessage({
+  message,
+  onMessageUpdate,
+  onMessageDelete,
+}: UserMessageProps) {
   const intl = useIntl();
   const contentRef = useRef<HTMLDivElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [editContent, setEditContent] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const { textContent, imagePaths } = getTextAndImageContent(message);
   const timestamp = formatMessageTimestamp(message.created);
+  const attached = useMemo(() => splitFindingChatPayload(textContent), [textContent]);
+  const displayText = attached?.question ?? textContent;
+  const contextLabel = useMemo(() => {
+    if (!attached) return '';
+    const title = findingContextTitle(attached.context);
+    return title
+      ? intl.formatMessage(i18n.findingContextWithTitle, { title })
+      : intl.formatMessage(i18n.findingContext);
+  }, [attached, intl]);
 
   const messageImages: ImageData[] = imageDataFromMessage(message);
 
   const [removedImageIndices, setRemovedImageIndices] = useState<Set<number>>(new Set());
+  const [contextOpen, setContextOpen] = useState(false);
 
   useEffect(() => {
     if (!isEditing) {
-      setEditContent(textContent);
+      setEditContent(displayText);
     }
-  }, [message.content, textContent, message.id, isEditing]);
+  }, [message.content, displayText, message.id, isEditing]);
 
   const initializeEditMode = useCallback(() => {
-    setEditContent(textContent);
+    setEditContent(displayText);
     setError(null);
     setRemovedImageIndices(new Set());
-    window.electron.logInfo(`Entering edit mode with content: ${textContent}`);
-  }, [textContent]);
+    window.electron.logInfo(`Entering edit mode with content: ${displayText}`);
+  }, [displayText]);
 
   const handleRemoveImage = useCallback((index: number) => {
     setRemovedImageIndices((prev) => {
@@ -174,19 +252,24 @@ export default function UserMessage({ message, onMessageUpdate }: UserMessagePro
 
       if (
         editType === 'edit' &&
-        editContent.trim() === textContent.trim() &&
+        editContent.trim() === displayText.trim() &&
         retainedImages.length === messageImages.length
       ) {
         return;
       }
 
+      const nextContent = attached
+        ? composeFindingChatPayload(attached.context, editContent)
+        : editContent;
+
       if (onMessageUpdate && message.id) {
-        onMessageUpdate(message.id, editContent, editType, retainedImages);
+        onMessageUpdate(message.id, nextContent, editType, retainedImages);
       }
     },
     [
+      attached,
+      displayText,
       editContent,
-      textContent,
       onMessageUpdate,
       message.id,
       intl,
@@ -198,9 +281,9 @@ export default function UserMessage({ message, onMessageUpdate }: UserMessagePro
   const handleCancel = useCallback(() => {
     window.electron.logInfo('Cancel clicked - reverting to original content');
     setIsEditing(false);
-    setEditContent(textContent);
+    setEditContent(displayText);
     setError(null);
-  }, [textContent]);
+  }, [displayText]);
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
@@ -219,6 +302,30 @@ export default function UserMessage({ message, onMessageUpdate }: UserMessagePro
     },
     [handleCancel, handleSave]
   );
+
+  const handleResend = useCallback(() => {
+    if (!onMessageUpdate || !message.id) return;
+    if (!textContent.trim() && messageImages.length === 0) return;
+    onMessageUpdate(message.id, textContent, 'edit', messageImages);
+  }, [onMessageUpdate, message.id, textContent, messageImages]);
+
+  const messagePreview = `${displayText.substring(0, 50)}${displayText.length > 50 ? '...' : ''}`;
+
+  const handleDeleteClick = useCallback(() => {
+    if (!onMessageDelete || !message.id) return;
+    setConfirmDelete(true);
+  }, [onMessageDelete, message.id]);
+
+  const handleConfirmDelete = useCallback(async () => {
+    if (!onMessageDelete || !message.id) return;
+    setIsDeleting(true);
+    try {
+      await onMessageDelete(message.id);
+      setConfirmDelete(false);
+    } finally {
+      setIsDeleting(false);
+    }
+  }, [onMessageDelete, message.id]);
 
   useEffect(() => {
     if (textareaRef.current && isEditing) {
@@ -321,12 +428,34 @@ export default function UserMessage({ message, onMessageUpdate }: UserMessagePro
         ) : (
           <div className="message flex justify-end w-full">
             <div className="flex-col max-w-[85%] w-fit">
-              <div className="flex flex-col group">
-                {textContent.trim() && (
+              <div className="flex flex-col group items-end">
+                {attached && (
+                  <Collapsible
+                    open={contextOpen}
+                    onOpenChange={setContextOpen}
+                    className="mb-1.5 w-full"
+                  >
+                    <div className="flex justify-end">
+                      <CollapsibleTrigger
+                        className="inline-flex max-w-full items-center gap-1 rounded-md border border-border-primary bg-background-primary px-2 py-0.5 text-[11px] leading-4 text-text-secondary hover:text-text-primary transition-colors cursor-pointer"
+                        aria-label={contextLabel}
+                      >
+                        <Expand size={3} isExpanded={contextOpen} />
+                        <span className="truncate">{contextLabel}</span>
+                      </CollapsibleTrigger>
+                    </div>
+                    <CollapsibleContent>
+                      <pre className="mt-1 max-w-full overflow-x-auto whitespace-pre-wrap break-all rounded-md border border-border-primary bg-background-primary px-2 py-1.5 text-left font-mono text-[11px] leading-5 text-text-secondary">
+                        {attached.context}
+                      </pre>
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
+                {displayText.trim() && (
                   <div className="user-message-bubble flex bg-text-primary text-background-primary rounded-xl py-2.5 px-4">
                     <div ref={contentRef}>
                       <MarkdownContent
-                        content={textContent}
+                        content={displayText}
                         className="!text-inherit prose-a:!text-inherit prose-headings:!text-inherit prose-strong:!text-inherit prose-em:!text-inherit prose-li:!text-inherit prose-p:!text-inherit user-message"
                       />
                     </div>
@@ -345,8 +474,9 @@ export default function UserMessage({ message, onMessageUpdate }: UserMessagePro
                   <div className="absolute w-40 font-mono right-0 text-xs text-text-secondary pt-1 transition-all duration-200 group-hover:-translate-y-4 group-hover:opacity-0">
                     {timestamp}
                   </div>
-                  <div className="absolute right-0 pt-1 flex items-center gap-2">
+                  <div className="absolute right-0 pt-1 flex items-center gap-2 whitespace-nowrap">
                     <button
+                      type="button"
                       onClick={handleEditClick}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter' || e.key === ' ') {
@@ -354,9 +484,9 @@ export default function UserMessage({ message, onMessageUpdate }: UserMessagePro
                           handleEditClick();
                         }
                       }}
-                      className="flex items-center gap-1 text-xs text-text-secondary hover:cursor-pointer hover:text-text-primary transition-all duration-200 opacity-0 group-hover:opacity-100 -translate-y-4 group-hover:translate-y-0 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 rounded"
+                      className={actionButtonClass}
                       aria-label={intl.formatMessage(i18n.editMessageAriaLabel, {
-                        preview: `${textContent.substring(0, 50)}${textContent.length > 50 ? '...' : ''}`,
+                        preview: messagePreview,
                       })}
                       aria-expanded={isEditing}
                       title={intl.formatMessage(i18n.editMessageTitle)}
@@ -364,7 +494,48 @@ export default function UserMessage({ message, onMessageUpdate }: UserMessagePro
                       <Edit className="h-3 w-3" />
                       <span>{intl.formatMessage(i18n.editButton)}</span>
                     </button>
-                    <MessageCopyLink text={textContent} contentRef={contentRef} />
+                    <MessageCopyLink text={displayText} contentRef={contentRef} />
+                    {onMessageUpdate && message.id && (
+                      <button
+                        type="button"
+                        onClick={handleResend}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleResend();
+                          }
+                        }}
+                        className={actionButtonClass}
+                        aria-label={intl.formatMessage(i18n.resendAriaLabel, {
+                          preview: messagePreview,
+                        })}
+                        title={intl.formatMessage(i18n.resendTitle)}
+                      >
+                        <RefreshCw className="h-3 w-3" />
+                        <span>{intl.formatMessage(i18n.resendButton)}</span>
+                      </button>
+                    )}
+                    {onMessageDelete && message.id && (
+                      <button
+                        type="button"
+                        onClick={handleDeleteClick}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            handleDeleteClick();
+                          }
+                        }}
+                        className={cn(actionButtonClass, 'hover:text-text-danger')}
+                        aria-label={intl.formatMessage(i18n.deleteAriaLabel, {
+                          preview: messagePreview,
+                        })}
+                        aria-haspopup="dialog"
+                        title={intl.formatMessage(i18n.deleteTitle)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                        <span>{intl.formatMessage(i18n.deleteButton)}</span>
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -372,6 +543,21 @@ export default function UserMessage({ message, onMessageUpdate }: UserMessagePro
           </div>
         )}
       </div>
+      <ConfirmationModal
+        isOpen={confirmDelete}
+        title={intl.formatMessage(i18n.deleteConfirmTitle)}
+        message={intl.formatMessage(i18n.deleteConfirmMessage)}
+        confirmLabel={intl.formatMessage(i18n.deleteConfirmAction)}
+        cancelLabel={intl.formatMessage(i18n.deleteCancel)}
+        confirmVariant="destructive"
+        isSubmitting={isDeleting}
+        onConfirm={() => {
+          void handleConfirmDelete();
+        }}
+        onCancel={() => {
+          if (!isDeleting) setConfirmDelete(false);
+        }}
+      />
     </div>
   );
 }

@@ -70,6 +70,7 @@ interface ProgressiveMessageListProps {
     editType: 'fork' | 'edit',
     retainedImages: ImageData[]
   ) => void;
+  onMessageDelete?: (messageId: string) => void;
   onRenderingComplete?: () => void; // Callback when all messages are rendered
   submitElicitationResponse?: (
     elicitationId: string,
@@ -89,6 +90,7 @@ export default function ProgressiveMessageList({
   renderMessage, // Custom render function
   isStreamingMessage = false, // Whether messages are currently being streamed
   onMessageUpdate,
+  onMessageDelete,
   onRenderingComplete,
   submitElicitationResponse,
 }: ProgressiveMessageListProps) {
@@ -293,12 +295,16 @@ export default function ProgressiveMessageList({
               previousResolvedModel &&
               renderModelChangeDisclosure(previousResolvedModel, currentResolvedModel)}
             <div
-              className={`relative ${index === 0 ? 'mt-0' : 'mt-4'} ${isUser ? 'user' : 'assistant'} ${messageIsInChain ? 'in-chain' : ''}`}
+              className={`relative ${index === 0 ? 'mt-0' : messageIsInChain ? 'mt-2' : 'mt-4'} ${isUser ? 'user' : 'assistant'} ${messageIsInChain ? 'in-chain' : ''}`}
               data-testid="message-container"
             >
               {isUser ? (
                 !hasOnlyToolResponses(message) && (
-                  <UserMessage message={message} onMessageUpdate={onMessageUpdate} />
+                  <UserMessage
+                    message={message}
+                    onMessageUpdate={onMessageUpdate}
+                    onMessageDelete={onMessageDelete}
+                  />
                 )
               ) : (
                 <GooseMessage
@@ -331,6 +337,7 @@ export default function ProgressiveMessageList({
     toolCallNotifications,
     isStreamingMessage,
     onMessageUpdate,
+    onMessageDelete,
     toolCallChains,
     submitElicitationResponse,
     getPreviousResolvedModel,
