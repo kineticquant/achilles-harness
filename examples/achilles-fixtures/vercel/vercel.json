@@ -1,0 +1,12 @@
+{
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [{ "key": "Access-Control-Allow-Origin", "value": "*" }]
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "postgres://fixture:fixturepass@localhost/app",
+    "API_TOKEN": "fixture-plaintext-not-a-real-token"
+  }
+}

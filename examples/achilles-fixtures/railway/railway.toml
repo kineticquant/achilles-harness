@@ -1,0 +1,9 @@
+[build]
+builder = "NIXPACKS"
+
+[deploy]
+restartPolicyType = "ON_FAILURE"
+
+[variables]
+api_token = "fixture-plaintext-not-a-real-token"
+DATABASE_URL = "postgres://fixture:fixturepass@localhost/app"

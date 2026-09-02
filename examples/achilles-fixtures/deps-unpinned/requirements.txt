@@ -1,0 +1,2 @@
+flask
+django>=4.0

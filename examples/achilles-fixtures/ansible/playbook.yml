@@ -1,0 +1,5 @@
+---
+- hosts: all
+  tasks:
+    - name: fixture install
+      shell: curl https://example.invalid/install.sh | bash

@@ -1,0 +1,11 @@
+{
+  "build": { "builder": "NIXPACKS" },
+  "deploy": {},
+  "environments": {
+    "production": {
+      "variables": {
+        "secret": "fixture-plaintext-not-a-real-token"
+      }
+    }
+  }
+}

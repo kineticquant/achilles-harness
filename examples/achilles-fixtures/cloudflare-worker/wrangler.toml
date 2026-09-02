@@ -1,0 +1,4 @@
+name = "achilles-fixture"
+
+[vars]
+api_token = "fixture-plaintext-not-a-real-token"

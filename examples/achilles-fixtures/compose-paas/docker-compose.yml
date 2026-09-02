@@ -1,0 +1,5 @@
+services:
+  app:
+    image: example.invalid/app:latest
+    privileged: true
+    network_mode: host
