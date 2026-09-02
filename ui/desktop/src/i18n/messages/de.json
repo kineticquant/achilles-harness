@@ -168,10 +168,10 @@
     "defaultMessage": "Starten"
   },
   "chat.notification.taskComplete.body": {
-    "defaultMessage": "Klicken Sie hier, um Goose wieder in den Vordergrund zu holen."
+    "defaultMessage": "Klicken Sie hier, um Achilles wieder in den Vordergrund zu holen."
   },
   "chat.notification.taskComplete.title": {
-    "defaultMessage": "Goose hat die Aufgabe abgeschlossen."
+    "defaultMessage": "Achilles hat die Aufgabe abgeschlossen."
   },
   "chatInput.contextWindow": {
     "defaultMessage": "Kontextfenster"
@@ -222,13 +222,13 @@
     "defaultMessage": "Warten auf das Speichern der Bilder..."
   },
   "chatSettings.modeDescription": {
-    "defaultMessage": "Wählen Sie den Standardmodus, den Goose für neue Sitzungen verwendet. Bestehende Sitzungen behalten ihren aktuellen Modus bei."
+    "defaultMessage": "Wählen Sie den Standardmodus, den Achilles für neue Sitzungen verwendet. Bestehende Sitzungen behalten ihren aktuellen Modus bei."
   },
   "chatSettings.modeTitle": {
     "defaultMessage": "Standardmodus"
   },
   "chatSettings.responseStylesDescription": {
-    "defaultMessage": "Wählen Sie, wie Goose seine Antworten formatieren und gestalten soll"
+    "defaultMessage": "Wählen Sie, wie Achilles seine Antworten formatieren und gestalten soll"
   },
   "chatSettings.responseStylesTitle": {
     "defaultMessage": "Antwortstile"
@@ -324,7 +324,7 @@
     "defaultMessage": "Max. Durchgänge"
   },
   "conversationLimitsDropdown.maxTurnsDescription": {
-    "defaultMessage": "Maximale Anzahl an Agentendurchgängen, bevor Goose eine Benutzereingabe anfordert"
+    "defaultMessage": "Maximale Anzahl an Agentendurchgängen, bevor Achilles eine Benutzereingabe anfordert"
   },
   "costTracker.costUnavailable": {
     "defaultMessage": "Kostendaten für {model} nicht verfügbar ({inputTokens} Eingabe, {outputTokens} Ausgabe-Token)"
@@ -936,7 +936,7 @@
     "defaultMessage": "Die Informationsanfrage wurde abgebrochen."
   },
   "elicitationRequest.defaultMessage": {
-    "defaultMessage": "Goose benötigt einige Informationen von Ihnen."
+    "defaultMessage": "Achilles benötigt einige Informationen von Ihnen."
   },
   "elicitationRequest.expired": {
     "defaultMessage": "Diese Anfrage ist abgelaufen. Die Erweiterung muss erneut nachfragen."
@@ -981,7 +981,7 @@
     "defaultMessage": "Ein Fehler ist aufgetreten."
   },
   "errorBoundary.errorWithVersion": {
-    "defaultMessage": "In Goose v{version} ist ein Fehler aufgetreten."
+    "defaultMessage": "In Achilles v{version} ist ein Fehler aufgetreten."
   },
   "errorBoundary.heading": {
     "defaultMessage": "Honk!"
@@ -1167,7 +1167,7 @@
     "defaultMessage": "Hier aktivierte Erweiterungen werden als Standard für neue Chats verwendet. Sie können aktive Erweiterungen auch während eines Chats umschalten."
   },
   "extensionsView.description": {
-    "defaultMessage": "Diese Erweiterungen nutzen das Model Context Protocol (MCP). Sie können die Fähigkeiten von Goose mit drei Hauptkomponenten erweitern: Prompts, Ressourcen und Tools. {searchShortcut} zum Suchen."
+    "defaultMessage": "Diese Erweiterungen nutzen das Model Context Protocol (MCP). Sie können die Fähigkeiten von Achilles mit drei Hauptkomponenten erweitern: Prompts, Ressourcen und Tools. {searchShortcut} zum Suchen."
   },
   "extensionsView.heading": {
     "defaultMessage": "Erweiterungen"
@@ -1191,13 +1191,13 @@
     "defaultMessage": "Certificate fingerprint requires an https URL"
   },
   "externalBackendSection.restartNote": {
-    "defaultMessage": "Änderungen werden erst nach einem Neustart von Goose wirksam. Neue Chat-Fenster verbinden sich mit dem externen Server."
+    "defaultMessage": "Änderungen werden erst nach einem Neustart von Achilles wirksam. Neue Chat-Fenster verbinden sich mit dem externen Server."
   },
   "externalBackendSection.secretKey": {
     "defaultMessage": "Geheimer Schlüssel"
   },
   "externalBackendSection.secretKeyHelp": {
-    "defaultMessage": "Der auf dem Goose-Server konfigurierte geheime Schlüssel (GOOSE_SERVER__SECRET_KEY)"
+    "defaultMessage": "Der auf dem Achilles-Server konfigurierte geheime Schlüssel (GOOSE_SERVER__SECRET_KEY)"
   },
   "externalBackendSection.secretKeyPlaceholder": {
     "defaultMessage": "Geben Sie den geheimen Schlüssel des Servers ein"
@@ -1206,10 +1206,10 @@
     "defaultMessage": "Server-URL"
   },
   "externalBackendSection.serverUrlHelp": {
-    "defaultMessage": "Enter the HTTP(S) base URL. Goose checks /status and connects to /acp under this base."
+    "defaultMessage": "Enter the HTTP(S) base URL. Achilles checks /status and connects to /acp under this base."
   },
   "externalBackendSection.title": {
-    "defaultMessage": "Goose-Server"
+    "defaultMessage": "Achilles-Server"
   },
   "externalBackendSection.urlBaseError": {
     "defaultMessage": "URL must be the backend base URL before /acp, without query parameters or fragments"
@@ -1257,7 +1257,7 @@
     "defaultMessage": "Entwickler"
   },
   "goosehintsModal.dialogDescription": {
-    "defaultMessage": "Stellen Sie zusätzlichen Kontext zu Ihrem Projekt bereit, um die Kommunikation mit Goose zu verbessern"
+    "defaultMessage": "Stellen Sie zusätzlichen Kontext zu Ihrem Projekt bereit, um die Kommunikation mit Achilles zu verbessern"
   },
   "goosehintsModal.dialogTitle": {
     "defaultMessage": "Projekt-Hinweise konfigurieren (.goosehints)"
@@ -1278,7 +1278,7 @@
     "defaultMessage": ".goosehints-Datei gefunden unter: {filePath}"
   },
   "goosehintsModal.helpText1": {
-    "defaultMessage": ".goosehints ist eine Textdatei, mit der zusätzlicher Kontext zu Ihrem Projekt bereitgestellt und die Kommunikation mit Goose verbessert wird."
+    "defaultMessage": ".goosehints ist eine Textdatei, mit der zusätzlicher Kontext zu Ihrem Projekt bereitgestellt und die Kommunikation mit Achilles verbessert wird."
   },
   "goosehintsModal.helpText2": {
     "defaultMessage": "Bitte stellen Sie sicher, dass die Erweiterung {bold} auf der Erweiterungsseite aktiviert ist. Diese Erweiterung ist erforderlich, um .goosehints zu verwenden. Sie müssen Ihre Sitzung neu starten, damit Aktualisierungen an .goosehints wirksam werden."
@@ -1305,7 +1305,7 @@
     "defaultMessage": "Konfigurieren"
   },
   "goosehintsSection.description": {
-    "defaultMessage": "Konfigurieren Sie die .goosehints-Datei Ihres Projekts, um Goose zusätzlichen Kontext bereitzustellen"
+    "defaultMessage": "Konfigurieren Sie die .goosehints-Datei Ihres Projekts, um Achilles zusätzlichen Kontext bereitzustellen"
   },
   "goosehintsSection.title": {
     "defaultMessage": "Projekt-Hinweise (.goosehints)"
@@ -1602,13 +1602,13 @@
     "defaultMessage": "Anwendungstastenkürzel"
   },
   "keyboardShortcuts.categoryApplicationDescription": {
-    "defaultMessage": "Diese Tastenkürzel funktionieren, wenn Goose die aktive Anwendung ist"
+    "defaultMessage": "Diese Tastenkürzel funktionieren, wenn Achilles die aktive Anwendung ist"
   },
   "keyboardShortcuts.categoryGlobal": {
     "defaultMessage": "Globale Tastenkürzel"
   },
   "keyboardShortcuts.categoryGlobalDescription": {
-    "defaultMessage": "Diese Tastenkürzel funktionieren systemweit, auch wenn Goose nicht im Fokus ist"
+    "defaultMessage": "Diese Tastenkürzel funktionieren systemweit, auch wenn Achilles nicht im Fokus ist"
   },
   "keyboardShortcuts.categorySearch": {
     "defaultMessage": "Such-Tastenkürzel"
@@ -1650,10 +1650,10 @@
     "defaultMessage": "Rückwärts suchen"
   },
   "keyboardShortcuts.focusWindowDescription": {
-    "defaultMessage": "Goose-Fenster von überall in den Vordergrund holen"
+    "defaultMessage": "Achilles-Fenster von überall in den Vordergrund holen"
   },
   "keyboardShortcuts.focusWindowLabel": {
-    "defaultMessage": "Goose-Fenster fokussieren"
+    "defaultMessage": "Achilles-Fenster fokussieren"
   },
   "keyboardShortcuts.loading": {
     "defaultMessage": "Wird geladen..."
@@ -1665,7 +1665,7 @@
     "defaultMessage": "Neuer Chat"
   },
   "keyboardShortcuts.newChatWindowDescription": {
-    "defaultMessage": "Ein neues Goose-Fenster öffnen"
+    "defaultMessage": "Ein neues Achilles-Fenster öffnen"
   },
   "keyboardShortcuts.newChatWindowLabel": {
     "defaultMessage": "Neues Chat-Fenster"
@@ -1704,7 +1704,7 @@
     "defaultMessage": "Auf Standard zurücksetzen"
   },
   "keyboardShortcuts.restartDescription": {
-    "defaultMessage": "Änderungen an Anwendungstastenkürzeln (wie Neuer Chat, Einstellungen usw.) erfordern einen Neustart von Goose, um wirksam zu werden. Globale Tastenkürzel (Fenster fokussieren, Schnellstart) funktionieren sofort."
+    "defaultMessage": "Änderungen an Anwendungstastenkürzeln (wie Neuer Chat, Einstellungen usw.) erfordern einen Neustart von Achilles, um wirksam zu werden. Globale Tastenkürzel (Fenster fokussieren, Schnellstart) funktionieren sofort."
   },
   "keyboardShortcuts.restartRequired": {
     "defaultMessage": "Neustart erforderlich"
@@ -2436,7 +2436,7 @@
     "defaultMessage": "Der Server startet möglicherweise gerade oder ist vorübergehend nicht verfügbar."
   },
   "onboardingGuard.checkProviderErrorTitle": {
-    "defaultMessage": "Verbindung zum Goose-Server nicht möglich"
+    "defaultMessage": "Verbindung zum Achilles-Server nicht möglich"
   },
   "onboardingGuard.retry": {
     "defaultMessage": "Erneut versuchen"
@@ -3831,7 +3831,7 @@
     "defaultMessage": "Chatverlauf"
   },
   "sessions.chatHistoryDesc": {
-    "defaultMessage": "Sehen und durchsuchen Sie Ihre vergangenen Unterhaltungen mit Goose. {shortcut} zum Suchen."
+    "defaultMessage": "Sehen und durchsuchen Sie Ihre vergangenen Unterhaltungen mit Achilles. {shortcut} zum Suchen."
   },
   "sessions.close": {
     "defaultMessage": "Schließen"
@@ -3867,7 +3867,7 @@
     "defaultMessage": "Link importieren"
   },
   "sessions.importNostr.description": {
-    "defaultMessage": "Fügen Sie einen Goose-Nostr-Freigabelink ein, um die Sitzung abzurufen, zu entschlüsseln und zu importieren."
+    "defaultMessage": "Fügen Sie einen Achilles-Nostr-Freigabelink ein, um die Sitzung abzurufen, zu entschlüsseln und zu importieren."
   },
   "sessions.importNostr.placeholder": {
     "defaultMessage": "goose://sessions/nostr?nevent=...&key=..."
@@ -4080,7 +4080,7 @@
     "defaultMessage": "Einstellungen öffnen"
   },
   "settings.notifications.task.description": {
-    "defaultMessage": "Benachrichtigen, wenn Goose eine Aufgabe abschließt, während sich das Fenster im Hintergrund befindet"
+    "defaultMessage": "Benachrichtigen, wenn Achilles eine Aufgabe abschließt, während sich das Fenster im Hintergrund befindet"
   },
   "settings.notifications.task.title": {
     "defaultMessage": "Benachrichtigungen bei Aufgabenabschluss"
@@ -4176,7 +4176,7 @@
     "defaultMessage": "Skills durchsuchen..."
   },
   "skillsView.skillsDescription": {
-    "defaultMessage": "Zeigen Sie installierte Skills an, die die Fähigkeiten von Goose erweitern. {shortcut} zum Suchen."
+    "defaultMessage": "Zeigen Sie installierte Skills an, die die Fähigkeiten von Achilles erweitern. {shortcut} zum Suchen."
   },
   "skillsView.skillsTitle": {
     "defaultMessage": "Skills"
@@ -4527,10 +4527,10 @@
     "defaultMessage": "{toolName} erlauben?"
   },
   "toolConfirmation.gooseWouldLikeToCallWithName": {
-    "defaultMessage": "Goose möchte {toolName} aufrufen. Erlauben?"
+    "defaultMessage": "Achilles möchte {toolName} aufrufen. Erlauben?"
   },
   "updateSection.autoDownload": {
-    "defaultMessage": "Goose lädt das Update im Hintergrund herunter und installiert es beim nächsten Beenden oder Neustart."
+    "defaultMessage": "Achilles lädt das Update im Hintergrund herunter und installiert es beim nächsten Beenden oder Neustart."
   },
   "updateSection.autoDownloadDisabledByEnv": {
     "defaultMessage": "Automatische Downloads sind über die Umgebungsvariable GOOSE_DISABLE_AUTO_DOWNLOAD deaktiviert."
@@ -4554,7 +4554,7 @@
     "defaultMessage": "Automatische Update-Downloads deaktivieren"
   },
   "updateSection.disableAutoDownloadDesc": {
-    "defaultMessage": "Wenn aktiviert, benachrichtigt Goose Sie über neue Versionen, lädt sie aber nicht automatisch herunter."
+    "defaultMessage": "Wenn aktiviert, benachrichtigt Achilles Sie über neue Versionen, lädt sie aber nicht automatisch herunter."
   },
   "updateSection.downloadNow": {
     "defaultMessage": "Jetzt herunterladen"
@@ -4587,7 +4587,7 @@
     "defaultMessage": "Für diese Update-Methode ist eine manuelle Installation erforderlich."
   },
   "updateSection.readyInstallAuto": {
-    "defaultMessage": "✓ Update ist bereit. Starten Sie Goose neu, um die Installation abzuschließen, oder beenden Sie es, wenn Sie fertig sind."
+    "defaultMessage": "✓ Update ist bereit. Starten Sie Achilles neu, um die Installation abzuschließen, oder beenden Sie es, wenn Sie fertig sind."
   },
   "updateSection.readyInstallManual": {
     "defaultMessage": "✓ Update ist bereit! Klicken Sie auf \"Installieren & Neustarten\", um die Installationsanweisungen zu erhalten."

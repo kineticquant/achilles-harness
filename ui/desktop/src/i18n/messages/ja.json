@@ -981,7 +981,7 @@
     "defaultMessage": "エラーが発生しました。"
   },
   "errorBoundary.errorWithVersion": {
-    "defaultMessage": "Goose v{version}でエラーが発生しました。"
+    "defaultMessage": "Achilles v{version}でエラーが発生しました。"
   },
   "errorBoundary.heading": {
     "defaultMessage": "ガァ！"
@@ -1167,7 +1167,7 @@
     "defaultMessage": "ここで有効にした拡張機能は、新しいチャットのデフォルトとして使用されます。チャット中にアクティブな拡張機能を切り替えることもできます。"
   },
   "extensionsView.description": {
-    "defaultMessage": "これらの拡張機能は Model Context Protocol（MCP）を使用します。Prompts、Resources、Tools の3つの主要コンポーネントで Goose の機能を拡張できます。検索するには {searchShortcut}。"
+    "defaultMessage": "これらの拡張機能は Model Context Protocol（MCP）を使用します。Prompts、Resources、Tools の3つの主要コンポーネントで Achilles の機能を拡張できます。検索するには {searchShortcut}。"
   },
   "extensionsView.heading": {
     "defaultMessage": "拡張機能"
@@ -1191,13 +1191,13 @@
     "defaultMessage": "Certificate fingerprint requires an https URL"
   },
   "externalBackendSection.restartNote": {
-    "defaultMessage": "変更を有効にするには Goose の再起動が必要です。新しいチャットウィンドウは外部サーバーに接続します。"
+    "defaultMessage": "変更を有効にするには Achilles の再起動が必要です。新しいチャットウィンドウは外部サーバーに接続します。"
   },
   "externalBackendSection.secretKey": {
     "defaultMessage": "シークレットキー"
   },
   "externalBackendSection.secretKeyHelp": {
-    "defaultMessage": "Goose サーバーに設定されたシークレットキー（GOOSE_SERVER__SECRET_KEY）"
+    "defaultMessage": "Achilles サーバーに設定されたシークレットキー（GOOSE_SERVER__SECRET_KEY）"
   },
   "externalBackendSection.secretKeyPlaceholder": {
     "defaultMessage": "サーバーのシークレットキーを入力"
@@ -1206,10 +1206,10 @@
     "defaultMessage": "サーバーURL"
   },
   "externalBackendSection.serverUrlHelp": {
-    "defaultMessage": "Enter the HTTP(S) base URL. Goose checks /status and connects to /acp under this base."
+    "defaultMessage": "Enter the HTTP(S) base URL. Achilles checks /status and connects to /acp under this base."
   },
   "externalBackendSection.title": {
-    "defaultMessage": "Goose Server"
+    "defaultMessage": "Achilles Server"
   },
   "externalBackendSection.urlBaseError": {
     "defaultMessage": "URL must be the backend base URL before /acp, without query parameters or fragments"
@@ -1257,7 +1257,7 @@
     "defaultMessage": "開発者"
   },
   "goosehintsModal.dialogDescription": {
-    "defaultMessage": "Goose とのコミュニケーションを改善するために、プロジェクトに関する追加コンテキストを提供します"
+    "defaultMessage": "Achilles とのコミュニケーションを改善するために、プロジェクトに関する追加コンテキストを提供します"
   },
   "goosehintsModal.dialogTitle": {
     "defaultMessage": "プロジェクトヒントを設定（.goosehints）"
@@ -1278,7 +1278,7 @@
     "defaultMessage": ".goosehints ファイルが見つかりました: {filePath}"
   },
   "goosehintsModal.helpText1": {
-    "defaultMessage": ".goosehints は、プロジェクトに関する追加コンテキストを提供し、Goose とのコミュニケーションを改善するためのテキストファイルです。"
+    "defaultMessage": ".goosehints は、プロジェクトに関する追加コンテキストを提供し、Achilles とのコミュニケーションを改善するためのテキストファイルです。"
   },
   "goosehintsModal.helpText2": {
     "defaultMessage": "拡張機能ページで {bold} 拡張機能が有効になっていることを確認してください。この拡張機能は .goosehints を使用するために必要です。.goosehints の更新を反映するにはセッションの再起動が必要です。"
@@ -1305,7 +1305,7 @@
     "defaultMessage": "設定"
   },
   "goosehintsSection.description": {
-    "defaultMessage": "Goose に追加コンテキストを提供するために、プロジェクトの .goosehints ファイルを設定します"
+    "defaultMessage": "Achilles に追加コンテキストを提供するために、プロジェクトの .goosehints ファイルを設定します"
   },
   "goosehintsSection.title": {
     "defaultMessage": "プロジェクトヒント（.goosehints）"
@@ -3867,7 +3867,7 @@
     "defaultMessage": "リンクをインポート"
   },
   "sessions.importNostr.description": {
-    "defaultMessage": "Goose Nostr共有リンクを貼り付けて、セッションを取得・復号・インポートします。"
+    "defaultMessage": "Achilles Nostr共有リンクを貼り付けて、セッションを取得・復号・インポートします。"
   },
   "sessions.importNostr.placeholder": {
     "defaultMessage": "goose://sessions/nostr?nevent=...&key=..."
@@ -4554,7 +4554,7 @@
     "defaultMessage": "アップデートの自動ダウンロードを無効にする"
   },
   "updateSection.disableAutoDownloadDesc": {
-    "defaultMessage": "有効にすると、Goose は新しいバージョンを通知しますが、自動的にはダウンロードしません。"
+    "defaultMessage": "有効にすると、Achilles は新しいバージョンを通知しますが、自動的にはダウンロードしません。"
   },
   "updateSection.downloadNow": {
     "defaultMessage": "今すぐダウンロード"

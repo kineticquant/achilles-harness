@@ -27,7 +27,11 @@ import os from 'node:os';
 import { execFileSync, spawn, execFile } from 'child_process';
 import 'dotenv/config';
 import { checkBackendStatus } from './backendStatus';
-import { startGooseServe } from './gooseServe';
+import { startGooseServe, findAchillesCliPath, findGooseBinaryPath } from './gooseServe';
+import { inspectCallGraph } from './codeMap/inspectCallGraph';
+import { inspectApiGraphSafe } from './codeMap/inspectApiGraph';
+import { inspectTemplateGraphSafe } from './codeMap/inspectTemplateGraph';
+import { listCodeMapFiles } from './codeMap/workspaceWalk';
 import { getLoginShellPath } from './loginShellPath';
 import { GooseServeLeaseRegistry, type GooseServeLease } from './gooseServeLeaseRegistry';
 import { acpWebSocketUrlFromHttpBase, normalizeAcpHttpBaseUrl } from './acp/url';
@@ -36,6 +40,7 @@ import log from './utils/logger';
 import { ensureWinShims } from './utils/winShims';
 import { addRecentDir, loadRecentDirs } from './utils/recentDirs';
 import { formatAppName, errorMessage, formatErrorForLogging } from './utils/conversionUtils';
+import { resolveTrayIcon, resolveWindowIcon } from './utils/desktopIcons';
 import { isRetiredGooseChatApp } from './utils/retiredApps';
 import type { Settings, SettingKey } from './utils/settings';
 import { defaultSettings, getKeyboardShortcuts } from './utils/settings';
@@ -56,6 +61,12 @@ import type { GooseApp } from './types/apps';
 import installExtension, { REACT_DEVELOPER_TOOLS } from 'electron-devtools-installer';
 import { BLOCKED_PROTOCOLS, WEB_PROTOCOLS } from './utils/urlSecurity';
 import { buildCSP } from './utils/csp';
+import {
+  ACHILLES_DISCUSSIONS,
+  ACHILLES_DOCS,
+  ACHILLES_ISSUES,
+  ACHILLES_SITE,
+} from './utils/achillesLinks';
 
 function shouldSetupUpdater(): boolean {
   // Setup updater if either the flag is enabled OR dev updates are enabled
@@ -96,11 +107,15 @@ const MENU_TRANSLATIONS_ZH_CN: Record<string, string> = {
   'New Chat Window': '新建聊天窗口',
   'Open Directory...': '打开目录…',
   'Recent Directories': '最近的目录',
-  'Focus Goose Window': '聚焦 Goose 窗口',
+  'Focus Achilles Window': '聚焦 Achilles 窗口',
   'Quick Launcher': '快速启动器',
   'Always on Top': '窗口置顶',
   'Toggle Navigation': '切换导航',
-  'About Goose': '关于 Goose',
+  'About Achilles': '关于 Achilles',
+  'Learn More': '了解更多',
+  Documentation: '文档',
+  'Community Discussions': '社区讨论',
+  'Search Issues': '搜索议题',
   // Electron's default role-based labels we want to translate as well.
   // (The menu role itself still provides the correct behaviour; only the
   // display string is overridden.)
@@ -126,7 +141,7 @@ const MENU_TRANSLATIONS_ZH_CN: Record<string, string> = {
   'Bring All to Front': '全部置于最前',
   'Emoji & Symbols': '表情符号',
   'Start Dictation…': '开始听写…',
-  'Hide Goose': '隐藏 Goose',
+  'Hide Achilles': '隐藏 Achilles',
   'Hide Others': '隐藏其他',
   'Show All': '全部显示',
   Services: '服务',
@@ -165,6 +180,84 @@ function translateMenuLabels(items: MenuItem[]): void {
     if (item.submenu && item.submenu.items) {
       translateMenuLabels(item.submenu.items);
     }
+  }
+}
+
+/** Electron's unpackaged default Help items point at electronjs.org — hide those. */
+const ELECTRON_DEFAULT_HELP_LABELS = new Set([
+  'Learn More',
+  'Documentation',
+  'Community Discussions',
+  'Search Issues',
+]);
+
+function applyAchillesHelpMenu(menu: Menu | null, appVersion: string): void {
+  if (!menu) return;
+
+  let helpMenu = menu.items.find((item) => item.label === 'Help');
+  if (!helpMenu) {
+    helpMenu = new MenuItem({
+      label: menuT('Help'),
+      submenu: Menu.buildFromTemplate([]),
+    });
+    const insertIndex = menu.items.length > 0 ? menu.items.length - 1 : 0;
+    menu.items.splice(insertIndex, 0, helpMenu);
+  }
+  if (!helpMenu.submenu) return;
+
+  for (const item of helpMenu.submenu.items) {
+    if (ELECTRON_DEFAULT_HELP_LABELS.has(item.label)) {
+      item.visible = false;
+    }
+  }
+
+  const openHelp = (url: string) => {
+    void shell.openExternal(url);
+  };
+
+  helpMenu.submenu.append(
+    new MenuItem({
+      label: menuT('Learn More'),
+      click: () => openHelp(ACHILLES_SITE),
+    })
+  );
+  helpMenu.submenu.append(
+    new MenuItem({
+      label: menuT('Documentation'),
+      click: () => openHelp(ACHILLES_DOCS),
+    })
+  );
+  helpMenu.submenu.append(
+    new MenuItem({
+      label: menuT('Community Discussions'),
+      click: () => openHelp(ACHILLES_DISCUSSIONS),
+    })
+  );
+  helpMenu.submenu.append(
+    new MenuItem({
+      label: menuT('Search Issues'),
+      click: () => openHelp(ACHILLES_ISSUES),
+    })
+  );
+
+  // macOS already has About under the app menu.
+  if (process.platform !== 'darwin') {
+    if (helpMenu.submenu.items.length > 0) {
+      helpMenu.submenu.append(new MenuItem({ type: 'separator' }));
+    }
+    const aboutAchillesMenuItem = new MenuItem({
+      label: menuT('About Achilles'),
+      submenu: Menu.buildFromTemplate([]),
+    });
+    if (aboutAchillesMenuItem.submenu) {
+      aboutAchillesMenuItem.submenu.append(
+        new MenuItem({
+          label: `Version ${appVersion}`,
+          enabled: false,
+        })
+      );
+    }
+    helpMenu.submenu.append(aboutAchillesMenuItem);
   }
 }
 
@@ -303,6 +396,11 @@ async function configureProxy() {
 
 if (started) app.quit();
 
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.achilles.desktop');
+}
+app.setName('Achilles');
+
 // Certificate trust for active backend leases. Renderer requests and
 // main-process net.fetch both pin to the exact cert fingerprint. Each backend
 // lease owns a trust record so old windows keep working after settings change.
@@ -420,13 +518,14 @@ if (process.env.ENABLE_PLAYWRIGHT) {
 // In production, register normally
 if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
   // Development mode - force registration
-  console.log('[Main] Development mode: Forcing protocol registration for goose://');
+  console.log('[Main] Development mode: Forcing protocol registration for achilles://');
+  app.setAsDefaultProtocolClient('achilles');
   app.setAsDefaultProtocolClient('goose');
 
   if (process.platform === 'darwin') {
     try {
       // Reset the default handler to ensure dev version takes precedence
-      spawn('open', ['-a', process.execPath, '--args', '--reset-protocol-handler', 'goose'], {
+      spawn('open', ['-a', process.execPath, '--args', '--reset-protocol-handler', 'achilles'], {
         detached: true,
         stdio: 'ignore',
       });
@@ -436,6 +535,7 @@ if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
   }
 } else {
   // Production mode - normal registration
+  app.setAsDefaultProtocolClient('achilles');
   app.setAsDefaultProtocolClient('goose');
 }
 
@@ -450,7 +550,9 @@ if (process.platform !== 'darwin') {
     app.quit();
   } else {
     app.on('second-instance', (_event, commandLine) => {
-      const protocolUrl = commandLine.find((arg) => arg.startsWith('goose://'));
+      const protocolUrl = commandLine.find(
+        (arg) => arg.startsWith('achilles://') || arg.startsWith('goose://')
+      );
       if (protocolUrl) {
         const parsedUrl = new URL(protocolUrl);
         // If it's a bot/recipe URL, handle it directly by creating a new window
@@ -513,7 +615,9 @@ if (process.platform !== 'darwin') {
   }
 
   // Handle protocol URLs on Windows and Linux startup
-  const protocolUrl = process.argv.find((arg) => arg.startsWith('goose://'));
+  const protocolUrl = process.argv.find(
+    (arg) => arg.startsWith('achilles://') || arg.startsWith('goose://')
+  );
   if (protocolUrl) {
     app.whenReady().then(async () => {
       let parsedUrl: URL;
@@ -765,7 +869,7 @@ app.on('open-url', async (_event, url) => {
 app.on('will-finish-launching', () => {
   if (process.platform === 'darwin') {
     app.setAboutPanelOptions({
-      applicationName: 'Goose',
+      applicationName: 'Achilles',
       applicationVersion: app.getVersion(),
     });
   }
@@ -820,7 +924,7 @@ async function handleFileOpen(filePath: string) {
 
     // Show user-friendly error notification
     new Notification({
-      title: 'Goose',
+      title: 'Achilles',
       body: `Could not open directory: ${path.basename(filePath)}`,
     }).show();
   }
@@ -998,6 +1102,7 @@ interface CreateChatOptions {
   recipeId?: string;
   scheduledJobId?: string;
   recipeParameters?: Record<string, string>;
+  assessmentId?: string;
 }
 
 const createChat = async (
@@ -1014,6 +1119,7 @@ const createChat = async (
     recipeId,
     scheduledJobId,
     recipeParameters,
+    assessmentId,
   } = options;
   const settings = getSettings();
 
@@ -1195,7 +1301,7 @@ const createChat = async (
       log.error('goose serve failed to start', error);
       dialog.showMessageBoxSync({
         type: 'error',
-        title: 'Goose Failed to Start',
+        title: 'Achilles Failed to Start',
         message: 'The backend server failed to start.',
         detail: [
           'Backend: goose serve',
@@ -1255,7 +1361,7 @@ const createChat = async (
       minWidth: 480,
       minHeight: 400,
       resizable: true,
-      icon: path.join(__dirname, '../images/icon.icns'),
+      icon: resolveWindowIcon(),
       webPreferences: {
         spellcheck: settings.spellcheckEnabled ?? true,
         preload: path.join(__dirname, 'preload.js'),
@@ -1413,6 +1519,8 @@ const createChat = async (
     schedules: '/schedules',
     recipes: '/recipes',
     skills: '/skills',
+    findings: '/findings',
+    tools: '/tools',
     permission: '/permission',
     ConfigureProviders: '/configure-providers',
   };
@@ -1432,6 +1540,12 @@ const createChat = async (
     searchParams.set('resumeSessionId', resumeSessionId);
     if (appPath === '/') {
       appPath = '/pair';
+    }
+  }
+  if (assessmentId) {
+    searchParams.set('assessmentId', assessmentId);
+    if (appPath === '/') {
+      appPath = '/findings';
     }
   }
 
@@ -1596,6 +1710,257 @@ const createLauncher = () => {
   return launcherWindow;
 };
 
+const filePreviewWindows = new Map<string, BrowserWindow>();
+
+type FilePreviewWindowOptions = {
+  workingDir: string;
+  path: string;
+  lineStart?: number | null;
+  lineEnd?: number | null;
+};
+
+function filePreviewWindowKey(workingDir: string, rel: string): string {
+  const win = /^[a-zA-Z]:/.test(workingDir) || workingDir.includes('\\');
+  const sep = win ? '\\' : '/';
+  if (/^[a-zA-Z]:[\\/]/.test(rel) || rel.startsWith('\\\\') || rel.startsWith('/')) {
+    return rel;
+  }
+  const root = workingDir.replace(/[\\/]+$/, '').replace(/[\\/]/g, sep);
+  return `${root}${sep}${rel.replace(/[\\/]/g, sep)}`;
+}
+
+const createFilePreviewWindow = (options: FilePreviewWindowOptions) => {
+  const workingDir = String(options.workingDir || '').trim();
+  const rel = String(options.path || '').trim();
+  if (!workingDir || !rel) {
+    return;
+  }
+
+  const key = filePreviewWindowKey(workingDir, rel);
+  const existing = filePreviewWindows.get(key);
+  if (existing && !existing.isDestroyed()) {
+    existing.show();
+    existing.focus();
+    return existing;
+  }
+
+  const base = rel.replace(/\\/g, '/').split('/').pop() || rel;
+  const previewWindow = new BrowserWindow({
+    show: false,
+    title: base,
+    width: 920,
+    height: 700,
+    minWidth: 480,
+    minHeight: 320,
+    titleBarStyle: process.platform === 'darwin' ? 'hidden' : 'default',
+    trafficLightPosition: process.platform === 'darwin' ? { x: 16, y: 14 } : undefined,
+    frame: process.platform !== 'darwin',
+    icon: resolveWindowIcon(),
+    webPreferences: {
+      spellcheck: getSettings().spellcheckEnabled ?? true,
+      preload: path.join(__dirname, 'preload.js'),
+      webSecurity: true,
+      nodeIntegration: false,
+      contextIsolation: true,
+      additionalArguments: [
+        JSON.stringify({
+          ...appConfig,
+          GOOSE_LOCALE: getConfiguredGooseLocale(),
+        }),
+      ],
+      partition: 'persist:goose',
+    },
+  });
+
+  const url = getAppUrl();
+  const searchParams = new URLSearchParams();
+  searchParams.set('workingDir', workingDir);
+  searchParams.set('path', rel);
+  if (options.lineStart != null) searchParams.set('lineStart', String(options.lineStart));
+  if (options.lineEnd != null) searchParams.set('lineEnd', String(options.lineEnd));
+  url.hash = `/file-preview?${searchParams.toString()}`;
+  previewWindow.loadURL(formatUrl(url));
+
+  previewWindow.once('ready-to-show', () => {
+    if (!previewWindow.isDestroyed()) {
+      previewWindow.show();
+    }
+  });
+
+  filePreviewWindows.set(key, previewWindow);
+  previewWindow.on('closed', () => {
+    if (filePreviewWindows.get(key) === previewWindow) {
+      filePreviewWindows.delete(key);
+    }
+  });
+
+  return previewWindow;
+};
+
+ipcMain.handle('open-file-preview-window', (_event, options: FilePreviewWindowOptions) => {
+  createFilePreviewWindow(options ?? { workingDir: '', path: '' });
+});
+
+type CodeMapWindowOptions = {
+  workingDir: string;
+  path?: string;
+  file?: string;
+  focus?: string;
+  line?: number | null;
+};
+
+const codeMapWindows = new Map<string, BrowserWindow>();
+
+const createCodeMapWindow = (options: CodeMapWindowOptions) => {
+  const workingDir = String(options.workingDir || '').trim();
+  if (!workingDir) {
+    return;
+  }
+
+  const existing = codeMapWindows.get(workingDir);
+  if (existing && !existing.isDestroyed()) {
+    existing.destroy();
+  }
+  codeMapWindows.delete(workingDir);
+
+  const searchParams = new URLSearchParams();
+  searchParams.set('workingDir', workingDir);
+  if (options.path) searchParams.set('path', String(options.path));
+  if (options.file) searchParams.set('file', String(options.file));
+  if (options.focus) searchParams.set('focus', String(options.focus));
+  if (options.line != null) searchParams.set('line', String(options.line));
+  searchParams.set('_', String(Date.now()));
+
+  const mapWindow = new BrowserWindow({
+    show: false,
+    title: 'Call graph',
+    width: 1100,
+    height: 760,
+    minWidth: 640,
+    minHeight: 420,
+    titleBarStyle: process.platform === 'darwin' ? 'hidden' : 'default',
+    trafficLightPosition: process.platform === 'darwin' ? { x: 16, y: 14 } : undefined,
+    frame: process.platform !== 'darwin',
+    icon: resolveWindowIcon(),
+    webPreferences: {
+      spellcheck: getSettings().spellcheckEnabled ?? true,
+      preload: path.join(__dirname, 'preload.js'),
+      webSecurity: true,
+      nodeIntegration: false,
+      contextIsolation: true,
+      additionalArguments: [
+        JSON.stringify({
+          ...appConfig,
+          GOOSE_LOCALE: getConfiguredGooseLocale(),
+        }),
+      ],
+      partition: 'persist:goose',
+    },
+  });
+
+  const url = getAppUrl();
+  url.hash = `/code-map?${searchParams.toString()}`;
+  mapWindow.loadURL(formatUrl(url));
+  mapWindow.once('ready-to-show', () => {
+    if (!mapWindow.isDestroyed()) {
+      mapWindow.show();
+    }
+  });
+  codeMapWindows.set(workingDir, mapWindow);
+  mapWindow.on('closed', () => {
+    if (codeMapWindows.get(workingDir) === mapWindow) {
+      codeMapWindows.delete(workingDir);
+    }
+  });
+  return mapWindow;
+};
+
+ipcMain.handle('open-code-map-window', (_event, options: CodeMapWindowOptions) => {
+  createCodeMapWindow(options ?? { workingDir: '' });
+});
+
+ipcMain.handle(
+  'inspect-call-graph',
+  (
+    _event,
+    options: {
+      workingDir: string;
+      focus: string;
+      path?: string;
+      maxDepth?: number;
+      followDepth?: number;
+    }
+  ) => {
+    return inspectCallGraph(
+      {
+        workingDir: options?.workingDir ?? '',
+        focus: options?.focus ?? '',
+        path: options?.path,
+        maxDepth: options?.maxDepth,
+        followDepth: options?.followDepth,
+      },
+      {
+        isPackaged: app.isPackaged,
+        resourcesPath: process.resourcesPath,
+      }
+    );
+  }
+);
+
+ipcMain.handle(
+  'inspect-api-graph',
+  (
+    event,
+    options: {
+      workingDir: string;
+      focus: string;
+      file?: string;
+    }
+  ) => {
+    return inspectApiGraphSafe(
+      {
+        workingDir: options?.workingDir ?? '',
+        focus: options?.focus ?? '',
+        file: options?.file,
+      },
+      (progress) => {
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('code-map-progress', progress);
+        }
+      }
+    );
+  }
+);
+
+ipcMain.handle(
+  'inspect-template-graph',
+  (
+    event,
+    options: {
+      workingDir: string;
+      focus: string;
+      file?: string;
+    }
+  ) => {
+    return inspectTemplateGraphSafe(
+      {
+        workingDir: options?.workingDir ?? '',
+        focus: options?.focus ?? '',
+        file: options?.file,
+      },
+      (progress) => {
+        if (!event.sender.isDestroyed()) {
+          event.sender.send('code-map-progress', progress);
+        }
+      }
+    );
+  }
+);
+
+ipcMain.handle('list-code-map-files', (_event, workingDir: string) => {
+  return listCodeMapFiles(String(workingDir || ''));
+});
+
 // Track tray instance
 let tray: Tray | null = null;
 
@@ -1615,15 +1980,7 @@ const disableTray = () => {
 const createTray = () => {
   destroyTray();
 
-  const possiblePaths = [
-    path.join(process.resourcesPath, 'images', 'iconTemplate.png'),
-    path.join(process.cwd(), 'src', 'images', 'iconTemplate.png'),
-    path.join(__dirname, '..', 'images', 'iconTemplate.png'),
-    path.join(__dirname, 'images', 'iconTemplate.png'),
-    path.join(process.cwd(), 'images', 'iconTemplate.png'),
-  ];
-
-  const iconPath = possiblePaths.find((p) => fsSync.existsSync(p));
+  const iconPath = resolveTrayIcon(false);
 
   if (!iconPath) {
     console.warn('[Main] Tray icon not found. App will continue without system tray.');
@@ -1633,6 +1990,7 @@ const createTray = () => {
 
   try {
     tray = new Tray(iconPath);
+    tray.setToolTip('Achilles');
     setTrayRef(tray);
     updateTrayMenu(getUpdateAvailable());
 
@@ -1946,6 +2304,7 @@ const validSettingKeys: Set<string> = new Set([
   'showPricing',
   'seenAnnouncementIds',
   'disableAutoDownload',
+  'findingsFileEdit',
 ]);
 
 ipcMain.handle('set-setting', (_event, key: SettingKey, value: unknown) => {
@@ -2376,6 +2735,25 @@ ipcMain.handle('show-save-dialog', async (_event, options) => {
   return dialog.showSaveDialog(options);
 });
 
+ipcMain.handle('get-binary-path', async (_event, binaryName: string) => {
+  const name = String(binaryName || '').toLowerCase();
+  const opts = {
+    isPackaged: app.isPackaged,
+    resourcesPath: process.resourcesPath,
+  };
+  if (name === 'achilles' || name === 'achilles.exe') {
+    return findAchillesCliPath(opts);
+  }
+  if (name === 'goose' || name === 'goose.exe') {
+    try {
+      return findGooseBinaryPath(opts);
+    } catch {
+      return process.platform === 'win32' ? 'goose.exe' : 'goose';
+    }
+  }
+  return String(binaryName || '');
+});
+
 ipcMain.handle('get-allowed-extensions', async () => {
   return await getAllowList();
 });
@@ -2530,7 +2908,7 @@ async function appMain() {
 
   const shortcuts = getKeyboardShortcuts(settings);
 
-  const appMenu = menu?.items.find((item) => item.label === 'Goose');
+  const appMenu = menu?.items.find((item) => item.label === 'Achilles' || item.label === 'Goose');
   if (appMenu?.submenu) {
     appMenu.submenu.insert(1, new MenuItem({ type: 'separator' }));
     if (shortcuts.settings) {
@@ -2658,7 +3036,7 @@ async function appMain() {
     if (shortcuts.focusWindow) {
       fileMenu.submenu.append(
         new MenuItem({
-          label: menuT('Focus Goose Window'),
+          label: menuT('Focus Achilles Window'),
           accelerator: shortcuts.focusWindow,
           click() {
             focusWindow();
@@ -2743,47 +3121,7 @@ async function appMain() {
     }
   }
 
-  // on macOS, the topbar is hidden
-  if (menu && process.platform !== 'darwin') {
-    let helpMenu = menu.items.find((item) => item.label === 'Help');
-
-    // If Help menu doesn't exist, create it and add it to the menu
-    if (!helpMenu) {
-      helpMenu = new MenuItem({
-        label: menuT('Help'),
-        submenu: Menu.buildFromTemplate([]), // Start with an empty submenu
-      });
-      // Find a reasonable place to insert the Help menu, usually near the end
-      const insertIndex = menu.items.length > 0 ? menu.items.length - 1 : 0;
-      menu.items.splice(insertIndex, 0, helpMenu);
-    }
-
-    // Ensure the Help menu has a submenu before appending
-    if (helpMenu.submenu) {
-      // Add a separator before the About item if the submenu is not empty
-      if (helpMenu.submenu.items.length > 0) {
-        helpMenu.submenu.append(new MenuItem({ type: 'separator' }));
-      }
-
-      // Create the About Goose menu item with a submenu
-      const aboutGooseMenuItem = new MenuItem({
-        label: menuT('About Goose'),
-        submenu: Menu.buildFromTemplate([]), // Start with an empty submenu for About
-      });
-
-      // Add the Version menu item (display only) to the About Goose submenu
-      if (aboutGooseMenuItem.submenu) {
-        aboutGooseMenuItem.submenu.append(
-          new MenuItem({
-            label: `Version ${version || app.getVersion()}`,
-            enabled: false,
-          })
-        );
-      }
-
-      helpMenu.submenu.append(aboutGooseMenuItem);
-    }
-  }
+  applyAchillesHelpMenu(menu, version || app.getVersion());
 
   if (menu) {
     // Translate labels (including Electron's default top-level entries
@@ -2801,7 +3139,7 @@ async function appMain() {
   });
 
   ipcMain.on('create-chat-window', (event, options = {}) => {
-    const { query, dir, resumeSessionId, viewType, recipeId } = options;
+    const { query, dir, resumeSessionId, viewType, recipeId, assessmentId } = options;
 
     let resolvedDir = dir;
     if (!resolvedDir?.trim()) {
@@ -2835,6 +3173,7 @@ async function appMain() {
       resumeSessionId,
       viewType,
       recipeId,
+      assessmentId,
     });
   });
 
@@ -3010,6 +3349,7 @@ async function appMain() {
         height: gooseApp.height ?? 600,
         resizable: gooseApp.resizable ?? true,
         useContentSize: true,
+        icon: resolveWindowIcon(),
         webPreferences: {
           preload: path.join(__dirname, 'preload.js'),
           nodeIntegration: false,
@@ -3098,7 +3438,7 @@ app.whenReady().then(async () => {
   try {
     await appMain();
   } catch (error) {
-    dialog.showErrorBox('Goose Error', `Failed to create main window: ${error}`);
+    dialog.showErrorBox('Achilles Error', `Failed to create main window: ${error}`);
     app.quit();
   }
 });

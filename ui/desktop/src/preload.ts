@@ -93,6 +93,7 @@ export interface CreateChatWindowOptions {
   resumeSessionId?: string;
   viewType?: string;
   recipeId?: string;
+  assessmentId?: string;
 }
 
 // Define the API types in a single place
@@ -169,6 +170,49 @@ type ElectronAPI = {
   getAutoDownloadDisabled: () => Promise<boolean>;
   // Recipe warning functions
   closeWindow: () => void;
+  openFilePreviewWindow: (options: {
+    workingDir: string;
+    path: string;
+    lineStart?: number | null;
+    lineEnd?: number | null;
+  }) => Promise<void>;
+  openCodeMapWindow: (options: {
+    workingDir: string;
+    path?: string;
+    file?: string;
+    focus?: string;
+    line?: number | null;
+  }) => Promise<void>;
+  inspectCallGraph: (options: {
+    workingDir: string;
+    focus: string;
+    path?: string;
+    maxDepth?: number;
+    followDepth?: number;
+  }) => Promise<
+    | { ok: true; graph: import('./codeMap/types').InspectGraph }
+    | { ok: false; error: string }
+  >;
+  inspectApiGraph: (options: {
+    workingDir: string;
+    focus: string;
+    file?: string;
+  }) => Promise<
+    | { ok: true; graph: import('./codeMap/types').InspectGraph; files?: string[] }
+    | { ok: false; error: string }
+  >;
+  inspectTemplateGraph: (options: {
+    workingDir: string;
+    focus: string;
+    file?: string;
+  }) => Promise<
+    | { ok: true; graph: import('./codeMap/types').InspectGraph; files?: string[] }
+    | { ok: false; error: string }
+  >;
+  listCodeMapFiles: (workingDir: string) => Promise<string[]>;
+  onCodeMapProgress: (
+    callback: (progress: { current: number; total: number; file: string }) => void
+  ) => () => void;
   hasAcceptedRecipeBefore: (recipe: Recipe) => Promise<boolean>;
   recordRecipeHash: (recipe: Recipe) => Promise<boolean>;
   openDirectoryInExplorer: (directoryPath: string) => Promise<boolean>;
@@ -324,6 +368,46 @@ const electronAPI: ElectronAPI = {
     return ipcRenderer.invoke('get-auto-download-disabled');
   },
   closeWindow: () => ipcRenderer.send('close-window'),
+  openFilePreviewWindow: (options: {
+    workingDir: string;
+    path: string;
+    lineStart?: number | null;
+    lineEnd?: number | null;
+  }) => ipcRenderer.invoke('open-file-preview-window', options),
+  openCodeMapWindow: (options: {
+    workingDir: string;
+    path?: string;
+    file?: string;
+    focus?: string;
+    line?: number | null;
+  }) => ipcRenderer.invoke('open-code-map-window', options),
+  inspectCallGraph: (options: {
+    workingDir: string;
+    focus: string;
+    path?: string;
+    maxDepth?: number;
+    followDepth?: number;
+  }) => ipcRenderer.invoke('inspect-call-graph', options),
+  inspectApiGraph: (options: {
+    workingDir: string;
+    focus: string;
+    file?: string;
+  }) => ipcRenderer.invoke('inspect-api-graph', options),
+  inspectTemplateGraph: (options: {
+    workingDir: string;
+    focus: string;
+    file?: string;
+  }) => ipcRenderer.invoke('inspect-template-graph', options),
+  listCodeMapFiles: (workingDir: string) => ipcRenderer.invoke('list-code-map-files', workingDir),
+  onCodeMapProgress: (callback: (progress: { current: number; total: number; file: string }) => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, progress: { current: number; total: number; file: string }) => {
+      callback(progress);
+    };
+    ipcRenderer.on('code-map-progress', handler);
+    return () => {
+      ipcRenderer.removeListener('code-map-progress', handler);
+    };
+  },
   hasAcceptedRecipeBefore: (recipe: Recipe) =>
     ipcRenderer.invoke('has-accepted-recipe-before', recipe),
   recordRecipeHash: (recipe: Recipe) => ipcRenderer.invoke('record-recipe-hash', recipe),

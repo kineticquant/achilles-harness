@@ -168,10 +168,10 @@
     "defaultMessage": "启动"
   },
   "chat.notification.taskComplete.body": {
-    "defaultMessage": "点击这里让 Goose 窗口回到前台。"
+    "defaultMessage": "点击这里让 Achilles 窗口回到前台。"
   },
   "chat.notification.taskComplete.title": {
-    "defaultMessage": "Goose 完成任务了。"
+    "defaultMessage": "Achilles 完成任务了。"
   },
   "chatInput.contextWindow": {
     "defaultMessage": "上下文窗口"
@@ -222,13 +222,13 @@
     "defaultMessage": "正在等待图片保存…"
   },
   "chatSettings.modeDescription": {
-    "defaultMessage": "配置 Goose 与工具和扩展的交互方式"
+    "defaultMessage": "配置 Achilles 与工具和扩展的交互方式"
   },
   "chatSettings.modeTitle": {
     "defaultMessage": "模式"
   },
   "chatSettings.responseStylesDescription": {
-    "defaultMessage": "选择 Goose 格式化和呈现回复的方式"
+    "defaultMessage": "选择 Achilles 格式化和呈现回复的方式"
   },
   "chatSettings.responseStylesTitle": {
     "defaultMessage": "回复风格"
@@ -324,7 +324,7 @@
     "defaultMessage": "最大轮次"
   },
   "conversationLimitsDropdown.maxTurnsDescription": {
-    "defaultMessage": "Goose 请求用户输入前的最大 agent 轮次"
+    "defaultMessage": "Achilles 请求用户输入前的最大 agent 轮次"
   },
   "costTracker.costUnavailable": {
     "defaultMessage": "无法获取 {model} 的费用数据（输入 {inputTokens}、输出 {outputTokens} 令牌）"
@@ -936,7 +936,7 @@
     "defaultMessage": "信息请求已取消。"
   },
   "elicitationRequest.defaultMessage": {
-    "defaultMessage": "Goose 需要你提供一些信息。"
+    "defaultMessage": "Achilles 需要你提供一些信息。"
   },
   "elicitationRequest.expired": {
     "defaultMessage": "此请求已过期，扩展需要重新询问。"
@@ -981,7 +981,7 @@
     "defaultMessage": "发生了错误。"
   },
   "errorBoundary.errorWithVersion": {
-    "defaultMessage": "Goose v{version} 发生了错误。"
+    "defaultMessage": "Achilles v{version} 发生了错误。"
   },
   "errorBoundary.heading": {
     "defaultMessage": "嘎！"
@@ -1167,7 +1167,7 @@
     "defaultMessage": "在此启用的扩展将作为新聊天的默认扩展。你也可以在聊天过程中切换活跃的扩展。"
   },
   "extensionsView.description": {
-    "defaultMessage": "这些扩展使用模型上下文协议（MCP）。它们可以通过三大组件扩展 Goose 的能力：Prompts、Resources 和 Tools。按 {searchShortcut} 搜索。"
+    "defaultMessage": "这些扩展使用模型上下文协议（MCP）。它们可以通过三大组件扩展 Achilles 的能力：Prompts、Resources 和 Tools。按 {searchShortcut} 搜索。"
   },
   "extensionsView.heading": {
     "defaultMessage": "扩展"
@@ -1191,13 +1191,13 @@
     "defaultMessage": "Certificate fingerprint requires an https URL"
   },
   "externalBackendSection.restartNote": {
-    "defaultMessage": "更改需要重启 Goose 才能生效。新的聊天窗口将连接到外部服务器。"
+    "defaultMessage": "更改需要重启 Achilles 才能生效。新的聊天窗口将连接到外部服务器。"
   },
   "externalBackendSection.secretKey": {
     "defaultMessage": "密钥"
   },
   "externalBackendSection.secretKeyHelp": {
-    "defaultMessage": "在 Goose 服务器上配置的密钥（GOOSE_SERVER__SECRET_KEY）"
+    "defaultMessage": "在 Achilles 服务器上配置的密钥（GOOSE_SERVER__SECRET_KEY）"
   },
   "externalBackendSection.secretKeyPlaceholder": {
     "defaultMessage": "输入服务器的密钥"
@@ -1206,10 +1206,10 @@
     "defaultMessage": "服务器地址"
   },
   "externalBackendSection.serverUrlHelp": {
-    "defaultMessage": "Enter the HTTP(S) base URL. Goose checks /status and connects to /acp under this base."
+    "defaultMessage": "Enter the HTTP(S) base URL. Achilles checks /status and connects to /acp under this base."
   },
   "externalBackendSection.title": {
-    "defaultMessage": "Goose 服务器"
+    "defaultMessage": "Achilles 服务器"
   },
   "externalBackendSection.urlBaseError": {
     "defaultMessage": "URL must be the backend base URL before /acp, without query parameters or fragments"
@@ -1257,7 +1257,7 @@
     "defaultMessage": "Developer"
   },
   "goosehintsModal.dialogDescription": {
-    "defaultMessage": "为你的项目提供额外上下文，改善与 Goose 的沟通"
+    "defaultMessage": "为你的项目提供额外上下文，改善与 Achilles 的沟通"
   },
   "goosehintsModal.dialogTitle": {
     "defaultMessage": "配置项目提示（.goosehints）"
@@ -1278,7 +1278,7 @@
     "defaultMessage": "已找到 .goosehints 文件：{filePath}"
   },
   "goosehintsModal.helpText1": {
-    "defaultMessage": ".goosehints 是一个文本文件，用于为你的项目提供额外上下文，改善与 Goose 的沟通。"
+    "defaultMessage": ".goosehints 是一个文本文件，用于为你的项目提供额外上下文，改善与 Achilles 的沟通。"
   },
   "goosehintsModal.helpText2": {
     "defaultMessage": "请确认已在扩展页面启用 {bold} 扩展。此扩展是使用 .goosehints 所必需的。你需要重启会话，.goosehints 的更新才会生效。"
@@ -1305,7 +1305,7 @@
     "defaultMessage": "配置"
   },
   "goosehintsSection.description": {
-    "defaultMessage": "配置项目的 .goosehints 文件，为 Goose 提供额外上下文"
+    "defaultMessage": "配置项目的 .goosehints 文件，为 Achilles 提供额外上下文"
   },
   "goosehintsSection.title": {
     "defaultMessage": "项目提示（.goosehints）"
@@ -1602,13 +1602,13 @@
     "defaultMessage": "应用内快捷键"
   },
   "keyboardShortcuts.categoryApplicationDescription": {
-    "defaultMessage": "当 Goose 为活动应用时，这些快捷键生效"
+    "defaultMessage": "当 Achilles 为活动应用时，这些快捷键生效"
   },
   "keyboardShortcuts.categoryGlobal": {
     "defaultMessage": "全局快捷键"
   },
   "keyboardShortcuts.categoryGlobalDescription": {
-    "defaultMessage": "这些快捷键系统范围内有效，即使 Goose 未聚焦"
+    "defaultMessage": "这些快捷键系统范围内有效，即使 Achilles 未聚焦"
   },
   "keyboardShortcuts.categorySearch": {
     "defaultMessage": "搜索快捷键"
@@ -1650,10 +1650,10 @@
     "defaultMessage": "查找上一个"
   },
   "keyboardShortcuts.focusWindowDescription": {
-    "defaultMessage": "从任何位置将 Goose 窗口置于前台"
+    "defaultMessage": "从任何位置将 Achilles 窗口置于前台"
   },
   "keyboardShortcuts.focusWindowLabel": {
-    "defaultMessage": "聚焦 Goose 窗口"
+    "defaultMessage": "聚焦 Achilles 窗口"
   },
   "keyboardShortcuts.loading": {
     "defaultMessage": "加载中…"
@@ -1665,7 +1665,7 @@
     "defaultMessage": "新建聊天"
   },
   "keyboardShortcuts.newChatWindowDescription": {
-    "defaultMessage": "打开一个新的 Goose 窗口"
+    "defaultMessage": "打开一个新的 Achilles 窗口"
   },
   "keyboardShortcuts.newChatWindowLabel": {
     "defaultMessage": "新聊天窗口"
@@ -1704,7 +1704,7 @@
     "defaultMessage": "重置为默认"
   },
   "keyboardShortcuts.restartDescription": {
-    "defaultMessage": "应用快捷键（如新建聊天、设置等）的更改需要重启 Goose 才能生效。全局快捷键（聚焦窗口、快速启动器）立即生效。"
+    "defaultMessage": "应用快捷键（如新建聊天、设置等）的更改需要重启 Achilles 才能生效。全局快捷键（聚焦窗口、快速启动器）立即生效。"
   },
   "keyboardShortcuts.restartRequired": {
     "defaultMessage": "需要重启"
@@ -2436,7 +2436,7 @@
     "defaultMessage": "服务器可能正在启动或暂时不可用。"
   },
   "onboardingGuard.checkProviderErrorTitle": {
-    "defaultMessage": "无法连接到 Goose 服务器"
+    "defaultMessage": "无法连接到 Achilles 服务器"
   },
   "onboardingGuard.retry": {
     "defaultMessage": "重试"
@@ -3831,7 +3831,7 @@
     "defaultMessage": "聊天历史"
   },
   "sessions.chatHistoryDesc": {
-    "defaultMessage": "查看并搜索你与 Goose 的过往对话。按 {shortcut} 搜索。"
+    "defaultMessage": "查看并搜索你与 Achilles 的过往对话。按 {shortcut} 搜索。"
   },
   "sessions.close": {
     "defaultMessage": "关闭"
@@ -3867,7 +3867,7 @@
     "defaultMessage": "导入链接"
   },
   "sessions.importNostr.description": {
-    "defaultMessage": "粘贴 Goose Nostr 分享链接以获取、解密并导入会话。"
+    "defaultMessage": "粘贴 Achilles Nostr 分享链接以获取、解密并导入会话。"
   },
   "sessions.importNostr.placeholder": {
     "defaultMessage": "goose://sessions/nostr?nevent=...&key=..."
@@ -4080,7 +4080,7 @@
     "defaultMessage": "打开设置"
   },
   "settings.notifications.task.description": {
-    "defaultMessage": "窗口在后台时，Goose 完成任务后通知你"
+    "defaultMessage": "窗口在后台时，Achilles 完成任务后通知你"
   },
   "settings.notifications.task.title": {
     "defaultMessage": "任务完成通知"
@@ -4176,7 +4176,7 @@
     "defaultMessage": "搜索技能…"
   },
   "skillsView.skillsDescription": {
-    "defaultMessage": "查看已安装的用于扩展 Goose 能力的技能。按 {shortcut} 搜索。"
+    "defaultMessage": "查看已安装的用于扩展 Achilles 能力的技能。按 {shortcut} 搜索。"
   },
   "skillsView.skillsTitle": {
     "defaultMessage": "技能"
@@ -4527,7 +4527,7 @@
     "defaultMessage": "允许 {toolName} 吗？"
   },
   "toolConfirmation.gooseWouldLikeToCallWithName": {
-    "defaultMessage": "Goose 想调用 {toolName}，允许吗？"
+    "defaultMessage": "Achilles 想调用 {toolName}，允许吗？"
   },
   "updateSection.autoDownload": {
     "defaultMessage": "更新将在后台自动下载。"
@@ -4554,7 +4554,7 @@
     "defaultMessage": "禁用自动更新下载"
   },
   "updateSection.disableAutoDownloadDesc": {
-    "defaultMessage": "启用后，Goose 会通知你有新版本，但不会自动下载。"
+    "defaultMessage": "启用后，Achilles 会通知你有新版本，但不会自动下载。"
   },
   "updateSection.downloadNow": {
     "defaultMessage": "立即下载"
@@ -4587,7 +4587,7 @@
     "defaultMessage": "此更新方式需要手动安装。"
   },
   "updateSection.readyInstallAuto": {
-    "defaultMessage": "✓ 更新已就绪！退出 Goose 时将自动安装。"
+    "defaultMessage": "✓ 更新已就绪！退出 Achilles 时将自动安装。"
   },
   "updateSection.readyInstallManual": {
     "defaultMessage": "✓ 更新已就绪！点击“安装并重启”查看安装说明。"

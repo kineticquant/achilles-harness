@@ -15,7 +15,6 @@ import RecipeParamsModalContainer from './components/RecipeParamsModalContainer'
 import { isRecipeParamsCancelled } from './acp/errors';
 import { toast, ToastContainer } from 'react-toastify';
 import AnnouncementModal from './components/AnnouncementModal';
-import TelemetryConsentPrompt from './components/TelemetryConsentPrompt';
 import OnboardingGuard from './components/onboarding/OnboardingGuard';
 import { createSession } from './sessions';
 import { acpListSessions, acpDeleteSession } from './acp/sessions';
@@ -40,7 +39,7 @@ import LauncherView from './components/LauncherView';
 import 'react-toastify/dist/ReactToastify.css';
 import { useConfig } from './components/ConfigContext';
 import { ModelAndProviderProvider } from './components/ModelAndProviderContext';
-import { ThemeProvider } from './contexts/ThemeContext';
+import { ThemeProvider, useTheme } from './contexts/ThemeContext';
 import { FeaturesProvider } from './contexts/FeaturesContext';
 import PermissionSettingsView from './components/settings/permission/PermissionSetting';
 
@@ -48,6 +47,9 @@ import ExtensionsView, { ExtensionsViewOptions } from './components/extensions/E
 import RecipesView from './components/recipes/RecipesView';
 import SkillsView from './components/skills/SkillsView';
 import FindingsView from './components/findings/FindingsView';
+import ToolsView from './components/tools/ToolsView';
+import FilePreviewWindow from './components/findings/FilePreviewWindow';
+import CodeMapWindow from './components/codeMap/CodeMapWindow';
 import AppsView from './components/apps/AppsView';
 import StandaloneAppView from './components/apps/StandaloneAppView';
 import { View, ViewOptions } from './utils/navigationUtils';
@@ -224,6 +226,10 @@ const FindingsRoute = () => {
   return <FindingsView />;
 };
 
+const ToolsRoute = () => {
+  return <ToolsView />;
+};
+
 const PermissionRoute = () => {
   const location = useLocation();
   const navigate = useNavigate();
@@ -312,6 +318,7 @@ const ExtensionsRoute = () => {
 
 export function AppInner() {
   const [fatalError, setFatalError] = useState<string | null>(null);
+  const { resolvedTheme } = useTheme();
 
   const nostrImportInFlight = useRef<string | null>(null);
 
@@ -619,15 +626,17 @@ export function AppInner() {
         toastClassName={() =>
           `relative min-h-16 mb-4 p-2 rounded-lg
                flex justify-between overflow-hidden cursor-pointer
-               text-text-inverse bg-background-inverse
+               text-text-primary bg-background-tertiary border border-border-primary
               `
         }
         style={{ width: '450px' }}
         className="mt-6"
         position="top-right"
-        autoClose={3000}
+        autoClose={4000}
         closeOnClick
         pauseOnHover
+        hideProgressBar={false}
+        theme={resolvedTheme}
       />
       <ExtensionInstallModal addExtension={addExtension} setView={setView} />
       <RecipeParamsModalContainer />
@@ -636,6 +645,8 @@ export function AppInner() {
         <div style={{ position: 'relative', width: '100%', height: '100%' }}>
           <Routes>
             <Route path="launcher" element={<LauncherView />} />
+            <Route path="file-preview" element={<FilePreviewWindow />} />
+            <Route path="code-map" element={<CodeMapWindow />} />
             <Route path="configure-providers" element={<ConfigureProvidersRoute />} />
             <Route path="standalone-app" element={<StandaloneAppView />} />
             <Route
@@ -673,6 +684,7 @@ export function AppInner() {
               <Route path="recipes" element={<RecipesRoute />} />
               <Route path="skills" element={<SkillsRoute />} />
               <Route path="findings" element={<FindingsRoute />} />
+              <Route path="tools" element={<ToolsRoute />} />
               <Route path="permission" element={<PermissionRoute />} />
             </Route>
           </Routes>
@@ -691,7 +703,6 @@ export default function App() {
             <AppInner />
           </HashRouter>
           <AnnouncementModal />
-          <TelemetryConsentPrompt />
         </ModelAndProviderProvider>
       </FeaturesProvider>
     </ThemeProvider>

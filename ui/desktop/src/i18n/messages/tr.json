@@ -168,10 +168,10 @@
     "defaultMessage": "Başlat"
   },
   "chat.notification.taskComplete.body": {
-    "defaultMessage": "Goose'yi tekrar odağa almak için buraya tıklayın."
+    "defaultMessage": "Achilles'yi tekrar odağa almak için buraya tıklayın."
   },
   "chat.notification.taskComplete.title": {
-    "defaultMessage": "Goose görevi tamamladı."
+    "defaultMessage": "Achilles görevi tamamladı."
   },
   "chatInput.contextWindow": {
     "defaultMessage": "Bağlam penceresi"
@@ -222,13 +222,13 @@
     "defaultMessage": "Resimlerin kaydedilmesi bekleniyor..."
   },
   "chatSettings.modeDescription": {
-    "defaultMessage": "Goose'nin araçlar ve uzantılarla nasıl etkileşimde bulunacağını yapılandırın"
+    "defaultMessage": "Achilles'nin araçlar ve uzantılarla nasıl etkileşimde bulunacağını yapılandırın"
   },
   "chatSettings.modeTitle": {
     "defaultMessage": "Mod"
   },
   "chatSettings.responseStylesDescription": {
-    "defaultMessage": "Goose'nin yanıtlarını nasıl biçimlendireceğini ve stillendireceğini seçin"
+    "defaultMessage": "Achilles'nin yanıtlarını nasıl biçimlendireceğini ve stillendireceğini seçin"
   },
   "chatSettings.responseStylesTitle": {
     "defaultMessage": "Yanıt Stilleri"
@@ -324,7 +324,7 @@
     "defaultMessage": "Maksimum Dönüş"
   },
   "conversationLimitsDropdown.maxTurnsDescription": {
-    "defaultMessage": "Goose kullanıcı girişi istemeden önce maksimum aracı dönüşü"
+    "defaultMessage": "Achilles kullanıcı girişi istemeden önce maksimum aracı dönüşü"
   },
   "costTracker.costUnavailable": {
     "defaultMessage": "{model} için maliyet verileri mevcut değil ({inputTokens} girişi, {outputTokens} çıkış jetonları)"
@@ -936,7 +936,7 @@
     "defaultMessage": "Bilgi talebi iptal edildi."
   },
   "elicitationRequest.defaultMessage": {
-    "defaultMessage": "Goose'nin sizden bazı bilgilere ihtiyacı var."
+    "defaultMessage": "Achilles'nin sizden bazı bilgilere ihtiyacı var."
   },
   "elicitationRequest.expired": {
     "defaultMessage": "Bu isteğin süresi doldu. Uzantının tekrar sorması gerekecek."
@@ -981,7 +981,7 @@
     "defaultMessage": "Bir hata oluştu."
   },
   "errorBoundary.errorWithVersion": {
-    "defaultMessage": "Goose v{version}'de bir hata oluştu."
+    "defaultMessage": "Achilles v{version}'de bir hata oluştu."
   },
   "errorBoundary.heading": {
     "defaultMessage": "Korna!"
@@ -1167,7 +1167,7 @@
     "defaultMessage": "Burada etkinleştirilen uzantılar, yeni sohbetler için varsayılan olarak kullanılır. Ayrıca sohbet sırasında etkin uzantıları da değiştirebilirsiniz."
   },
   "extensionsView.description": {
-    "defaultMessage": "Bu uzantılar Model Bağlam Protokolünü (MCP) kullanır. Üç ana bileşeni kullanarak Goose'nin yeteneklerini genişletebilirler: İstemler, Kaynaklar ve Araçlar. Aramak için {searchShortcut}."
+    "defaultMessage": "Bu uzantılar Model Bağlam Protokolünü (MCP) kullanır. Üç ana bileşeni kullanarak Achilles'nin yeteneklerini genişletebilirler: İstemler, Kaynaklar ve Araçlar. Aramak için {searchShortcut}."
   },
   "extensionsView.heading": {
     "defaultMessage": "Uzantılar"
@@ -1191,13 +1191,13 @@
     "defaultMessage": "Certificate fingerprint requires an https URL"
   },
   "externalBackendSection.restartNote": {
-    "defaultMessage": "Değişikliklerin etkili olması için Goose'nin yeniden başlatılması gerekir. Yeni sohbet pencereleri harici sunucuya bağlanacaktır."
+    "defaultMessage": "Değişikliklerin etkili olması için Achilles'nin yeniden başlatılması gerekir. Yeni sohbet pencereleri harici sunucuya bağlanacaktır."
   },
   "externalBackendSection.secretKey": {
     "defaultMessage": "Gizli Anahtar"
   },
   "externalBackendSection.secretKeyHelp": {
-    "defaultMessage": "Goose sunucusunda yapılandırılan gizli anahtar (GOOSE_SERVER__SECRET_KEY)"
+    "defaultMessage": "Achilles sunucusunda yapılandırılan gizli anahtar (GOOSE_SERVER__SECRET_KEY)"
   },
   "externalBackendSection.secretKeyPlaceholder": {
     "defaultMessage": "Sunucunun gizli anahtarını girin"
@@ -1206,10 +1206,10 @@
     "defaultMessage": "Sunucu URL'si"
   },
   "externalBackendSection.serverUrlHelp": {
-    "defaultMessage": "Enter the HTTP(S) base URL. Goose checks /status and connects to /acp under this base."
+    "defaultMessage": "Enter the HTTP(S) base URL. Achilles checks /status and connects to /acp under this base."
   },
   "externalBackendSection.title": {
-    "defaultMessage": "Goose Sunucu"
+    "defaultMessage": "Achilles Sunucu"
   },
   "externalBackendSection.urlBaseError": {
     "defaultMessage": "URL must be the backend base URL before /acp, without query parameters or fragments"
@@ -1257,7 +1257,7 @@
     "defaultMessage": "Geliştirici"
   },
   "goosehintsModal.dialogDescription": {
-    "defaultMessage": "Goose ile iletişimi geliştirmek için projeniz hakkında ek bağlam sağlayın"
+    "defaultMessage": "Achilles ile iletişimi geliştirmek için projeniz hakkında ek bağlam sağlayın"
   },
   "goosehintsModal.dialogTitle": {
     "defaultMessage": "Proje İpuçlarını Yapılandırma (.goosehints)"
@@ -1278,7 +1278,7 @@
     "defaultMessage": ".goosehints dosyası şu konumda bulundu: {filePath}"
   },
   "goosehintsModal.helpText1": {
-    "defaultMessage": ".goosehints, projeniz hakkında ek bağlam sağlamak ve Goose ile iletişimi geliştirmek için kullanılan bir metin dosyasıdır."
+    "defaultMessage": ".goosehints, projeniz hakkında ek bağlam sağlamak ve Achilles ile iletişimi geliştirmek için kullanılan bir metin dosyasıdır."
   },
   "goosehintsModal.helpText2": {
     "defaultMessage": "Lütfen uzantılar sayfasında {bold} uzantısının etkinleştirildiğinden emin olun. Bu uzantı.goosehints'i kullanmak için gereklidir..goosehints güncellemelerinin etkili olması için oturumunuzu yeniden başlatmanız gerekir."
@@ -1305,7 +1305,7 @@
     "defaultMessage": "Yapılandır"
   },
   "goosehintsSection.description": {
-    "defaultMessage": "Goose'a ek bağlam sağlamak için projenizin.goosehints dosyasını yapılandırın"
+    "defaultMessage": "Achilles'a ek bağlam sağlamak için projenizin.goosehints dosyasını yapılandırın"
   },
   "goosehintsSection.title": {
     "defaultMessage": "Proje İpuçları (.goosehints)"
@@ -1602,13 +1602,13 @@
     "defaultMessage": "Uygulama Kısayolları"
   },
   "keyboardShortcuts.categoryApplicationDescription": {
-    "defaultMessage": "Bu kısayollar Goose etkin uygulama olduğunda çalışır"
+    "defaultMessage": "Bu kısayollar Achilles etkin uygulama olduğunda çalışır"
   },
   "keyboardShortcuts.categoryGlobal": {
     "defaultMessage": "Genel Kısayollar"
   },
   "keyboardShortcuts.categoryGlobalDescription": {
-    "defaultMessage": "Bu kısayollar, Goose odaklanmadığında bile sistem genelinde çalışır"
+    "defaultMessage": "Bu kısayollar, Achilles odaklanmadığında bile sistem genelinde çalışır"
   },
   "keyboardShortcuts.categorySearch": {
     "defaultMessage": "Arama Kısayolları"
@@ -1650,10 +1650,10 @@
     "defaultMessage": "Öncekini Bul"
   },
   "keyboardShortcuts.focusWindowDescription": {
-    "defaultMessage": "Goose penceresini istediğiniz yerden öne getirin"
+    "defaultMessage": "Achilles penceresini istediğiniz yerden öne getirin"
   },
   "keyboardShortcuts.focusWindowLabel": {
-    "defaultMessage": "Odak Goose Penceresi"
+    "defaultMessage": "Odak Achilles Penceresi"
   },
   "keyboardShortcuts.loading": {
     "defaultMessage": "Yükleniyor..."
@@ -1665,7 +1665,7 @@
     "defaultMessage": "Yeni Sohbet"
   },
   "keyboardShortcuts.newChatWindowDescription": {
-    "defaultMessage": "Yeni bir Goose penceresi aç"
+    "defaultMessage": "Yeni bir Achilles penceresi aç"
   },
   "keyboardShortcuts.newChatWindowLabel": {
     "defaultMessage": "Yeni Sohbet Penceresi"
@@ -1704,7 +1704,7 @@
     "defaultMessage": "Varsayılanlara Sıfırla"
   },
   "keyboardShortcuts.restartDescription": {
-    "defaultMessage": "Uygulama kısayollarında yapılan değişikliklerin (Yeni Sohbet, Ayarlar vb.) etkili olması için Goose'nin yeniden başlatılması gerekir. Genel kısayollar (Odak Penceresi, Hızlı Başlatıcı) hemen çalışır."
+    "defaultMessage": "Uygulama kısayollarında yapılan değişikliklerin (Yeni Sohbet, Ayarlar vb.) etkili olması için Achilles'nin yeniden başlatılması gerekir. Genel kısayollar (Odak Penceresi, Hızlı Başlatıcı) hemen çalışır."
   },
   "keyboardShortcuts.restartRequired": {
     "defaultMessage": "Yeniden Başlatma Gerekli"
@@ -2436,7 +2436,7 @@
     "defaultMessage": "Sunucu başlatılıyor veya geçici olarak kullanılamıyor olabilir."
   },
   "onboardingGuard.checkProviderErrorTitle": {
-    "defaultMessage": "Goose sunucusuna bağlanılamıyor"
+    "defaultMessage": "Achilles sunucusuna bağlanılamıyor"
   },
   "onboardingGuard.retry": {
     "defaultMessage": "Yeniden dene"
@@ -3831,7 +3831,7 @@
     "defaultMessage": "Sohbet geçmişi"
   },
   "sessions.chatHistoryDesc": {
-    "defaultMessage": "Goose ile geçmiş konuşmalarınızı görüntüleyin ve arayın. Aramak için {shortcut}."
+    "defaultMessage": "Achilles ile geçmiş konuşmalarınızı görüntüleyin ve arayın. Aramak için {shortcut}."
   },
   "sessions.close": {
     "defaultMessage": "Kapat"
@@ -3867,7 +3867,7 @@
     "defaultMessage": "Bağlantıyı İçe Aktar"
   },
   "sessions.importNostr.description": {
-    "defaultMessage": "Oturumu almak, şifresini çözmek ve içe aktarmak için bir Goose Nostr paylaşım bağlantısını yapıştırın."
+    "defaultMessage": "Oturumu almak, şifresini çözmek ve içe aktarmak için bir Achilles Nostr paylaşım bağlantısını yapıştırın."
   },
   "sessions.importNostr.placeholder": {
     "defaultMessage": "goose://sessions/nostr?nevent=...&key=..."
@@ -4080,7 +4080,7 @@
     "defaultMessage": "Ayarları Aç"
   },
   "settings.notifications.task.description": {
-    "defaultMessage": "Pencere arka plandayken Goose bir görevi tamamladığında bildirim al"
+    "defaultMessage": "Pencere arka plandayken Achilles bir görevi tamamladığında bildirim al"
   },
   "settings.notifications.task.title": {
     "defaultMessage": "Görev tamamlama bildirimleri"
@@ -4176,7 +4176,7 @@
     "defaultMessage": "Arama becerileri..."
   },
   "skillsView.skillsDescription": {
-    "defaultMessage": "Goose yeteneklerini genişleten yüklü becerileri görüntüleyin. Aramak için {shortcut}."
+    "defaultMessage": "Achilles yeteneklerini genişleten yüklü becerileri görüntüleyin. Aramak için {shortcut}."
   },
   "skillsView.skillsTitle": {
     "defaultMessage": "Beceriler"
@@ -4527,7 +4527,7 @@
     "defaultMessage": "{toolName}'ye izin verilsin mi?"
   },
   "toolConfirmation.gooseWouldLikeToCallWithName": {
-    "defaultMessage": "Goose, {toolName}'yi aramak istiyor. İzin vermek?"
+    "defaultMessage": "Achilles, {toolName}'yi aramak istiyor. İzin vermek?"
   },
   "updateSection.autoDownload": {
     "defaultMessage": "Güncelleme arka planda otomatik olarak indirilecektir."
@@ -4554,7 +4554,7 @@
     "defaultMessage": "Otomatik güncelleme indirmelerini devre dışı bırak"
   },
   "updateSection.disableAutoDownloadDesc": {
-    "defaultMessage": "Etkinleştirildiğinde, Goose yeni sürümleri bildirir ancak bunları otomatik olarak indirmez."
+    "defaultMessage": "Etkinleştirildiğinde, Achilles yeni sürümleri bildirir ancak bunları otomatik olarak indirmez."
   },
   "updateSection.downloadNow": {
     "defaultMessage": "Şimdi İndir"
@@ -4587,7 +4587,7 @@
     "defaultMessage": "Bu güncelleme yöntemi için manuel kurulum gereklidir."
   },
   "updateSection.readyInstallAuto": {
-    "defaultMessage": "✓ Güncelleme hazır! Goose'den çıktığınızda yüklenecektir."
+    "defaultMessage": "✓ Güncelleme hazır! Achilles'den çıktığınızda yüklenecektir."
   },
   "updateSection.readyInstallManual": {
     "defaultMessage": "✓ Güncelleme hazır! Kurulum talimatları için \"Yükle ve Yeniden Başlat\"a tıklayın."
