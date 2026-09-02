@@ -5,13 +5,13 @@ body:
   - type: markdown
     attributes:
       value: |
-        💡 Before posting, please attach your **diagnostics zip** — it helps the Goose team debug faster and saves everyone time.  
-        [How to capture and share diagnostics](https://goose-docs.ai/docs/troubleshooting/diagnostics-and-reporting/)
+        💡 Before posting, please attach your **diagnostics JSON** — it helps debug faster.  
+        [How to capture diagnostics](https://github.com/kineticquant/achilles-harness/blob/main/docs/troubleshooting.html#diagnostics)
   - type: textarea
     id: problem
     attributes:
       label: What happened?
-      description: Describe the issue in detail and attach your diagnostics zip if possible.
+      description: Describe the issue in detail and attach your diagnostics JSON if possible.
     validations:
       required: true
   - type: textarea
@@ -22,5 +22,5 @@ body:
   - type: textarea
     id: version
     attributes:
-      label: Goose version and environment
-      description: Include your Goose version and operating system if known.
+      label: Achilles version and environment
+      description: Include your Achilles version and operating system if known.

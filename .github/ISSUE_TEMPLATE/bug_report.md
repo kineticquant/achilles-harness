@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Create a report to help us improve
+about: Create a report to help us improve Achilles
 title: ''
 type: bug
 assignees: ''
@@ -9,10 +9,10 @@ assignees: ''
 **Describe the bug**
 
 💡 Before filing, please check common issues:  
-https://goose-docs.ai/docs/troubleshooting  
+https://github.com/kineticquant/achilles-harness/blob/main/docs/troubleshooting.html
 
-📦 To help us debug faster, attach your **diagnostics zip** if possible.  
-👉 How to capture it: https://goose-docs.ai/docs/troubleshooting/diagnostics-and-reporting/
+📦 To help us debug faster, attach your **diagnostics JSON** if possible.  
+👉 How to capture it: https://github.com/kineticquant/achilles-harness/blob/main/docs/troubleshooting.html#diagnostics
 
 A clear and concise description of what the bug is.
 
@@ -38,15 +38,13 @@ If applicable, add screenshots to help explain your problem.
 ---
 
 **Please provide the following information**
-- **OS & Arch:** [e.g. Ubuntu 22.04 x86]
+- **OS & Arch:** [e.g. Windows 10 x64]
 - **Interface:** [UI / CLI]
-- **Version:** [e.g. v1.0.2]
-- **Extensions enabled:** [e.g. Computer Controller, Figma]
-- **Provider & Model:** [e.g. Google – gemini-1.5-pro]
+- **Version:** [e.g. v1.45.0]
+- **Extensions enabled:** [e.g. Developer, AppSec]
+- **Provider & Model:** [e.g. OpenRouter – …]
 
 ---
 
 **Additional context**
 Add any other context about the problem here.
-
-Do not begin implementation until the issue reaches **Ready** on the [Goose Issues board](https://github.com/orgs/aaif-goose/projects/1).

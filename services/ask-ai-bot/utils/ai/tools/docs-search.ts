@@ -93,10 +93,8 @@ function initializeSearch(): MiniSearch<DocFile> {
 }
 
 function generateWebUrl(filePath: string): string {
-  const baseUrl = "https://goose-docs.ai/docs";
-  // Remove file extension for the URL path
-  const urlPath = filePath.replace(/\.[^/.]+$/, "");
-  return `${baseUrl}/${urlPath}`;
+  const baseUrl = "https://github.com/kineticquant/achilles-harness/blob/main/docs";
+  return `${baseUrl}/${filePath}`;
 }
 
 function getPreview(content: string, maxLength: number = 1000): string {

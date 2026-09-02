@@ -13,7 +13,7 @@ function truncateBody(body: string, maxLen: number = 500): string {
 
 export const aiTools = {
   search_docs: tool({
-    description: "Search the goose documentation for relevant information",
+    description: "Search the Achilles documentation for relevant information",
     inputSchema: z.object({
       query: z
         .string()
@@ -76,7 +76,7 @@ export const aiTools = {
   }),
   search_codebase: tool({
     description:
-      "Search the goose source code (Rust crates and TypeScript UI) using regex patterns. Searches across ui/ and crates/. Use this to find function definitions, struct/type definitions, imports, error messages, or any code pattern.",
+      "Search the Achilles source code (Rust crates and TypeScript UI) using regex patterns. Searches across ui/ and crates/. Use this to find function definitions, struct/type definitions, imports, error messages, or any code pattern.",
     inputSchema: z.object({
       query: z
         .string()
@@ -180,7 +180,7 @@ export const aiTools = {
   }),
   search_github: tool({
     description:
-      "Search GitHub issues and pull requests in the aaif-goose/goose repository. Use this to find bugs, feature requests, or discussions. Results can be sorted by recency, relevance, or comment count.",
+      "Search GitHub issues and pull requests in the kineticquant/achilles-harness repository. Use this to find bugs, feature requests, or discussions. Results can be sorted by recency, relevance, or comment count.",
     inputSchema: z.object({
       query: z
         .string()
@@ -246,7 +246,7 @@ export const aiTools = {
   }),
   get_github_issue_or_pr: tool({
     description:
-      "Get detailed information about a specific GitHub issue or pull request in the aaif-goose/goose repository, including its description and comments.",
+      "Get detailed information about a specific GitHub issue or pull request in the kineticquant/achilles-harness repository, including its description and comments.",
     inputSchema: z.object({
       issueNumber: z.number().describe("The issue or pull request number"),
       includeComments: z

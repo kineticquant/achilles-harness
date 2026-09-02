@@ -22,8 +22,8 @@ COPY --from=build /app/dist ./dist
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/package.json ./
 
-# Copy documentation (only docs/ subdirectory with markdown files)
-COPY documentation/docs ./docs
+# Copy product docs
+COPY docs ./docs
 
 # Copy codebase source for code browsing
 COPY ui/ ./codebase/ui/

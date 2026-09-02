@@ -35,7 +35,7 @@
 - Improper trait implementations
 
 ### No Doc Updates with Code Changes
-- PRs with code changes shouldn't update `/documentation` - docs deploy on merge, code on release. Use `unlisted: true` or remove/hide docs.
+- Keep product docs in `docs/` in the same PR when a user-facing Help/Settings link changes.
 
 ## Project-Specific Context
 
@@ -44,7 +44,7 @@
 - Error handling: Use `anyhow::Result`, not `unwrap()` in production code
 - Async runtime: tokio
 - MCP protocol implementations require extra scrutiny
-- Naming convention: In `documentation/docs` and `documentation/blog`, always refer to the project as "goose" (lowercase), never "Goose" (even at the start of sentences)
+- User-facing product name is Achilles. Do not write goose docs as if this repo publishes goose-docs.ai.
 
 ## CI Pipeline Context
 

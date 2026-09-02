@@ -1,7 +1,7 @@
 import { Octokit } from "@octokit/rest";
 
-const REPO_OWNER = "aaif-goose";
-const REPO_NAME = "goose";
+const REPO_OWNER = "kineticquant";
+const REPO_NAME = "achilles-harness";
 
 let octokit: Octokit | null = null;
 
