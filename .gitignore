@@ -40,15 +40,8 @@ ui/desktop/src/bin/goose_llm.dll
 
 debug_*.txt
 
-# Docs
-# Dependencies
-
 # Production
 /build
-
-# Generated files
-.docusaurus
-.cache-loader
 
 # Benchmark paths
 benchmark-*
@@ -61,6 +54,7 @@ do_not_version/
 /temporal.db
 /ui/desktop/src/bin/goose-scheduler-executor
 /ui/desktop/src/bin/goose
+/ui/desktop/src/bin/achilles
 /.env
 
 /working_dir
@@ -98,3 +92,15 @@ gooseselftest/
 
 # Local working sessions (notes, plans, scratch) — never commit
 .working_sessions/
+
+# Impeccable design sessions (mocks, sketches, question logs).
+# Matches repo-root `.impeccable/` and `ui/desktop/.impeccable/`.
+.impeccable/
+
+# Landing page lives in a separate repo; do not ship from this tree
+/website/
+/website_delete_me/
+
+# Internal planning / product-design notes (not contributor docs)
+/APPSEC.md
+/PRODUCT.md
