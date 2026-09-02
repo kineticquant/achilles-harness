@@ -85,6 +85,7 @@ jobs:
     uses: ./.github/workflows/bundle-windows.yml
     permissions:
       contents: read
+      id-token: write
     with:
       package_cli: true
       package_desktop: true
@@ -95,6 +96,7 @@ jobs:
     uses: ./.github/workflows/bundle-windows.yml
     permissions:
       contents: read
+      id-token: write
     with:
       package_cli: true
       package_desktop: true
