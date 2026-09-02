@@ -1,8 +1,8 @@
 # Contribution Guide
 
-goose is open source, and code is only one way to contribute. Reporting a problem, reproducing it, sharing domain knowledge, shaping the design, implementing the solution, and verifying the result are all valuable work.
+This is **Achilles**, a fork of [goose](https://github.com/aaif-goose/goose). File bugs and features on [this repo](https://github.com/kineticquant/achilles-harness/issues), not on upstream goose.
 
-We organize this work on the public [Goose Issues board](https://github.com/orgs/aaif-goose/projects/1). The issue is the main record of a contribution, from the first report through design, implementation, and verification.
+Reporting a problem, reproducing it, sharing domain knowledge, shaping the design, implementing the solution, and verifying the result are all valuable work.
 
 > [!TIP]
 > Beyond code, check out [other ways to contribute](#other-ways-to-contribute)
@@ -11,7 +11,7 @@ We organize this work on the public [Goose Issues board](https://github.com/orgs
 
 ## Issue Workflow
 
-Every open issue is tracked on the [Goose Issues board](https://github.com/orgs/aaif-goose/projects/1):
+Every open issue is tracked on [GitHub Issues](https://github.com/kineticquant/achilles-harness/issues):
 
 - **Inbox**: The issue is waiting for triage.
 - **Needs info**: More information is needed before the issue can progress.
@@ -25,11 +25,11 @@ Issues we do not plan to pursue are closed with an explanation. We do not use re
 
 Feature requests should describe a broadly useful problem rather than only a preferred implementation. Adding features is easy; maintaining them is a long-term cost, so we may decline features that add complexity without enough general benefit.
 
-Discord and GitHub Discussions remain useful for informal conversation, but decisions that affect an implementation should be captured in the issue.
+GitHub Discussions remain useful for informal conversation, but decisions that affect an implementation should be captured in the issue.
 
 ## How to Contribute
 
-If you find a bug or want a new feature, [open an issue](https://github.com/aaif-goose/goose/issues/new/choose). A good issue explains the problem, who it affects, and why it matters. For bugs, include clear reproduction steps and a diagnostics report when possible.
+If you find a bug or want a new feature, [open an issue](https://github.com/kineticquant/achilles-harness/issues/new/choose). A good issue explains the problem, who it affects, and why it matters. For bugs, include clear reproduction steps and a diagnostics report when possible.
 Please write the issue yourself. Your agent can do the research and help you explore, but you should understand the issue. You can
 suggest a solution direction, but refrain from a detailed solution especially code.
 
@@ -39,7 +39,7 @@ Substantial contributors at any stage may be recognized as co-authors. The unit 
 
 ## From Issue to Pull Request
 
-Do not begin implementation or open a pull request until the issue has reached **Ready** on the Goose Issues board.
+Do not begin implementation or open a pull request until the intended design is settled on the issue.
 
 Every external pull request must:
 
@@ -75,7 +75,7 @@ are responsible for the final code. Before submitting a PR for review, make sure
 We'll close any vibe coded submissions that obviously skip this step.
 
 You can use whatever agent and whatever methodology you like as long as you stick to that principle. We hope
-you like goose of course and use that. One thing to watch out for is LLM eagerness. They like to please and
+you like Achilles of course and use that. One thing to watch out for is LLM eagerness. They like to please and
 are in a hurry. 
 
    * **Think first**. Agents tend to jump straight to code writing. Explain the architecture you want first to 
@@ -94,7 +94,7 @@ are in a hurry.
    
 ## Prerequisites
 
-goose includes Rust binaries alongside an electron app for the GUI.
+Achilles includes Rust binaries (CLI still named `goose`) alongside an Electron app for the GUI.
 
 We use [Hermit][hermit] to manage development dependencies (Rust, Node, pnpm, just, etc.).
 Activate Hermit when entering the project:
@@ -122,16 +122,15 @@ sudo apt install libxcb1-dev      # libxcb1-dev is the development package for t
 
 ### Rust
 
-First let's compile goose and try it out
-Since goose requires Hermit for managing dependencies, let's activate hermit.
+First let's compile the CLI and try it out.
+Hermit manages dependencies — activate it from the repo root:
 
 ```
-cd goose
 source ./bin/activate-hermit
 cargo build
 ```
 
-When that completes, debug builds of the binaries are available, including the goose CLI:
+When that completes, debug builds of the binaries are available, including the CLI:
 
 ```
 ./target/debug/goose --help
@@ -168,7 +167,7 @@ just run-ui
 ```
 
 This command builds a release build of Rust (equivalent to `cargo build -r`) and starts the Electron process.
-The app opens a window and displays first-time setup. After completing setup, goose is ready for use.
+The app opens a window and displays first-time setup. After completing setup, Achilles is ready for use.
 
 Make GUI changes in `ui/desktop`.
 
@@ -209,16 +208,16 @@ and stepping through the backend code while interacting with the UI.
 
 To fork the repository:
 
-1. Go to https://github.com/aaif-goose/goose and click “Fork” (top-right corner).
-2. This creates https://github.com/<your-username>/goose under your GitHub account.
+1. Go to https://github.com/kineticquant/achilles-harness and click “Fork” (top-right corner).
+2. This creates https://github.com/<your-username>/achilles-harness under your GitHub account.
 3. Clone your fork (not the main repo):
 
 ```
-git clone https://github.com/<your-username>/goose.git
-cd goose
+git clone https://github.com/<your-username>/achilles-harness.git
+cd achilles-harness
 ```
 
-4. Add the main repository as upstream:
+4. Add this repository as origin (already set) and goose as upstream if you need to sync:
 
 ```
 git remote add upstream https://github.com/aaif-goose/goose.git
@@ -246,7 +245,7 @@ git merge upstream/main
 git push origin my-feature-branch
 ```
 
-8. Open a Pull Request from your branch on your fork to aaif-goose/goose’s main branch.
+8. Open a Pull Request from your branch on your fork to kineticquant/achilles-harness’s main branch.
 
 ## Keeping Your Fork Up-to-Date
 
@@ -259,6 +258,7 @@ repository. This helps avoid conflicts and allows us to merge your pull requests
 
    ```bash
    git remote add upstream https://github.com/aaif-goose/goose.git
+   # optional: pull goose changes; this fork’s origin is Achilles
    ```
 
 2. **Fetch the Latest Changes from the Main Repository**:
@@ -305,7 +305,7 @@ your configuration.
 > At the moment, we are still updating some of the CLI configuration to make sure this is
 > respected.
 
-You can change the provider goose points to via the `GOOSE_PROVIDER` env var. If you already
+You can change the provider the CLI points to via the `GOOSE_PROVIDER` env var (inherited name). If you already
 have a credential for that provider in your keychain from previously setting up, it should
 reuse it. For things like automations or to test without doing official setup, you can also
 set the relevant env vars for that provider. For example `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`,
@@ -313,7 +313,7 @@ or `DATABRICKS_HOST`. Refer to the provider details for more info on required ke
 
 ### Isolating Test Environments
 
-When testing changes or running multiple goose configurations, use `GOOSE_PATH_ROOT` to isolate your data:
+When testing changes or running multiple configurations, use `GOOSE_PATH_ROOT` to isolate your data:
 
 ```bash
 # Test with a clean environment
@@ -324,12 +324,12 @@ export GOOSE_PATH_ROOT="/tmp/goose-test"
 GOOSE_PATH_ROOT="/tmp/goose-dev" cargo run -p goose-cli -- session
 ```
 
-This creates isolated `config/`, `data/`, and `state/` directories under the specified path, preventing your test sessions from affecting your main goose installation. See the [environment variables guide](./documentation/docs/guides/environment-variables.md#development--testing) for more details.
+This creates isolated `config/`, `data/`, and `state/` directories under the specified path, preventing your test sessions from affecting your main installation.
 
-## Enable traces in goose with [locally hosted Langfuse](https://langfuse.com/docs/deployment/self-host)
+## Enable traces with [locally hosted Langfuse](https://langfuse.com/docs/deployment/self-host)
 
 - [Start a local Langfuse using the docs](https://langfuse.com/self-hosting/docker-compose). Create an organization and project and create API credentials.
-- Set the environment variables so that goose can connect to the langfuse server:
+- Set the environment variables so that the agent can connect to the langfuse server:
 
 ```
 export LANGFUSE_INIT_PROJECT_PUBLIC_KEY=publickey-local
@@ -342,20 +342,16 @@ Then you can view your traces at http://localhost:3000
 
 This project follows the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification for PR titles. Conventional Commits make it easier to understand the history of a project and facilitate automation around versioning and changelog generation.
 
-[issues]: https://github.com/aaif-goose/goose/issues
+[issues]: https://github.com/kineticquant/achilles-harness/issues
 [hermit]: https://cashapp.github.io/hermit/
 [just]: https://github.com/casey/just?tab=readme-ov-file#installation
 
 ## Other Ways to Contribute
 
-There are numerous ways to be an open source contributor and contribute to goose. We're here to help you on your way! Here are some suggestions to get started. If you have any questions or need help, feel free to reach out to us on [Discord](https://discord.gg/n8R5VaWDAn).
+There are many ways to contribute besides code.
 
-- **Stars on GitHub:** If you resonate with our project and find it valuable, consider starring our goose on GitHub! 🌟
-- **Ask Questions:** Your questions not only help us improve but also benefit the community. If you have a question, don't hesitate to ask it on [Discord](https://discord.gg/n8R5VaWDAn).
-- **Give Feedback:** Have a feature you want to see or encounter an issue with goose, [click here to open an issue](https://github.com/aaif-goose/goose/issues/new/choose), [start a discussion](https://github.com/aaif-goose/goose/discussions) or tell us on Discord.
-- **Participate in Community Events:** We host a variety of community events and livestreams on Discord every month, ranging from workshops to brainstorming sessions. You can subscribe to our [events calendar](https://calget.com/c/t7jszrie) or follow us on [social media](https://linktr.ee/goose_oss) to stay in touch.
-- **Improve Documentation:** Good documentation is key to the success of any project. You can help improve the quality of our existing docs or add new pages.
-- **Help Other Members:** See another community member stuck? Or a contributor blocked by a question you know the answer to? Reply to community threads or do a code review for others to help.
-- **Showcase Your Work:** Working on a project or written a blog post recently? Share it with the community in our [#share-your-work](https://discord.com/channels/1287729918100246654/1287729920797179958) channel.
-- **Give Shoutouts:** Is there a project you love or a community/staff who's been especially helpful? Feel free to give them a shoutout in our [#general](https://discord.com/channels/1287729918100246654/1287729920797179957) channel.
-- **Spread the Word:** Help us reach more people by sharing goose's project, website, YouTube, and/or Twitter/X.
+- **Stars on GitHub:** Star [kineticquant/achilles-harness](https://github.com/kineticquant/achilles-harness).
+- **Ask Questions:** Open a [discussion](https://github.com/kineticquant/achilles-harness/discussions) or an issue.
+- **Give Feedback:** [File a bug](https://github.com/kineticquant/achilles-harness/issues/new/choose) or a feature request.
+- **Improve Documentation:** Product docs live in [`docs/`](docs/README.md).
+- **Help Other Members:** Comment on issues and review pull requests.

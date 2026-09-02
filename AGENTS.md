@@ -41,7 +41,10 @@ crates/
 └── ...
 
 ui/desktop/               # Electron UI (Achilles)
+docs/                     # Achilles product docs (Help / Settings links)
 ```
+
+The fork does **not** ship the upstream goose Docusaurus site. Product guidance lives in `docs/`. Goose docs remain upstream at [aaif-goose/goose](https://github.com/aaif-goose/goose).
 
 Useful in-tree build notes: `CUSTOM_DISTROS.md`, `BUILDING_LINUX.md`, `BUILDING_DOCKER.md`, `ui/desktop/README.md`.
 

@@ -317,6 +317,5 @@ When contributing Docker-related changes:
 
 ## Related Documentation
 
-- [goose in Docker Tutorial](documentation/docs/tutorials/goose-in-docker.md) - Step-by-step tutorial
-- [Installation Guide](https://goose-docs.ai/docs/getting-started/installation) - All installation methods
-- [Configuration Guide](https://goose-docs.ai/docs/guides/config-files) - Detailed configuration options
+- This file is the Docker build guide for this repo
+- [Installation](docs/quickstart.html) — run Achilles from source
