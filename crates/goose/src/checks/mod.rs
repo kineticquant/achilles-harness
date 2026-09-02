@@ -415,7 +415,7 @@ fn read_checks_dir(dir: &Path, scope_dir: &str, mode: LoadMode) -> Result<Vec<Ch
             Err(e) => match mode {
                 LoadMode::Strict => return Err(e),
                 LoadMode::Lenient => {
-                    eprintln!("goose review: skipping {}: {e}", path.display());
+                    eprintln!("Achilles review: skipping {}: {e}", path.display());
                 }
             },
         }

@@ -205,9 +205,16 @@ impl Agent {
             .extension_manager
             .get_extensions_info(working_dir)
             .await;
+        let available_packs = self.extension_manager.available_pack_catalog().await;
         let (extension_count, tool_count) = self.total_extension_and_tool_counts(session_id).await;
 
         let model_config = self.model_config_for_session(session_id).await?;
+        let provider_name = self
+            .provider()
+            .await
+            .ok()
+            .map(|provider| provider.get_name().to_string())
+            .unwrap_or_default();
 
         let goose_mode = *self.current_goose_mode.lock().await;
 
@@ -224,6 +231,8 @@ impl Agent {
             .with_code_execution_mode(code_execution_active)
             .with_hints(working_dir)
             .with_goose_mode(goose_mode)
+            .with_model_identity(&model_config.model_name, provider_name)
+            .with_available_packs(available_packs)
             .build();
 
         let (tools, toolshim_tools, system_prompt) =

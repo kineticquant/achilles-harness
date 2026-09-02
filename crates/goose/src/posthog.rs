@@ -41,14 +41,9 @@ pub fn get_telemetry_choice() -> Option<bool> {
 
 /// Check if telemetry is enabled.
 ///
-/// Returns false if:
-/// - GOOSE_TELEMETRY_OFF environment variable is set to "1" or "true"
-/// - GOOSE_TELEMETRY_ENABLED config value is set to false
-/// - User has not made a telemetry choice yet (opt-in required)
-///
-/// Returns true only if the user has explicitly opted in.
+/// Achilles does not collect usage telemetry. Always false.
 pub fn is_telemetry_enabled() -> bool {
-    get_telemetry_choice().unwrap_or(false)
+    false
 }
 
 // ============================================================================

@@ -1,7 +1,10 @@
 use super::*;
 use achilles_store::acp::{
-    AssessmentsGetRequest, AssessmentsGetResponse, AssessmentsListRequest, AssessmentsListResponse,
-    AssessmentsStartRequest, AssessmentsStartResponse, FindingsListRequest, FindingsListResponse,
+    AssessmentsCancelRequest, AssessmentsCancelResponse, AssessmentsGetRequest,
+    AssessmentsGetResponse, AssessmentsListRequest, AssessmentsListResponse,
+    AssessmentsPauseRequest, AssessmentsPauseResponse, AssessmentsStartRequest,
+    AssessmentsStartResponse, FindingsListRequest, FindingsListResponse, FindingsSetStateRequest,
+    FindingsSetStateResponse, UtilsRunRequest, UtilsRunResponse,
 };
 use goose_acp_macros::custom_methods;
 
@@ -944,6 +947,22 @@ impl GooseAcpAgent {
         self.on_achilles_assessments_start(req).await
     }
 
+    #[custom_method(AssessmentsCancelRequest)]
+    async fn dispatch_achilles_assessments_cancel(
+        &self,
+        req: AssessmentsCancelRequest,
+    ) -> Result<AssessmentsCancelResponse, agent_client_protocol::Error> {
+        self.on_achilles_assessments_cancel(req).await
+    }
+
+    #[custom_method(AssessmentsPauseRequest)]
+    async fn dispatch_achilles_assessments_pause(
+        &self,
+        req: AssessmentsPauseRequest,
+    ) -> Result<AssessmentsPauseResponse, agent_client_protocol::Error> {
+        self.on_achilles_assessments_pause(req).await
+    }
+
     #[custom_method(AssessmentsListRequest)]
     async fn dispatch_achilles_assessments_list(
         &self,
@@ -966,5 +985,21 @@ impl GooseAcpAgent {
         req: FindingsListRequest,
     ) -> Result<FindingsListResponse, agent_client_protocol::Error> {
         self.on_achilles_findings_list(req).await
+    }
+
+    #[custom_method(FindingsSetStateRequest)]
+    async fn dispatch_achilles_findings_set_state(
+        &self,
+        req: FindingsSetStateRequest,
+    ) -> Result<FindingsSetStateResponse, agent_client_protocol::Error> {
+        self.on_achilles_findings_set_state(req).await
+    }
+
+    #[custom_method(UtilsRunRequest)]
+    async fn dispatch_achilles_utils_run(
+        &self,
+        req: UtilsRunRequest,
+    ) -> Result<UtilsRunResponse, agent_client_protocol::Error> {
+        self.on_achilles_utils_run(req).await
     }
 }

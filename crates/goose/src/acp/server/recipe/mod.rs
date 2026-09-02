@@ -192,6 +192,10 @@ impl GooseAcpAgent {
         req: DeleteRecipeRequest,
     ) -> Result<EmptyResponse, agent_client_protocol::Error> {
         let file_path = self.resolve_recipe_path_by_id(&req.id).await?;
+        if crate::recipe::shipped::is_shipped_recipe_path(&file_path) {
+            return Err(agent_client_protocol::Error::invalid_params()
+                .data("Shipped recipes cannot be deleted"));
+        }
         fs::remove_file(&file_path).internal_err_ctx("Failed to delete recipe")?;
         self.recipe_path_cache.lock().await.remove(&req.id);
         Ok(EmptyResponse {})

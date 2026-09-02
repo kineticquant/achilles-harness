@@ -64,13 +64,11 @@ impl McpClientTrait for TomClient {
     async fn get_moim(&self, _session_id: &str) -> Option<String> {
         let mut parts = Vec::new();
 
-        if let Ok(text) = std::env::var("GOOSE_MOIM_MESSAGE_TEXT") {
-            if !text.trim().is_empty() {
-                parts.push(truncate_utf8(text));
-            }
+        if let Some(text) = moim_env("ACHILLES_MOIM_MESSAGE_TEXT", "GOOSE_MOIM_MESSAGE_TEXT") {
+            parts.push(truncate_utf8(text));
         }
 
-        if let Ok(path) = std::env::var("GOOSE_MOIM_MESSAGE_FILE") {
+        if let Some(path) = moim_env("ACHILLES_MOIM_MESSAGE_FILE", "GOOSE_MOIM_MESSAGE_FILE") {
             let expanded = shellexpand::tilde(&path);
             if let Some(content) = read_bounded(&expanded).await {
                 if !content.trim().is_empty() {
@@ -85,6 +83,13 @@ impl McpClientTrait for TomClient {
             Some(parts.join("\n"))
         }
     }
+}
+
+fn moim_env(achilles_key: &str, goose_key: &str) -> Option<String> {
+    std::env::var(achilles_key)
+        .ok()
+        .or_else(|| std::env::var(goose_key).ok())
+        .filter(|value| !value.trim().is_empty())
 }
 
 async fn read_bounded(path: &str) -> Option<String> {

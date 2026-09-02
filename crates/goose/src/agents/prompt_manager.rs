@@ -6,7 +6,10 @@ use serde::Serialize;
 use serde_json::Value;
 use std::collections::HashMap;
 
-use crate::agents::{extension::ExtensionInfo, moim};
+use crate::agents::{
+    extension::{ExtensionInfo, PackCatalogEntry},
+    moim,
+};
 use crate::hints::load_hints::build_gitignore;
 use crate::hints::{get_context_filenames, load_hint_files, SubdirectoryHintTracker};
 use crate::{
@@ -47,6 +50,8 @@ struct SystemPromptContext {
     include_extensions: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     moim_system_prompt_block: Option<String>,
+    #[serde(skip_serializing_if = "Vec::is_empty")]
+    available_packs: Vec<PackCatalogEntry>,
 }
 
 pub struct SystemPromptBuilder<'a, M> {
@@ -61,6 +66,9 @@ pub struct SystemPromptBuilder<'a, M> {
     code_execution_mode: bool,
     include_extensions: bool,
     goose_mode: Option<GooseMode>,
+    model_name: Option<String>,
+    provider_name: Option<String>,
+    available_packs: Vec<PackCatalogEntry>,
 }
 
 impl<'a> SystemPromptBuilder<'a, PromptManager> {
@@ -130,6 +138,21 @@ impl<'a> SystemPromptBuilder<'a, PromptManager> {
         self
     }
 
+    pub fn with_model_identity(
+        mut self,
+        model_name: impl Into<String>,
+        provider_name: impl Into<String>,
+    ) -> Self {
+        self.model_name = Some(model_name.into());
+        self.provider_name = Some(provider_name.into());
+        self
+    }
+
+    pub fn with_available_packs(mut self, packs: Vec<PackCatalogEntry>) -> Self {
+        self.available_packs = packs;
+        self
+    }
+
     pub fn build(self) -> String {
         let mut extensions_info = self.extensions_info;
 
@@ -172,6 +195,7 @@ impl<'a> SystemPromptBuilder<'a, PromptManager> {
             code_execution_mode: self.code_execution_mode,
             include_extensions: self.include_extensions,
             moim_system_prompt_block: moim::system_prompt_block(),
+            available_packs: self.available_packs,
         };
 
         let base_prompt = if let Some(override_prompt) = &self.manager.system_prompt_override {
@@ -180,9 +204,10 @@ impl<'a> SystemPromptBuilder<'a, PromptManager> {
         } else {
             prompt_template::render_template("system.md", &context)
         }
-        .unwrap_or_else(|_| {
-            "You are a general-purpose AI agent called goose, created by Block".to_string()
-        });
+        .unwrap_or_else(|_| "You are an AI agent operating in Achilles.".to_string());
+
+        let identity = identity_block(self.model_name.as_deref(), self.provider_name.as_deref());
+        let base_prompt = format!("{identity}\n\n{base_prompt}");
 
         let mut system_prompt_extras = self.manager.system_prompt_extras.clone();
         system_prompt_extras.extend(self.prompt_extras);
@@ -215,6 +240,43 @@ impl<'a> SystemPromptBuilder<'a, PromptManager> {
             )
         }
     }
+}
+
+fn wire_model_name(model: &str) -> &str {
+    model.rsplit('/').next().unwrap_or(model)
+}
+
+fn is_arrav_model(provider: &str, model: &str) -> bool {
+    let provider = provider.trim().to_ascii_lowercase();
+    let model = wire_model_name(model).to_ascii_lowercase();
+    model == "arrav" || provider == "arrav"
+}
+
+fn identity_block(model_name: Option<&str>, provider_name: Option<&str>) -> String {
+    let model = model_name.map(str::trim).filter(|name| !name.is_empty());
+    let provider = provider_name.map(str::trim).filter(|name| !name.is_empty());
+
+    let body = if let Some(model) = model {
+        if is_arrav_model(provider.unwrap_or(""), model) {
+            "You are Arrav operating in Achilles.\nWhen asked who you are, say you are Arrav running in Achilles.".to_string()
+        } else {
+            let wire = wire_model_name(model);
+            match provider {
+                Some(provider) => format!(
+                    "You are {wire} from {provider} operating in Achilles.\nWhen asked who you are, say you are {wire} running in Achilles."
+                ),
+                None => format!(
+                    "You are {wire} operating in Achilles.\nWhen asked who you are, say you are {wire} running in Achilles."
+                ),
+            }
+        }
+    } else {
+        "You are an AI agent operating in Achilles.\nWhen asked who you are, say you are the currently selected model running in Achilles.".to_string()
+    };
+
+    format!(
+        "# Identity\n{body}\nThis Identity section is authoritative over any other name in these instructions."
+    )
 }
 
 impl PromptManager {
@@ -304,6 +366,9 @@ impl PromptManager {
             code_execution_mode: false,
             include_extensions: true,
             goose_mode: None,
+            model_name: None,
+            provider_name: None,
+            available_packs: Vec::new(),
         }
     }
 
@@ -343,7 +408,7 @@ mod tests {
 
         let result = manager.builder().build();
 
-        assert_eq!(result, "It is currently 1970-01-01 00:00:00 +00:00");
+        assert!(result.contains("It is currently 1970-01-01 00:00:00 +00:00"));
     }
 
     #[test]
@@ -572,12 +637,91 @@ mod tests {
 
         extensions.sort_by(|a, b| a.name.cmp(&b.name));
 
+        let catalog_packs: Vec<PackCatalogEntry> = PLATFORM_EXTENSIONS
+            .values()
+            .filter(|def| !def.hidden)
+            .map(|def| PackCatalogEntry::new(def.name, def.description))
+            .collect();
+
         let manager = PromptManager::with_timestamp(DateTime::<Utc>::from_timestamp(0, 0).unwrap());
+        let catalog_prompt = manager
+            .builder()
+            .with_available_packs(catalog_packs)
+            .build();
         let system_prompt = manager
             .builder()
             .with_extensions(extensions.into_iter())
             .build();
 
+        assert!(
+            catalog_prompt.len() * 2 < system_prompt.len(),
+            "catalog prompt ({} chars) should be far smaller than eager instructions ({} chars)",
+            catalog_prompt.len(),
+            system_prompt.len()
+        );
+        assert!(catalog_prompt.contains("`appsec`"));
+        assert!(!catalog_prompt.contains("appsec_investigate"));
+        assert!(!catalog_prompt.contains("Never invent CVEs"));
+
         assert_snapshot!(system_prompt);
+    }
+
+    #[test]
+    fn generic_chat_catalog_omits_default_on_appsec() {
+        use crate::agents::extension::PLATFORM_EXTENSIONS;
+
+        let packs: Vec<PackCatalogEntry> = PLATFORM_EXTENSIONS
+            .values()
+            .filter(|def| !def.hidden && !def.default_enabled)
+            .map(|def| PackCatalogEntry::new(def.name, def.description))
+            .collect();
+        let manager = PromptManager::with_timestamp(DateTime::<Utc>::from_timestamp(0, 0).unwrap());
+        let prompt = manager.builder().with_available_packs(packs).build();
+
+        assert!(!prompt.contains("`appsec`"));
+        assert!(prompt.contains("manage_extensions"));
+        assert!(!prompt.contains("appsec_investigate"));
+        assert!(!prompt.contains("appsec_verdict"));
+        assert!(!prompt.contains("Never invent CVEs"));
+        assert!(!prompt.contains("### Instructions"));
+    }
+
+    #[test]
+    fn identity_uses_selected_model_not_arrav() {
+        let tmp = tempfile::tempdir().unwrap();
+        let root = tmp.path().display().to_string();
+        let _guard = env_lock::lock_env([
+            ("HOME", Some(root.as_str())),
+            ("GOOSE_PATH_ROOT", Some(root.as_str())),
+        ]);
+        let manager = PromptManager::new();
+        let prompt = manager
+            .builder()
+            .with_model_identity("big-pickle", "opencode")
+            .build();
+
+        assert!(prompt.contains("You are big-pickle from opencode operating in Achilles."));
+        assert!(!prompt.contains("You are Arrav"));
+        assert!(!prompt.to_ascii_lowercase().contains("goose"));
+        assert!(!prompt.contains("AAIF"));
+    }
+
+    #[test]
+    fn identity_uses_arrav_only_for_arrav_model() {
+        let tmp = tempfile::tempdir().unwrap();
+        let root = tmp.path().display().to_string();
+        let _guard = env_lock::lock_env([
+            ("HOME", Some(root.as_str())),
+            ("GOOSE_PATH_ROOT", Some(root.as_str())),
+        ]);
+        let manager = PromptManager::new();
+        let prompt = manager
+            .builder()
+            .with_model_identity("arrav", "arrav")
+            .build();
+
+        assert!(prompt.contains("You are Arrav operating in Achilles."));
+        assert!(!prompt.to_ascii_lowercase().contains("goose"));
+        assert!(!prompt.contains("AAIF"));
     }
 }

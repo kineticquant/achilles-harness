@@ -115,6 +115,39 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_opencode_zen_provider() {
+        let zen = crate::providers::get_from_registry("opencode")
+            .await
+            .expect("OpenCode Zen should be registered as a declarative provider");
+        assert_eq!(zen.provider_type(), ProviderType::Declarative);
+
+        let metadata = zen.metadata();
+        assert_eq!(metadata.display_name, "OpenCode Zen");
+        assert!(
+            metadata
+                .known_models
+                .iter()
+                .any(|model| model.name == "big-pickle" || model.name.ends_with("-free")),
+            "OpenCode Zen should list free models as a static fallback"
+        );
+        assert!(
+            metadata
+                .config_keys
+                .iter()
+                .any(|key| key.name == "OPENCODE_API_KEY"),
+            "OpenCode Zen should expose OPENCODE_API_KEY"
+        );
+
+        let setup_entry = get_setup_catalog_entries()
+            .await
+            .into_iter()
+            .find(|entry| entry.provider_id == "opencode")
+            .expect("OpenCode Zen should be in the setup catalog");
+        assert_eq!(setup_entry.setup_method, ProviderSetupMethod::SingleApiKey);
+        assert_eq!(setup_entry.display_name, "OpenCode Zen");
+    }
+
+    #[tokio::test]
     async fn setup_catalog_includes_goose_and_curated_fields() {
         let entries = get_setup_catalog_entries().await;
 
@@ -198,6 +231,8 @@ mod tests {
         assert!(provider_ids.contains("claude-acp"));
         assert!(provider_ids.contains("codex-acp"));
         assert!(provider_ids.contains("atomic_chat"));
+        assert!(provider_ids.contains("opencode"));
+        assert!(provider_ids.contains("opencode_go"));
         assert!(!provider_ids.contains("claude_code"));
         assert!(!provider_ids.contains("codex"));
         assert!(!provider_ids.contains("gemini_cli"));

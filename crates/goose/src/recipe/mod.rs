@@ -17,6 +17,7 @@ pub mod local_recipes;
 pub mod manifest;
 pub mod read_recipe_file_content;
 mod recipe_extension_adapter;
+pub mod shipped;
 pub mod template_recipe;
 pub mod validate_recipe;
 pub mod yaml_format_utils;

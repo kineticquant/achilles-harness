@@ -1,0 +1,59 @@
+version: 1.0.0
+title: SCA and pinning report
+description: Scan lockfiles, then report known-vulnerable dependencies and pinning hygiene. Copy advisory ids from findings — never invent CVEs.
+author:
+  contact: Achilles
+
+activities:
+  - "message: SCA is third-party libraries vs OSV. Pinning is unpinned manifests / missing lockfiles. Not a source-code bug in your file."
+  - What should we pin or upgrade first?
+  - Which advisories are known-exploited?
+
+parameters:
+  - key: workspace
+    input_type: string
+    requirement: required
+    description: Absolute path of the repo whose lockfiles to scan
+
+settings:
+  max_turns: 20
+
+extensions:
+  - type: platform
+    name: appsec
+  - type: platform
+    name: developer
+
+instructions: |
+  You produce an SCA (software composition analysis) and pinning hygiene report
+  for one workspace. Engines are authoritative. Never invent package names, versions,
+  CVEs, GHSAs, CVSS, KEV, or EPSS.
+
+  Tools:
+  - appsec_scan(working_dir, mode=quick, depth=fast, wait=true)
+  - appsec_query — use finding ids; filter to SCA, pinning, and Socket rule_ids
+  - appsec_intel — only for CVE/GHSA ids already on a finding. Skip for
+    Socket-only alerts and for pinning (those have no CVE).
+
+  Categories:
+  - SCA = lockfile packages vs OSV (CVEs/GHSAs, including MAL-* malware advisories)
+  - Pinning = unpinned manifests or missing lockfiles, not CVEs
+  - Socket (optional token) = extra catalog alerts on those same packages
+    (rule_id like socket:malware), no CVE
+  - Local hygiene = install-time scripts and lookalike names in manifests/lockfiles
+
+  Do not report SAST, secrets, or surfaces here. No exploit details.
+
+prompt: |
+  Scan {{ workspace }} at depth=fast, mode=quick, wait until it finishes. Then
+  appsec_query and write a dependency report.
+
+  1. Pinning / missing lockfiles first (actionable, no CVE needed).
+  2. SCA findings with advisory ids. Call appsec_intel for each CVE/GHSA.
+     Note KEV (CISA Known Exploited Vulnerabilities) and EPSS only when the
+     tool returns them; otherwise say unknown.
+  3. Socket / lookalike / install-script hygiene last.
+
+  For each item: finding id, package + version, advisory ids, why it matters,
+  smallest upgrade or pin that clears it. If there are no SCA or pinning
+  hits, say so — do not invent a backlog.

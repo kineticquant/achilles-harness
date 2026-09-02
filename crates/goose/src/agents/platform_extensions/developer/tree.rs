@@ -6,6 +6,7 @@ use ignore::WalkBuilder;
 use rmcp::model::{CallToolResult, ContentBlock};
 use schemars::JsonSchema;
 use serde::Deserialize;
+use tokio_util::sync::CancellationToken;
 
 #[derive(Debug, Deserialize, JsonSchema)]
 pub struct TreeParams {
@@ -27,10 +28,15 @@ impl TreeTool {
 
     pub fn tree(&self, params: TreeParams) -> CallToolResult {
         let root = PathBuf::from(&params.path);
-        self.tree_at(root, params.depth)
+        self.tree_at(root, params.depth, None)
     }
 
-    pub fn tree_with_cwd(&self, params: TreeParams, working_dir: Option<&Path>) -> CallToolResult {
+    pub fn tree_with_cwd(
+        &self,
+        params: TreeParams,
+        working_dir: Option<&Path>,
+        cancel: Option<&CancellationToken>,
+    ) -> CallToolResult {
         let path = PathBuf::from(&params.path);
         let root = if path.is_absolute() {
             path
@@ -41,10 +47,26 @@ impl TreeTool {
                 .unwrap_or_else(|| PathBuf::from("."))
                 .join(path)
         };
-        self.tree_at(root, params.depth)
+        self.tree_at(root, params.depth, cancel)
     }
 
-    fn tree_at(&self, root: PathBuf, depth: u32) -> CallToolResult {
+    fn tree_at(
+        &self,
+        root: PathBuf,
+        depth: u32,
+        cancel: Option<&CancellationToken>,
+    ) -> CallToolResult {
+        if cancel.is_some_and(|token| token.is_cancelled()) {
+            return cancelled_tree_result();
+        }
+
+        if is_overbroad_tree_root(&root) {
+            return CallToolResult::error(vec![ContentBlock::text(format!(
+                "Refusing to tree `{}` (home directory or drive root). Pass a specific project directory.",
+                root.display()
+            ))]);
+        }
+
         if !root.exists() {
             return CallToolResult::error(vec![ContentBlock::text(format!(
                 "Path does not exist: {}",
@@ -65,7 +87,10 @@ impl TreeTool {
             Some(depth as usize)
         };
 
-        let mut tree = collect_tree(&root, max_depth);
+        let mut tree = match collect_tree(&root, max_depth, cancel) {
+            Ok(tree) => tree,
+            Err(()) => return cancelled_tree_result(),
+        };
         tree.compute_total_lines();
 
         let mut output = String::new();
@@ -148,7 +173,43 @@ impl DirectoryNode {
     }
 }
 
-fn collect_tree(root: &Path, max_depth: Option<usize>) -> DirectoryNode {
+fn cancelled_tree_result() -> CallToolResult {
+    CallToolResult::error(vec![ContentBlock::text("Tree cancelled")])
+}
+
+fn is_filesystem_root(path: &Path) -> bool {
+    let mut saw_rootish = false;
+    for component in path.components() {
+        match component {
+            Component::Prefix(_) | Component::RootDir => saw_rootish = true,
+            _ => return false,
+        }
+    }
+    saw_rootish
+}
+
+fn paths_loosely_equal(a: &Path, b: &Path) -> bool {
+    if a == b {
+        return true;
+    }
+    match (a.canonicalize(), b.canonicalize()) {
+        (Ok(left), Ok(right)) => left == right,
+        _ => false,
+    }
+}
+
+fn is_overbroad_tree_root(path: &Path) -> bool {
+    if is_filesystem_root(path) {
+        return true;
+    }
+    dirs::home_dir().is_some_and(|home| paths_loosely_equal(path, &home))
+}
+
+fn collect_tree(
+    root: &Path,
+    max_depth: Option<usize>,
+    cancel: Option<&CancellationToken>,
+) -> Result<DirectoryNode, ()> {
     let mut builder = WalkBuilder::new(root);
     builder.git_ignore(true);
     builder.git_exclude(true);
@@ -163,6 +224,10 @@ fn collect_tree(root: &Path, max_depth: Option<usize>) -> DirectoryNode {
 
     let mut tree = DirectoryNode::default();
     for entry in builder.build().flatten() {
+        if cancel.is_some_and(|token| token.is_cancelled()) {
+            return Err(());
+        }
+
         let path = entry.path();
         if path == root {
             continue;
@@ -185,7 +250,7 @@ fn collect_tree(root: &Path, max_depth: Option<usize>) -> DirectoryNode {
         }
     }
 
-    tree
+    Ok(tree)
 }
 
 fn relative_components(path: &Path) -> Option<Vec<String>> {
@@ -295,5 +360,51 @@ mod tests {
         assert!(text.contains("visible.rs"));
         assert!(!text.contains("ignored"));
         assert!(!text.contains("debug.log"));
+    }
+
+    #[test]
+    fn tree_refuses_home_directory() {
+        let Some(home) = dirs::home_dir() else {
+            return;
+        };
+        let tool = TreeTool::new();
+        let result = tool.tree(TreeParams {
+            path: home.display().to_string(),
+            depth: 1,
+        });
+        assert_eq!(result.is_error, Some(true));
+        assert!(extract_text(&result).contains("home directory or drive root"));
+    }
+
+    #[test]
+    fn tree_refuses_filesystem_root() {
+        let root = if cfg!(windows) { r"C:\" } else { "/" };
+        let tool = TreeTool::new();
+        let result = tool.tree(TreeParams {
+            path: root.to_string(),
+            depth: 1,
+        });
+        assert_eq!(result.is_error, Some(true));
+        assert!(extract_text(&result).contains("home directory or drive root"));
+    }
+
+    #[test]
+    fn tree_stops_when_cancelled() {
+        let dir = setup_tree();
+        let tool = TreeTool::new();
+        let token = CancellationToken::new();
+        token.cancel();
+
+        let result = tool.tree_with_cwd(
+            TreeParams {
+                path: dir.path().display().to_string(),
+                depth: 2,
+            },
+            None,
+            Some(&token),
+        );
+
+        assert_eq!(result.is_error, Some(true));
+        assert_eq!(extract_text(&result), "Tree cancelled");
     }
 }

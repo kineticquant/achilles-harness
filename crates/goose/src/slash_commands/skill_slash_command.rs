@@ -6,7 +6,7 @@ use super::types::{SlashCommandEntry, SlashCommandSource};
 use super::util::normalize_command_name;
 
 pub fn list_commands(working_dir: Option<&Path>) -> Vec<SlashCommandEntry> {
-    commands_from_sources(crate::skills::list_installed_skills(working_dir))
+    commands_from_sources(crate::skills::discover_enabled_skills(working_dir))
 }
 
 pub fn format_installed_skills(working_dir: Option<&Path>) -> String {

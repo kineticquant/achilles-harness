@@ -19,6 +19,7 @@ use rmcp::model::{
 use schemars::{schema_for, JsonSchema};
 use serde_json::Value;
 use shell::{shell_display_name, ShellOutput, ShellParams, ShellTool};
+use std::path::PathBuf;
 use std::sync::Arc;
 use tokio_util::sync::CancellationToken;
 use tree::{TreeParams, TreeTool};
@@ -49,6 +50,9 @@ fn developer_instructions() -> &'static str {
             responsible for managing your context window, and to minimize unnecessary turns which
             cost the user money.
 
+            Do not start a new project from a short or ambiguous user message. Ask what they want first.
+            Never run tree on a home directory, user profile, or drive root — only on a specific project path.
+
             For editing software, prefer the flow of using tree to understand the codebase structure
             and file sizes. When you need to search, prefer findstr or Select-String (via shell).
             Then use type or Get-Content to gather the context you need, always reading before
@@ -62,6 +66,9 @@ fn developer_instructions() -> &'static str {
             iterations as possible and then making the requested edits or running commands. You are
             responsible for managing your context window, and to minimize unnecessary turns which
             cost the user money.
+
+            Do not start a new project from a short or ambiguous user message. Ask what they want first.
+            Never run tree on a home directory, user profile, or drive root — only on a specific project path.
 
             For editing software, prefer the flow of using tree to understand the codebase structure
             and file sizes. When you need to search, prefer rg which correctly respects gitignored
@@ -230,7 +237,18 @@ impl McpClientTrait for DeveloperClient {
                 ))])),
             },
             "tree" => match Self::parse_args::<TreeParams>(arguments) {
-                Ok(params) => Ok(self.tree_tool.tree_with_cwd(params, working_dir)),
+                Ok(params) => {
+                    let working_dir = working_dir.map(PathBuf::from);
+                    let cancel = cancel_token.clone();
+                    let tree_tool = Arc::clone(&self.tree_tool);
+                    let result = tokio::task::spawn_blocking(move || {
+                        tree_tool.tree_with_cwd(params, working_dir.as_deref(), Some(&cancel))
+                    })
+                    .await;
+                    Ok(result.unwrap_or_else(|_| {
+                        CallToolResult::error(vec![visible_text("Tree cancelled")])
+                    }))
+                }
                 Err(error) => Ok(CallToolResult::error(vec![visible_text(format!(
                     "Error: {error}"
                 ))])),

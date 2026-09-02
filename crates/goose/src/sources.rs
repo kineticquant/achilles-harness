@@ -1535,14 +1535,23 @@ mod tests {
         let listed = list_sources(Some(SourceType::BuiltinSkill), None, false).unwrap();
         let builtin = listed
             .iter()
-            .find(|source| source.name == "goose-doc-guide")
-            .expect("expected goose-doc-guide builtin skill");
+            .find(|source| source.name == "goose-doc-guide");
 
-        assert_eq!(builtin.source_type, SourceType::BuiltinSkill);
-        assert!(builtin.global);
-        assert_eq!(builtin.path, "builtin://skills/goose-doc-guide");
-        assert!(builtin.supporting_files.is_empty());
-        assert!(!builtin.content.is_empty());
+        #[cfg(debug_assertions)]
+        {
+            let builtin = builtin.expect("expected goose-doc-guide builtin skill in debug builds");
+            assert_eq!(builtin.source_type, SourceType::BuiltinSkill);
+            assert!(builtin.global);
+            assert_eq!(builtin.path, "builtin://skills/goose-doc-guide");
+            assert!(builtin.supporting_files.is_empty());
+            assert!(!builtin.content.is_empty());
+        }
+
+        #[cfg(not(debug_assertions))]
+        assert!(
+            builtin.is_none(),
+            "dev-only builtins must not be embedded in release builds"
+        );
     }
 
     #[test]

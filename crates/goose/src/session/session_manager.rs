@@ -333,6 +333,8 @@ pub(crate) struct SessionListFilters<'a> {
     pub(crate) types: Option<&'a [SessionType]>,
     pub(crate) working_dir: Option<&'a Path>,
     pub(crate) keyword: Option<&'a str>,
+    /// When true, omit unnamed sessions that have no messages. User-named
+    /// sessions (including scan sessions) are still listed.
     pub(crate) only_sessions_with_messages: bool,
 }
 
@@ -1960,6 +1962,9 @@ impl SessionStorage {
                 "({sort_timestamp_sql} < ? OR ({sort_timestamp_sql} = ? AND s.id < ?))"
             ));
         }
+        if filters.only_sessions_with_messages {
+            having_clauses.push("(COUNT(m.id) > 0 OR s.user_set_name = TRUE)".to_string());
+        }
 
         let where_clause = if where_clauses.is_empty() {
             String::new()
@@ -1971,11 +1976,7 @@ impl SessionStorage {
         } else {
             format!("HAVING {}", having_clauses.join(" AND "))
         };
-        let message_join = if filters.only_sessions_with_messages {
-            "JOIN messages m ON s.id = m.session_id"
-        } else {
-            "LEFT JOIN messages m ON s.id = m.session_id"
-        };
+        let message_join = "LEFT JOIN messages m ON s.id = m.session_id";
         let order_by = "ORDER BY sort_timestamp DESC, s.id DESC";
         let limit_clause = if query.limit.is_some() { "LIMIT ?" } else { "" };
 
@@ -3541,6 +3542,43 @@ mod tests {
             assert_session_list_page(&sm, cursor.as_ref(), None, 2, &expected_ids[2..4], true)
                 .await;
         assert_session_list_page(&sm, cursor.as_ref(), None, 2, &expected_ids[4..5], false).await;
+    }
+
+    #[tokio::test]
+    async fn test_session_list_paged_includes_user_named_sessions_without_messages() {
+        let temp_dir = TempDir::new().unwrap();
+        let sm = SessionManager::new(temp_dir.path().to_path_buf());
+        let unnamed_empty = create_session_for_list(&sm, "/tmp/session-list", false).await;
+        let named_empty = create_session_for_list(&sm, "/tmp/session-list", false).await;
+        sm.update(&named_empty)
+            .user_provided_name("Scan · repo")
+            .apply()
+            .await
+            .unwrap();
+        let with_message = create_session_for_list(&sm, "/tmp/session-list", true).await;
+
+        let types = [SessionType::User];
+        let page = sm
+            .list_sessions_paged(SessionListPageQuery {
+                filters: SessionListFilters {
+                    types: Some(&types),
+                    only_sessions_with_messages: true,
+                    ..Default::default()
+                },
+                cursor: None,
+                page_size: 10,
+                include_last_message_snippet: false,
+            })
+            .await
+            .unwrap();
+        let ids: Vec<_> = page
+            .sessions
+            .iter()
+            .map(|session| session.id.clone())
+            .collect();
+        assert!(ids.contains(&named_empty));
+        assert!(ids.contains(&with_message));
+        assert!(!ids.contains(&unnamed_empty));
     }
 
     #[tokio::test]

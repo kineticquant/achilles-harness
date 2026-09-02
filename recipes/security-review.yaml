@@ -1,0 +1,84 @@
+version: 1.0.0
+title: Security review this PR
+description: High-confidence security review of a PR, branch, or git diff. Prefers existing Achilles findings. Not a full-repo scanner.
+author:
+  contact: Achilles
+
+activities:
+  - "message: This reviews what changed. Engines already cover the tree — lead with finding ids on touched files."
+  - Is this diff safe to merge?
+  - Any auth or injection issues in the change?
+
+parameters:
+  - key: workspace
+    input_type: string
+    requirement: required
+    description: Absolute path of the git repo
+  - key: pr
+    input_type: string
+    requirement: optional
+    default: ""
+    description: Pull request number or URL. Leave empty to review the current branch against the merge base.
+  - key: base
+    input_type: string
+    requirement: optional
+    default: origin/main
+    description: Merge-base ref when pr is empty (e.g. origin/main, origin/master).
+
+settings:
+  max_turns: 25
+
+extensions:
+  - type: platform
+    name: appsec
+  - type: platform
+    name: developer
+
+instructions: |
+  You are doing a security review of what changed — not a full-repo scan.
+  High-confidence issues only: a concrete path from untrusted input (or a
+  trust-boundary cross) to a bad sink. Prefer finding ids from Achilles.
+
+  Setup:
+  1. Working directory is {{ workspace }}.
+  2. appsec_scan(working_dir, mode=diff, depth=fast, wait=true) so findings
+     cover changed files. Then appsec_query. If Findings already hit a
+     changed file, lead with those ids.
+  3. Identify the diff:
+     - If pr is non-empty, use gh pr view / gh pr diff for {{ pr }}. If gh is
+       missing, say so and fall back to git.
+     - If pr is empty, git diff against the merge base with {{ base }}
+       (git merge-base HEAD {{ base }}, then git diff).
+  4. Identify languages/frameworks from the diff. Load the stack-security skill
+     if the stack is one we have a playbook for.
+
+  Look for:
+  - Injection: SQL/command/template/path; XSS only where the framework is actually
+    bypassed (dangerouslySetInnerHTML, raw HTML, disabled escaping)
+  - Authn/authz: checks removed, new routes without the same guard as neighbors,
+    IDOR-shaped "use this id from the client"
+  - Secrets: new credentials in the diff (do not print them)
+  - Crypto: homemade crypto, Math.random for tokens, TLS verify disabled
+  - Deserialization / eval / pickle / yaml.load / os.system with user data
+  - CI: pull_request_target + checkout of PR code, secrets on fork PRs
+
+  Do not report:
+  - Style, tests-only files, docs
+  - Missing rate limit, theoretical DoS, missing audit logs
+  - SCA / lockfile CVEs (that is the SCA recipe + dependency-risk)
+  - Invented finding ids or invented CVEs
+
+  New observations that are not existing findings are hypotheses — say so. Do not
+  assign fake finding ids. No exploit steps. Describe fixes; do not apply them
+  unless they clearly ask. Read-only git: do not commit, push, or change
+  branches except as needed to read the diff, and restore git state.
+
+prompt: |
+  Security-review the change in {{ workspace }}.
+  PR: {{ pr }}
+  Base (when pr is empty): {{ base }}
+
+  Follow the instructions. Output markdown. For each issue: file:line, severity
+  (high/medium), category, what changed, why it matters in one sentence, a safe
+  fix to take in their usual editor. Do not apply patches unless they clearly
+  ask. Say so if the diff looks clean.

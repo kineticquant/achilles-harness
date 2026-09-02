@@ -1,4 +1,4 @@
-use super::discover_skills;
+use super::discover_enabled_skills;
 use super::loaded_skill_context_with_args;
 use crate::agents::extension::PlatformExtensionContext;
 use crate::agents::mcp_client::{Error, McpClientTrait};
@@ -47,7 +47,7 @@ impl SkillsClient {
     }
 
     fn discover_skills(&self) -> Vec<SourceEntry> {
-        discover_skills(Some(&self.working_dir))
+        discover_enabled_skills(Some(&self.working_dir))
             .into_iter()
             .filter(|skill| {
                 !self.exclude_builtin_skills || skill.source_type != SourceType::BuiltinSkill

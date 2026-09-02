@@ -38,7 +38,8 @@ impl TodoClient {
                 Your todo content is automatically available in your context.
 
                 Workflow:
-                - Start: write initial checklist
+                - Use this list only for concrete multi-step work the user clearly asked for
+                - Do not invent a project or checklist from a short or ambiguous phrase
                 - During: update progress
                 - End: verify all complete
 
@@ -193,10 +194,7 @@ impl McpClientTrait for TodoClient {
             Some(state) if !state.content.trim().is_empty() => {
                 Some(format!("Current tasks and notes:\n{}\n", state.content))
             }
-            _ => Some(
-                "Current tasks and notes:\nOnce given a task, immediately update your todo with all explicit and implicit requirements\n"
-                    .to_string(),
-            ),
+            _ => None,
         }
     }
 }

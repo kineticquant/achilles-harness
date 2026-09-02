@@ -80,21 +80,24 @@ impl ExtensionManagerClient {
             ServerCapabilities::builder().enable_tools().build(),
         )
         .with_server_info(Implementation::new(EXTENSION_NAME, "1.0.0").with_title(EXTENSION_NAME))
-        .with_instructions(indoc! {r#"
+            .with_instructions(indoc! {r#"
             Extension Management
 
             Use these tools to discover, enable, and disable extensions, as well as review resources.
 
             Available tools:
             - search_available_extensions: Find extensions available to enable/disable
-            - manage_extensions: Enable or disable extensions
+            - manage_extensions: Enable or disable extensions for this chat
             - list_resources: List resources from extensions
             - read_resource: Read specific resources from extensions
 
             When you lack the tools needed to complete a task, use search_available_extensions first
-            to discover what extensions can help.
+            to discover what extensions can help. A short catalog of unloaded packs is also in the
+            system prompt.
 
-            Use manage_extensions to enable or disable specific extensions by name.
+            Use manage_extensions to enable or disable specific extensions by name for this session
+            only. That does not change the user's default extensions; they persist defaults in the
+            Extensions sidebar.
             Use list_resources and read_resource to work with extension data and resources.
         "#});
 
@@ -166,7 +169,7 @@ impl ExtensionManagerClient {
                 .await
                 .map(|_| {
                     vec![ContentBlock::text(format!(
-                        "The extension '{}' has been disabled successfully",
+                        "The extension '{}' has been disabled for this chat. User defaults were not changed.",
                         extension_name
                     ))]
                 })
@@ -192,7 +195,7 @@ impl ExtensionManagerClient {
             .await
             .map(|_| {
                 vec![ContentBlock::text(format!(
-                    "The extension '{}' has been installed successfully",
+                    "The extension '{}' has been enabled for this chat. Its tools are now available. This does not change the user's default extensions.",
                     extension_name
                 ))]
             })
@@ -291,10 +294,10 @@ impl ExtensionManagerClient {
             )),
             Tool::new(
                 MANAGE_EXTENSIONS_TOOL_NAME.to_string(),
-                "Tool to manage extensions and tools in goose context.
-            Enable or disable extensions to help complete tasks.
-            Enable or disable an extension by providing the extension name.
-            ".to_string(),
+                "Tool to manage extensions in this chat.
+            Enable or disable an extension by name for this session only.
+            This hydrates tools for the rest of the chat; it does not change the user's default extensions.
+            Use the Extensions sidebar to persist defaults.".to_string(),
                 Arc::new(
                     serde_json::to_value(schema_for!(ManageExtensionsParams))
                         .expect("Failed to serialize schema")

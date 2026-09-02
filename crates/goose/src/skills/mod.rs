@@ -99,7 +99,8 @@ pub(crate) fn validate_skill_name(name: &str) -> Result<(), Error> {
     Ok(())
 }
 
-const DEFAULT_GOOSE_DOCS_ROOT: &str = "https://goose-docs.ai";
+const DEFAULT_GOOSE_DOCS_ROOT: &str =
+    "https://github.com/kineticquant/achilles-harness/blob/main/docs";
 const GOOSE_DOCS_ROOT_PLACEHOLDER: &str = "{{GOOSE_DOCS_ROOT}}";
 
 /// Substitute the `{{GOOSE_DOCS_ROOT}}` placeholder in the builtin
@@ -474,9 +475,36 @@ fn scan_skills_from_dir(dir: &Path, global: bool, seen: &mut HashSet<String>) ->
     sources
 }
 
+/// Config key: list of skill names the user turned off in the Skills UI.
+pub const DISABLED_SKILLS_CONFIG_KEY: &str = "DISABLED_SKILLS";
+
+pub fn disabled_skill_names() -> HashSet<String> {
+    Config::global()
+        .get_param::<Vec<String>>(DISABLED_SKILLS_CONFIG_KEY)
+        .unwrap_or_default()
+        .into_iter()
+        .filter(|name| !name.trim().is_empty())
+        .collect()
+}
+
+pub fn is_skill_enabled(name: &str) -> bool {
+    !disabled_skill_names().contains(name)
+}
+
+/// Skills the model may load. Same as [`discover_skills`] minus names the user
+/// turned off.
+pub fn discover_enabled_skills(working_dir: Option<&Path>) -> Vec<SourceEntry> {
+    let disabled = disabled_skill_names();
+    discover_skills(working_dir)
+        .into_iter()
+        .filter(|skill| !disabled.contains(&skill.name))
+        .collect()
+}
+
 /// Discover skills from all configured filesystem locations and built-ins.
 /// Each returned entry has `global` set according to the directory it was
-/// found in (or `true` for built-ins).
+/// found in (or `true` for built-ins). Does not apply the Skills UI on/off
+/// filter — use [`discover_enabled_skills`] for the agent.
 pub fn discover_skills(working_dir: Option<&Path>) -> Vec<SourceEntry> {
     let mut sources: Vec<SourceEntry> = Vec::new();
     let mut seen = HashSet::new();

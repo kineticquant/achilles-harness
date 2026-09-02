@@ -52,7 +52,7 @@ fn skill_tool() -> Result<Tool> {
 }
 
 fn skill_instructions(working_dir: &Path) -> Option<String> {
-    let sources = crate::skills::discover_skills(Some(working_dir));
+    let sources = crate::skills::discover_enabled_skills(Some(working_dir));
     let mut skills: Vec<&SourceEntry> = sources
         .iter()
         .filter(|source| {
@@ -90,7 +90,7 @@ fn execute_skill(working_dir: &Path, arguments: Option<JsonObject>) -> CallToolR
     };
     let skill_name = params.name.as_str();
     let args = params.args.as_deref();
-    let skills = crate::skills::discover_skills(Some(working_dir));
+    let skills = crate::skills::discover_enabled_skills(Some(working_dir));
 
     if let Some(skill) = skills.iter().find(|skill| skill.name == skill_name) {
         return match crate::skills::loaded_skill_context_with_args(skill, args) {

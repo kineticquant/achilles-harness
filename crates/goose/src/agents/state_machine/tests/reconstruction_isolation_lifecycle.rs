@@ -51,7 +51,7 @@ async fn reconstruction_and_session_isolation() -> Result<()> {
             "extension_name": "analyze"
         }),
     );
-    api.on("installed successfully").reply("analyze is ready");
+    api.on("enabled for this chat").reply("analyze is ready");
 
     let first = pipeline.run(["install analyze"]).await?;
     let first_cost = first.session.accumulated_cost.expect("estimated cost");

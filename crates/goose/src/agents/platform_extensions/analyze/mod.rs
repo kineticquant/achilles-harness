@@ -1,5 +1,6 @@
 pub mod format;
 pub mod graph;
+pub mod inspect;
 pub mod languages;
 pub mod parser;
 

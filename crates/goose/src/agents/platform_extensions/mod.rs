@@ -1,6 +1,8 @@
 pub mod analyze;
-pub mod appsec;
 pub mod apps;
+pub mod appsec;
+pub mod appsec_mcp;
+pub mod appsec_scan;
 pub mod chatrecall;
 #[cfg(feature = "code-mode")]
 pub mod code_execution;
@@ -38,7 +40,7 @@ pub static PLATFORM_EXTENSIONS: Lazy<HashMap<&'static str, PlatformExtensionDef>
                 display_name: "Analyze",
                 description:
                     "Analyze code structure with tree-sitter: directory overviews, file details, symbol call graphs",
-                default_enabled: true,
+                default_enabled: false,
                 unprefixed_tools: true,
                 hidden: false,
                 client_factory: |ctx| Some(Box::new(analyze::AnalyzeClient::new(ctx).unwrap())),
@@ -51,7 +53,7 @@ pub static PLATFORM_EXTENSIONS: Lazy<HashMap<&'static str, PlatformExtensionDef>
                 name: todo::EXTENSION_NAME,
                 display_name: "Todo",
                 description:
-                    "Enable a todo list for goose so it can keep track of what it is doing",
+                    "Enable a todo list for Achilles so it can keep track of what it is doing",
                 default_enabled: true,
                 unprefixed_tools: false,
                 hidden: false,
@@ -65,8 +67,8 @@ pub static PLATFORM_EXTENSIONS: Lazy<HashMap<&'static str, PlatformExtensionDef>
                 name: apps::EXTENSION_NAME,
                 display_name: "Apps",
                 description:
-                    "Create and manage custom Goose apps through chat. Apps are HTML/CSS/JavaScript and run in sandboxed windows.",
-                default_enabled: true,
+                    "Create and manage custom Achilles apps through chat. Apps are HTML/CSS/JavaScript and run in sandboxed windows.",
+                default_enabled: false,
                 unprefixed_tools: false,
                 hidden: false,
                 client_factory: |ctx| Some(Box::new(apps::AppsManagerClient::new(ctx).unwrap())),
@@ -109,7 +111,7 @@ pub static PLATFORM_EXTENSIONS: Lazy<HashMap<&'static str, PlatformExtensionDef>
                 name: scheduler::EXTENSION_NAME,
                 display_name: "Scheduler",
                 description: "Create and manage scheduled recipe execution",
-                default_enabled: true,
+                default_enabled: false,
                 unprefixed_tools: false,
                 hidden: true,
                 client_factory: |ctx| {
@@ -124,7 +126,7 @@ pub static PLATFORM_EXTENSIONS: Lazy<HashMap<&'static str, PlatformExtensionDef>
                 name: summon::EXTENSION_NAME,
                 display_name: "Summon",
                 description: "Load knowledge and delegate tasks to subagents",
-                default_enabled: true,
+                default_enabled: false,
                 unprefixed_tools: true,
                 hidden: false,
                 client_factory: |ctx| Some(Box::new(summon::SummonClient::new(ctx).unwrap())),
@@ -173,7 +175,7 @@ pub static PLATFORM_EXTENSIONS: Lazy<HashMap<&'static str, PlatformExtensionDef>
                 name: appsec::EXTENSION_NAME,
                 display_name: "AppSec",
                 description:
-                    "Scan for secrets and vulnerable dependencies; query the Achilles findings ledger",
+                    "Scan for secrets and vulnerable dependencies; query Achilles findings",
                 default_enabled: true,
                 unprefixed_tools: true,
                 hidden: false,
@@ -214,8 +216,8 @@ pub static PLATFORM_EXTENSIONS: Lazy<HashMap<&'static str, PlatformExtensionDef>
                 name: tom::EXTENSION_NAME,
                 display_name: "Top Of Mind",
                 description:
-                    "Inject custom context into every turn via GOOSE_MOIM_MESSAGE_TEXT and GOOSE_MOIM_MESSAGE_FILE environment variables",
-                default_enabled: true,
+                    "Inject custom context into every turn via ACHILLES_MOIM_MESSAGE_TEXT and ACHILLES_MOIM_MESSAGE_FILE (GOOSE_MOIM_* aliases still work)",
+                default_enabled: false,
                 unprefixed_tools: false,
                 hidden: false,
                 client_factory: |ctx| Some(Box::new(tom::TomClient::new(ctx).unwrap())),
@@ -318,4 +320,34 @@ pub struct PlatformExtensionDef {
     /// If true, the extension is not shown in the UI or discoverable via search_available_extensions.
     pub hidden: bool,
     pub client_factory: fn(PlatformExtensionContext) -> Option<Box<dyn McpClientTrait>>,
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn core_defaults_are_developer_todo_extension_manager_skills_and_appsec() {
+        let enabled: Vec<&str> = PLATFORM_EXTENSIONS
+            .iter()
+            .filter(|(_, def)| def.default_enabled)
+            .map(|(name, _)| *name)
+            .collect();
+        assert!(enabled.contains(&"developer"));
+        assert!(enabled.contains(&"todo"));
+        assert!(enabled.contains(&"extensionmanager"));
+        assert!(enabled.contains(&"skills"));
+        assert!(enabled.contains(&"appsec"));
+        assert_eq!(enabled.len(), 5, "unexpected default-on packs: {enabled:?}");
+    }
+
+    #[test]
+    fn lazy_packs_are_off_by_default() {
+        for name in ["apps", "summon", "tom", "analyze", "scheduler"] {
+            assert!(
+                !PLATFORM_EXTENSIONS[name].default_enabled,
+                "{name} should be lazy/off by default"
+            );
+        }
+    }
 }

@@ -1,0 +1,2 @@
+Shipped builtin skills live in this directory as *.md files.
+Dev-only skills belong in ../dev-builtins/ and are not compiled into release builds.

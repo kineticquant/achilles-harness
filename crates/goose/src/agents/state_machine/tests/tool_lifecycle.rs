@@ -348,7 +348,7 @@ async fn tool_availability_tracks_mode_and_extension_removal() -> Result<()> {
             "extension_name": "analyze"
         }),
     );
-    api.on("installed successfully").reply("extension ready");
+    api.on("enabled for this chat").reply("extension ready");
     let result = pipeline.run(["install the extra extension"]).await?;
     result.assert_message(-1, Agent, "extension ready");
     assert!(api.calls().last().unwrap().advertises_tool("analyze"));

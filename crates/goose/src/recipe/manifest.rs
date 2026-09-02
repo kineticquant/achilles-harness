@@ -6,6 +6,7 @@ use std::path::{Path, PathBuf};
 
 use crate::recipe::build_recipe::resolve_sub_recipe_path;
 use crate::recipe::local_recipes::list_local_recipes;
+use crate::recipe::shipped::is_shipped_recipe_path;
 use crate::recipe::Recipe;
 
 #[derive(Debug, Clone)]
@@ -46,7 +47,15 @@ pub fn list_recipe_file_manifests() -> Result<Vec<RecipeFileManifest>> {
         });
     }
 
-    manifests.sort_by(|a, b| b.last_modified.cmp(&a.last_modified));
+    manifests.sort_by(|a, b| {
+        let a_shipped = is_shipped_recipe_path(&a.file_path);
+        let b_shipped = is_shipped_recipe_path(&b.file_path);
+        match (a_shipped, b_shipped) {
+            (true, false) => std::cmp::Ordering::Less,
+            (false, true) => std::cmp::Ordering::Greater,
+            _ => b.last_modified.cmp(&a.last_modified),
+        }
+    });
 
     Ok(manifests)
 }

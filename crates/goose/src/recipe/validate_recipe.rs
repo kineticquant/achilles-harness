@@ -264,4 +264,28 @@ parameters:
         assert!(recipe.instructions.is_some());
         println!("Recipe: {:?}", recipe.prompt);
     }
+
+    #[test]
+    fn achilles_first_party_recipes_validate() {
+        let dir = std::path::PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("../../recipes");
+        let mut found = 0;
+        for entry in std::fs::read_dir(&dir).unwrap_or_else(|e| {
+            panic!("recipes/ missing at {}: {e}", dir.display());
+        }) {
+            let path = entry.unwrap().path();
+            if path.extension().and_then(|e| e.to_str()) != Some("yaml") {
+                continue;
+            }
+            found += 1;
+            let file = crate::recipe::read_recipe_file_content::read_recipe_file(&path)
+                .unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+            validate_recipe_template_from_file(&file)
+                .unwrap_or_else(|e| panic!("{}: {e}", path.display()));
+        }
+        assert!(
+            found >= 3,
+            "expected at least 3 first-party recipes in {}, found {found}",
+            dir.display()
+        );
+    }
 }

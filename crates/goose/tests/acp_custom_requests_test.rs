@@ -438,6 +438,14 @@ fn test_custom_get_available_extensions() {
             }),
             "hidden orchestrator platform extension should not be available"
         );
+        for hidden in ["tutorial", "autovisualiser", "computercontroller"] {
+            assert!(
+                !extensions
+                    .iter()
+                    .any(|extension| extension["name"] == hidden),
+                "{hidden} should not be listed as an available extension"
+            );
+        }
     });
 }
 
@@ -671,17 +679,26 @@ fn test_custom_list_builtin_skill_sources() {
             .expect("missing sources array");
         let builtin = sources
             .iter()
-            .find(|source| source.get("name") == Some(&serde_json::json!("goose-doc-guide")))
-            .expect("expected goose-doc-guide builtin skill");
+            .find(|source| source.get("name") == Some(&serde_json::json!("goose-doc-guide")));
 
-        assert_eq!(
-            builtin.get("type"),
-            Some(&serde_json::json!("builtinSkill"))
-        );
-        assert_eq!(builtin.get("global"), Some(&serde_json::json!(true)));
-        assert_eq!(
-            builtin.get("path"),
-            Some(&serde_json::json!("builtin://skills/goose-doc-guide"))
+        #[cfg(debug_assertions)]
+        {
+            let builtin = builtin.expect("expected goose-doc-guide builtin skill in debug builds");
+            assert_eq!(
+                builtin.get("type"),
+                Some(&serde_json::json!("builtinSkill"))
+            );
+            assert_eq!(builtin.get("global"), Some(&serde_json::json!(true)));
+            assert_eq!(
+                builtin.get("path"),
+                Some(&serde_json::json!("builtin://skills/goose-doc-guide"))
+            );
+        }
+
+        #[cfg(not(debug_assertions))]
+        assert!(
+            builtin.is_none(),
+            "dev-only builtins must not be listed in release builds"
         );
     });
 }

@@ -7,10 +7,19 @@ use serde_yaml::Mapping;
 const EXTENSIONS_CONFIG_KEY: &str = "extensions";
 const PROVIDERS_CONFIG_KEY: &str = "providers";
 const ACTIVE_PROVIDER_KEY: &str = "active_provider";
+const LAZY_TOOL_CONTEXT_KEY: &str = "achilles_lazy_tool_context";
+const LAZY_TOOL_CONTEXT_VERSION: i64 = 1;
+const APPSEC_DEFAULT_ON_KEY: &str = "achilles_appsec_default_on";
+const APPSEC_DEFAULT_ON_VERSION: i64 = 1;
+const HIDE_GOOSE_ERA_BUILTINS_KEY: &str = "achilles_hide_goose_era_builtins";
+const HIDE_GOOSE_ERA_BUILTINS_VERSION: i64 = 1;
 
 pub fn run_migrations(config: &mut Mapping) -> bool {
     let mut changed = false;
     changed |= migrate_platform_extensions(config);
+    changed |= migrate_lazy_tool_context(config);
+    changed |= migrate_appsec_default_on(config);
+    changed |= migrate_hide_goose_era_builtins(config);
     changed |= migrate_provider_config(config);
     changed
 }
@@ -20,6 +29,9 @@ pub fn run_migrations(config: &mut Mapping) -> bool {
 /// `get_param()` callers may still look up directly.
 pub fn run_read_migrations(config: &mut Mapping) {
     migrate_platform_extensions(config);
+    migrate_lazy_tool_context(config);
+    migrate_appsec_default_on(config);
+    migrate_hide_goose_era_builtins(config);
 }
 
 fn read_enabled_field(value: &serde_yaml::Value) -> Option<bool> {
@@ -117,6 +129,107 @@ fn migrate_platform_extensions(config: &mut Mapping) -> bool {
     }
 
     needs_save
+}
+
+/// One-shot: existing installs had lazy packs default-on and persisted `enabled: true`.
+/// Flip those packs off once so new chats stay small. Later UI toggles are preserved.
+fn migrate_lazy_tool_context(config: &mut Mapping) -> bool {
+    let version_key = serde_yaml::Value::String(LAZY_TOOL_CONTEXT_KEY.to_string());
+    let current_version = config
+        .get(&version_key)
+        .and_then(|value| value.as_i64())
+        .unwrap_or(0);
+    if current_version >= LAZY_TOOL_CONTEXT_VERSION {
+        return false;
+    }
+
+    let extensions_key = serde_yaml::Value::String(EXTENSIONS_CONFIG_KEY.to_string());
+    if let Some(serde_yaml::Value::Mapping(extensions_map)) = config.get_mut(&extensions_key) {
+        for (name, def) in PLATFORM_EXTENSIONS.iter() {
+            if def.default_enabled {
+                continue;
+            }
+            let ext_key = serde_yaml::Value::String(name.to_string());
+            let Some(entry_value) = extensions_map.get_mut(&ext_key) else {
+                continue;
+            };
+            let Some(entry_map) = entry_value.as_mapping_mut() else {
+                continue;
+            };
+            let enabled_key = serde_yaml::Value::String("enabled".to_string());
+            if entry_map
+                .get(&enabled_key)
+                .and_then(|value| value.as_bool())
+                != Some(true)
+            {
+                continue;
+            }
+            entry_map.insert(enabled_key, serde_yaml::Value::Bool(false));
+        }
+    }
+
+    config.insert(
+        version_key,
+        serde_yaml::Value::Number(LAZY_TOOL_CONTEXT_VERSION.into()),
+    );
+    true
+}
+
+/// One-shot: Achilles treats AppSec as a core default. Existing installs had it
+/// flipped off by the lazy-pack migration; turn it on once. Later UI toggles stick.
+fn migrate_appsec_default_on(config: &mut Mapping) -> bool {
+    let version_key = serde_yaml::Value::String(APPSEC_DEFAULT_ON_KEY.to_string());
+    let current_version = config
+        .get(&version_key)
+        .and_then(|value| value.as_i64())
+        .unwrap_or(0);
+    if current_version >= APPSEC_DEFAULT_ON_VERSION {
+        return false;
+    }
+
+    let extensions_key = serde_yaml::Value::String(EXTENSIONS_CONFIG_KEY.to_string());
+    if let Some(serde_yaml::Value::Mapping(extensions_map)) = config.get_mut(&extensions_key) {
+        let ext_key = serde_yaml::Value::String("appsec".to_string());
+        if let Some(entry_value) = extensions_map.get_mut(&ext_key) {
+            if let Some(entry_map) = entry_value.as_mapping_mut() {
+                entry_map.insert(
+                    serde_yaml::Value::String("enabled".to_string()),
+                    serde_yaml::Value::Bool(true),
+                );
+            }
+        }
+    }
+
+    config.insert(
+        version_key,
+        serde_yaml::Value::Number(APPSEC_DEFAULT_ON_VERSION.into()),
+    );
+    true
+}
+
+/// One-shot: drop goose-era builtins from settings so they no longer load or show.
+fn migrate_hide_goose_era_builtins(config: &mut Mapping) -> bool {
+    let version_key = serde_yaml::Value::String(HIDE_GOOSE_ERA_BUILTINS_KEY.to_string());
+    let current_version = config
+        .get(&version_key)
+        .and_then(|value| value.as_i64())
+        .unwrap_or(0);
+    if current_version >= HIDE_GOOSE_ERA_BUILTINS_VERSION {
+        return false;
+    }
+
+    let extensions_key = serde_yaml::Value::String(EXTENSIONS_CONFIG_KEY.to_string());
+    if let Some(serde_yaml::Value::Mapping(extensions_map)) = config.get_mut(&extensions_key) {
+        for name in ["tutorial", "autovisualiser", "computercontroller"] {
+            extensions_map.shift_remove(serde_yaml::Value::String(name.to_string()));
+        }
+    }
+
+    config.insert(
+        version_key,
+        serde_yaml::Value::Number(HIDE_GOOSE_ERA_BUILTINS_VERSION.into()),
+    );
+    true
 }
 
 /// Remove leftover legacy flat keys when `providers:` block already exists.
@@ -322,6 +435,168 @@ mod tests {
 
         let changed = run_migrations(&mut config);
         assert!(!changed);
+    }
+
+    fn extension_enabled(config: &Mapping, name: &str) -> Option<bool> {
+        let extensions = config
+            .get(serde_yaml::Value::String(EXTENSIONS_CONFIG_KEY.to_string()))?
+            .as_mapping()?;
+        extensions
+            .get(serde_yaml::Value::String(name.to_string()))?
+            .as_mapping()?
+            .get(serde_yaml::Value::String("enabled".to_string()))?
+            .as_bool()
+    }
+
+    #[test]
+    fn test_new_install_defaults_keep_core_and_appsec_on() {
+        let mut config = Mapping::new();
+        assert!(run_migrations(&mut config));
+        assert_eq!(extension_enabled(&config, "developer"), Some(true));
+        assert_eq!(extension_enabled(&config, "todo"), Some(true));
+        assert_eq!(extension_enabled(&config, "extensionmanager"), Some(true));
+        assert_eq!(extension_enabled(&config, "skills"), Some(true));
+        assert_eq!(extension_enabled(&config, "appsec"), Some(true));
+        assert_eq!(extension_enabled(&config, "apps"), Some(false));
+        assert_eq!(extension_enabled(&config, "summon"), Some(false));
+        let version = config
+            .get(serde_yaml::Value::String(LAZY_TOOL_CONTEXT_KEY.to_string()))
+            .and_then(|value| value.as_i64());
+        assert_eq!(version, Some(LAZY_TOOL_CONTEXT_VERSION));
+        let appsec_version = config
+            .get(serde_yaml::Value::String(APPSEC_DEFAULT_ON_KEY.to_string()))
+            .and_then(|value| value.as_i64());
+        assert_eq!(appsec_version, Some(APPSEC_DEFAULT_ON_VERSION));
+    }
+
+    fn platform_entry(name: &str, display_name: &str, enabled: bool) -> ExtensionEntry {
+        ExtensionEntry {
+            config: ExtensionConfig::Platform {
+                name: name.to_string(),
+                description: "old description".to_string(),
+                display_name: Some(display_name.to_string()),
+                bundled: Some(true),
+                available_tools: Vec::new(),
+            },
+            enabled,
+        }
+    }
+
+    fn insert_extension(config: &mut Mapping, entry: &ExtensionEntry) {
+        let extensions_key = serde_yaml::Value::String(EXTENSIONS_CONFIG_KEY.to_string());
+        if !config.contains_key(&extensions_key) {
+            config.insert(
+                extensions_key.clone(),
+                serde_yaml::Value::Mapping(Mapping::new()),
+            );
+        }
+        let extensions = config
+            .get_mut(&extensions_key)
+            .unwrap()
+            .as_mapping_mut()
+            .unwrap();
+        extensions.insert(
+            serde_yaml::Value::String(entry.config.name()),
+            serde_yaml::to_value(entry).unwrap(),
+        );
+    }
+
+    #[test]
+    fn test_lazy_tool_context_resets_eager_defaults_once() {
+        let mut config = Mapping::new();
+        insert_extension(&mut config, &platform_entry("apps", "Apps", true));
+
+        assert!(run_migrations(&mut config));
+        assert_eq!(extension_enabled(&config, "apps"), Some(false));
+
+        let extensions = config
+            .get_mut(serde_yaml::Value::String(EXTENSIONS_CONFIG_KEY.to_string()))
+            .unwrap()
+            .as_mapping_mut()
+            .unwrap();
+        let apps_map = extensions
+            .get_mut(serde_yaml::Value::String("apps".to_string()))
+            .unwrap()
+            .as_mapping_mut()
+            .unwrap();
+        apps_map.insert(
+            serde_yaml::Value::String("enabled".to_string()),
+            serde_yaml::Value::Bool(true),
+        );
+
+        assert!(!run_migrations(&mut config));
+        assert_eq!(extension_enabled(&config, "apps"), Some(true));
+    }
+
+    #[test]
+    fn test_appsec_default_on_enables_existing_off_once() {
+        let mut config = Mapping::new();
+        insert_extension(&mut config, &platform_entry("appsec", "AppSec", false));
+        config.insert(
+            serde_yaml::Value::String(LAZY_TOOL_CONTEXT_KEY.to_string()),
+            serde_yaml::Value::Number(LAZY_TOOL_CONTEXT_VERSION.into()),
+        );
+
+        assert!(run_migrations(&mut config));
+        assert_eq!(extension_enabled(&config, "appsec"), Some(true));
+
+        let extensions = config
+            .get_mut(serde_yaml::Value::String(EXTENSIONS_CONFIG_KEY.to_string()))
+            .unwrap()
+            .as_mapping_mut()
+            .unwrap();
+        let appsec_map = extensions
+            .get_mut(serde_yaml::Value::String("appsec".to_string()))
+            .unwrap()
+            .as_mapping_mut()
+            .unwrap();
+        appsec_map.insert(
+            serde_yaml::Value::String("enabled".to_string()),
+            serde_yaml::Value::Bool(false),
+        );
+
+        assert!(!run_migrations(&mut config));
+        assert_eq!(extension_enabled(&config, "appsec"), Some(false));
+    }
+
+    #[test]
+    fn test_hide_goose_era_builtins_removes_bundled_entries() {
+        let mut config = Mapping::new();
+        let mut extensions = Mapping::new();
+        for name in ["tutorial", "autovisualiser", "computercontroller", "memory"] {
+            let entry = ExtensionEntry {
+                config: ExtensionConfig::Builtin {
+                    name: name.to_string(),
+                    description: "old".to_string(),
+                    display_name: Some(name.to_string()),
+                    timeout: None,
+                    bundled: Some(true),
+                    available_tools: Vec::new(),
+                },
+                enabled: false,
+            };
+            extensions.insert(
+                serde_yaml::Value::String(name.to_string()),
+                serde_yaml::to_value(&entry).unwrap(),
+            );
+        }
+        config.insert(
+            serde_yaml::Value::String(EXTENSIONS_CONFIG_KEY.to_string()),
+            serde_yaml::Value::Mapping(extensions),
+        );
+
+        assert!(run_migrations(&mut config));
+        let extensions = config
+            .get(serde_yaml::Value::String(EXTENSIONS_CONFIG_KEY.to_string()))
+            .unwrap()
+            .as_mapping()
+            .unwrap();
+        assert!(!extensions.contains_key(serde_yaml::Value::String("tutorial".to_string())));
+        assert!(!extensions.contains_key(serde_yaml::Value::String("autovisualiser".to_string())));
+        assert!(
+            !extensions.contains_key(serde_yaml::Value::String("computercontroller".to_string()))
+        );
+        assert!(extensions.contains_key(serde_yaml::Value::String("memory".to_string())));
     }
 
     // -----------------------------------------------------------------------

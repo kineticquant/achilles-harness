@@ -389,11 +389,18 @@ impl Inference for InferenceRunner<'_> {
                     .prompt_parts
                     .push(("frontend".to_string(), frontend_instructions));
             }
-            let system_prompt = self.prompt_manager.lock().await.build_system_prompt(
-                &session.working_dir,
-                input.prompt_parts,
-                goose_mode,
-            );
+            let system_prompt = {
+                let mut prompt_manager = self.prompt_manager.lock().await;
+                prompt_manager.load_subdirectory_hints(&session.working_dir);
+                prompt_manager
+                    .builder()
+                    .with_prompt_extras(input.prompt_parts)
+                    .with_hints(&session.working_dir)
+                    .with_goose_mode(goose_mode)
+                    .without_extensions()
+                    .with_model_identity(&self.model_config.model_name, self.provider.get_name())
+                    .build()
+            };
             let (tools, toolshim_tools, system_prompt) =
                 crate::agents::reply_parts::prepare_tools_for_provider(
                     tools,

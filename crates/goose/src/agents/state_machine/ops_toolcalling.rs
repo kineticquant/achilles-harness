@@ -645,29 +645,34 @@ impl Operation for ToolExecutionOperation<'_> {
             .get_extensions_info(&session.working_dir)
             .await;
         extensions.retain(|extension| extension.name != crate::skills::EXTENSION_NAME);
-        if extensions.is_empty() {
-            return Ok(prompt_parts);
-        }
-        // HashMap order shuffles across restarts and would bust the prompt cache.
         extensions.sort_by(|a, b| a.name.cmp(&b.name));
 
-        let mut lines = vec![
-            "# Extensions".to_string(),
-            "Extensions provide additional tools and context from different data sources and applications.\n\
-             You can dynamically enable or disable extensions as needed to help complete tasks.\n\n\
-             Because you dynamically load extensions, your conversation history may refer to interactions with extensions that are not currently active. The currently active extensions are below. Each of these extensions provides tools that are in your tool specification."
-                .to_string(),
-        ];
-        for extension in extensions {
-            lines.push(format!("## {}", extension.name));
-            if extension.has_resources {
-                lines.push(format!("{} supports resources.", extension.name));
+        if !extensions.is_empty() {
+            let mut lines = vec![
+                "# Extensions".to_string(),
+                "Extensions provide additional tools and context from different data sources and applications.\n\
+                 You can dynamically enable or disable extensions as needed to help complete tasks.\n\n\
+                 Because you dynamically load extensions, your conversation history may refer to interactions with extensions that are not currently active. The currently active extensions are below. Each of these extensions provides tools that are in your tool specification."
+                    .to_string(),
+            ];
+            for extension in extensions {
+                lines.push(format!("## {}", extension.name));
+                if extension.has_resources {
+                    lines.push(format!("{} supports resources.", extension.name));
+                }
+                if !extension.instructions.is_empty() {
+                    lines.push(format!("### Instructions\n{}", extension.instructions));
+                }
             }
-            if !extension.instructions.is_empty() {
-                lines.push(format!("### Instructions\n{}", extension.instructions));
-            }
+            prompt_parts.push(("extensions".to_string(), lines.join("\n\n")));
         }
-        prompt_parts.push(("extensions".to_string(), lines.join("\n\n")));
+
+        let available_packs = self.extension_manager.available_pack_catalog().await;
+        if let Some(section) =
+            crate::agents::extension::format_available_packs_prompt(&available_packs)
+        {
+            prompt_parts.push(("available_packs".to_string(), section));
+        }
         Ok(prompt_parts)
     }
 

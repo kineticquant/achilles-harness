@@ -1,10 +1,12 @@
 use anyhow::{anyhow, Result};
+use std::collections::HashSet;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
 
 use crate::config::paths::Paths;
 use crate::recipe::read_recipe_file_content::{read_recipe_file, RecipeFile};
+use crate::recipe::shipped;
 use crate::recipe::Recipe;
 use crate::recipe::RECIPE_FILE_EXTENSIONS;
 
@@ -34,6 +36,11 @@ fn local_recipe_dirs() -> Vec<PathBuf> {
     }
     if let Some(home) = dirs::home_dir() {
         local_dirs.push(home.join(".agents/recipes"));
+    }
+
+    match shipped::ensure_shipped_recipes() {
+        Ok(dir) => local_dirs.push(dir),
+        Err(error) => tracing::error!("Failed to materialize shipped recipes: {error}"),
     }
 
     let mut dirs: Vec<PathBuf> = local_dirs
@@ -83,9 +90,18 @@ pub fn load_local_recipe_file(recipe_name: &str) -> Result<RecipeFile> {
 
 pub fn list_local_recipes() -> Result<Vec<(PathBuf, Recipe)>> {
     let mut recipes = Vec::new();
+    let mut seen_names = HashSet::new();
     for dir in local_recipe_dirs() {
         if let Ok(dir_recipes) = scan_directory_for_recipes(&dir) {
-            recipes.extend(dir_recipes);
+            for (path, recipe) in dir_recipes {
+                let Some(name) = path.file_name().map(|n| n.to_os_string()) else {
+                    continue;
+                };
+                if !seen_names.insert(name) {
+                    continue;
+                }
+                recipes.push((path, recipe));
+            }
         }
     }
 
@@ -186,6 +202,9 @@ pub fn save_recipe_to_file(recipe: Recipe, file_path: Option<PathBuf>) -> anyhow
     let recipe_library_dir = get_recipe_library_dir(true);
 
     let file_path_value = match file_path {
+        Some(path) if shipped::is_shipped_recipe_path(&path) => {
+            generate_recipe_filename(&recipe.title, &recipe_library_dir)
+        }
         Some(path) => path,
         None => generate_recipe_filename(&recipe.title, &recipe_library_dir),
     };

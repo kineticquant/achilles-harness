@@ -88,6 +88,8 @@ workspace = true
 lru = { workspace = true }
 rmcp = { workspace = true, features = [
     "client",
+    "server",
+    "transport-io",
     "transport-child-process",
     "transport-streamable-http-client",
     "transport-streamable-http-client-reqwest",

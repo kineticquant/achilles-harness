@@ -3711,11 +3711,18 @@ impl Agent {
             .get_extensions_info(&session.working_dir)
             .await;
         tracing::debug!("Retrieved {} extensions info", extensions_info.len());
+        let available_packs = self.extension_manager.available_pack_catalog().await;
         let (extension_count, tool_count) = self.total_extension_and_tool_counts(session_id).await;
 
         let model_config = self.model_config_for_session(session_id).await?;
         let model_name = &model_config.model_name;
         tracing::debug!("Using model: {}", model_name);
+        let provider_name = self
+            .provider()
+            .await
+            .ok()
+            .map(|provider| provider.get_name().to_string())
+            .unwrap_or_default();
 
         let goose_mode = *self.current_goose_mode.lock().await;
         let prompt_manager = self.prompt_manager.lock().await;
@@ -3725,6 +3732,8 @@ impl Agent {
             .with_frontend_instructions(self.frontend_instructions.lock().await.clone())
             .with_extension_and_tool_counts(extension_count, tool_count)
             .with_goose_mode(goose_mode)
+            .with_model_identity(model_name, provider_name)
+            .with_available_packs(available_packs)
             .build();
 
         let recipe_prompt = prompt_manager.get_recipe_prompt().await;

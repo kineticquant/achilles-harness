@@ -9,6 +9,13 @@ pub enum McpCommand {
     ComputerController,
     Memory,
     Tutorial,
+    Achilles,
+}
+
+impl Default for McpCommand {
+    fn default() -> Self {
+        Self::Achilles
+    }
 }
 
 impl FromStr for McpCommand {
@@ -20,6 +27,7 @@ impl FromStr for McpCommand {
             "computercontroller" => Ok(McpCommand::ComputerController),
             "memory" => Ok(McpCommand::Memory),
             "tutorial" => Ok(McpCommand::Tutorial),
+            "achilles" | "appsec" => Ok(McpCommand::Achilles),
             _ => Err(format!("Invalid command: {}", s)),
         }
     }
@@ -32,6 +40,7 @@ impl McpCommand {
             McpCommand::ComputerController => "computercontroller",
             McpCommand::Memory => "memory",
             McpCommand::Tutorial => "tutorial",
+            McpCommand::Achilles => "achilles",
         }
     }
 }

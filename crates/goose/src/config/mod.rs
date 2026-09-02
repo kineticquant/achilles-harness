@@ -33,3 +33,25 @@ pub use providers::{
     clear_active_provider, get_active_model, get_active_provider, get_provider_entry,
     set_active_provider, set_provider_entry, ProviderEntry,
 };
+
+/// Socket org token + slug for SCA. Env `SOCKET_SECURITY_API_KEY` wins over the stored token.
+pub fn achilles_socket_creds() -> (Option<String>, Option<String>) {
+    let config = Config::global();
+    let token = std::env::var("SOCKET_SECURITY_API_KEY")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())
+        .or_else(|| {
+            config
+                .get_secret::<String>("ACHILLES_SOCKET_API_TOKEN")
+                .ok()
+                .map(|s| s.trim().to_string())
+                .filter(|s| !s.is_empty())
+        });
+    let org = config
+        .get_param::<String>("ACHILLES_SOCKET_ORG")
+        .ok()
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty());
+    (token, org)
+}

@@ -250,6 +250,7 @@ pub fn get_available_extensions() -> Vec<ExtensionConfig> {
 
     builtin_names
         .into_iter()
+        .filter(|name| !crate::builtin_extension::is_hidden_builtin(name))
         .map(|name| ExtensionConfig::Builtin {
             name: name.to_string(),
             description: String::new(),
@@ -802,9 +803,11 @@ extensions:
     }
 
     #[test]
-    fn test_default_off_extension_disabled_when_config_empty() {
+    fn test_empty_config_uses_platform_defaults() {
         let (config, _config_file, _secrets_file) = test_config("");
 
         assert_eq!(configured_enabled_state(&config, "chatrecall"), Some(false));
+        assert_eq!(configured_enabled_state(&config, "appsec"), Some(true));
+        assert_eq!(configured_enabled_state(&config, "apps"), Some(false));
     }
 }

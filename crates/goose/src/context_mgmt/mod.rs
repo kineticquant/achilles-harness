@@ -1,5 +1,6 @@
 pub mod structured;
 
+use crate::config::paths::Paths;
 use crate::context_mgmt::structured::StructuredSummary;
 use crate::conversation::message::{ActionRequiredData, MessageMetadata};
 use crate::conversation::message::{Message, MessageContent};
@@ -334,6 +335,14 @@ fn filter_tool_responses(messages: &[Message], remove_percent: u32) -> Vec<&Mess
         .collect()
 }
 
+async fn appsec_compact_digest(session_id: &str) -> Option<String> {
+    let store = achilles_store::AchillesStore::new(Paths::data_dir());
+    achilles_store::scan::findings_context_for_session(&store, session_id)
+        .await
+        .ok()
+        .flatten()
+}
+
 async fn do_compact(
     provider: &dyn Provider,
     model_config: &ModelConfig,
@@ -355,11 +364,19 @@ async fn do_compact(
     for (attempt, &remove_percent) in removal_percentages.iter().enumerate() {
         let filtered_messages = filter_tool_responses(&agent_visible_messages, remove_percent);
 
-        let messages_text = filtered_messages
-            .iter()
-            .map(|&msg| format_message_for_compacting(msg))
-            .collect::<Vec<_>>()
-            .join("\n");
+        let messages_text = {
+            let body = filtered_messages
+                .iter()
+                .map(|&msg| format_message_for_compacting(msg))
+                .collect::<Vec<_>>()
+                .join("\n");
+            match appsec_compact_digest(session_id).await {
+                Some(digest) if !digest.is_empty() => format!(
+                    "[AppSec findings still on disk — keep these ids; do not invent extras]\n{digest}\n\n{body}"
+                ),
+                _ => body,
+            }
+        };
 
         let context = SummarizeContext {
             messages: messages_text,

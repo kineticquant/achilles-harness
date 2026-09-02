@@ -12,7 +12,7 @@ use rmcp::transport::streamable_http_client::{
 use rmcp::transport::{
     ConfigureCommandExt, DynamicTransportError, StreamableHttpClientTransport, TokioChildProcess,
 };
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::pin::Pin;
 use std::process::Stdio;
@@ -30,8 +30,8 @@ use tracing::{error, warn};
 
 use super::container::Container;
 use super::extension::{
-    ExtensionConfig, ExtensionError, ExtensionInfo, ExtensionResult, PlatformExtensionContext,
-    ToolInfo, PLATFORM_EXTENSIONS,
+    ExtensionConfig, ExtensionError, ExtensionInfo, ExtensionResult, PackCatalogEntry,
+    PlatformExtensionContext, ToolInfo, PLATFORM_EXTENSIONS,
 };
 use super::tool_execution::{ToolCallContext, ToolCallNotificationEmitter, ToolCallResult};
 use super::types::SharedProvider;
@@ -394,6 +394,9 @@ pub fn is_first_class_extension(name: &str) -> bool {
 }
 
 pub fn is_hidden_extension(name: &str) -> bool {
+    if crate::builtin_extension::is_hidden_builtin(name) {
+        return true;
+    }
     PLATFORM_EXTENSIONS
         .get(name_to_key(name).as_str())
         .is_some_and(|def| def.hidden)
@@ -1259,6 +1262,44 @@ impl ExtensionManager {
         self.invalidate_tools_cache_and_bump_version().await;
     }
 
+    /// Packs installed on this machine that are not loaded in the current session.
+    pub async fn available_pack_catalog(&self) -> Vec<PackCatalogEntry> {
+        let loaded: HashSet<String> = self
+            .extensions
+            .lock()
+            .await
+            .keys()
+            .map(|name| name_to_key(name))
+            .collect();
+
+        let mut packs: Vec<PackCatalogEntry> = PLATFORM_EXTENSIONS
+            .values()
+            .filter(|def| !def.hidden)
+            .filter(|def| !loaded.contains(&name_to_key(def.name)))
+            .map(|def| PackCatalogEntry::new(def.name, def.description))
+            .collect();
+
+        for entry in get_all_extensions() {
+            if is_hidden_extension(&entry.config.name()) {
+                continue;
+            }
+            let key = name_to_key(&entry.config.name());
+            if loaded.contains(&key) {
+                continue;
+            }
+            if packs.iter().any(|pack| name_to_key(&pack.name) == key) {
+                continue;
+            }
+            packs.push(PackCatalogEntry::new(
+                entry.config.name(),
+                entry.config.description().to_string(),
+            ));
+        }
+
+        packs.sort_by(|a, b| a.name.cmp(&b.name));
+        packs
+    }
+
     /// Get extensions info for building the system prompt
     pub async fn get_extensions_info(&self, working_dir: &std::path::Path) -> Vec<ExtensionInfo> {
         let working_dir_str = working_dir.to_string_lossy();
@@ -2084,35 +2125,13 @@ impl ExtensionManager {
     pub async fn search_available_extensions(&self) -> Result<Vec<ContentBlock>, ErrorData> {
         let mut output_parts = vec![];
 
-        // First get disabled extensions from current config (skip hidden ones)
-        let mut disabled_extensions: Vec<String> = vec![];
-        for extension in get_all_extensions() {
-            if !extension.enabled && !is_hidden_extension(&extension.config.name()) {
-                let config = extension.config.clone();
-                let description = match &config {
-                    ExtensionConfig::Builtin {
-                        description,
-                        display_name,
-                        ..
-                    } => {
-                        if description.is_empty() {
-                            display_name.as_deref().unwrap_or("Built-in extension")
-                        } else {
-                            description
-                        }
-                    }
-                    ExtensionConfig::Sse { .. } => "SSE extension (unsupported)",
-                    ExtensionConfig::Platform { description, .. }
-                    | ExtensionConfig::StreamableHttp { description, .. }
-                    | ExtensionConfig::Stdio { description, .. }
-                    | ExtensionConfig::Frontend { description, .. }
-                    | ExtensionConfig::InlinePython { description, .. } => description,
-                };
-                disabled_extensions.push(format!("- {} - {}", config.name(), description));
-            }
-        }
+        let available_to_enable: Vec<String> = self
+            .available_pack_catalog()
+            .await
+            .into_iter()
+            .map(|pack| format!("- {} - {}", pack.name, pack.description))
+            .collect();
 
-        // Get currently enabled extensions that can be disabled (skip hidden ones)
         let enabled_extensions: Vec<String> = self
             .extensions
             .lock()
@@ -2122,11 +2141,10 @@ impl ExtensionManager {
             .cloned()
             .collect();
 
-        // Build output string
-        if !disabled_extensions.is_empty() {
+        if !available_to_enable.is_empty() {
             output_parts.push(format!(
-                "Extensions available to enable:\n{}\n",
-                disabled_extensions.join("\n")
+                "Extensions available to enable for this chat (not saved as defaults):\n{}\n",
+                available_to_enable.join("\n")
             ));
         } else {
             output_parts.push("No extensions available to enable.\n".to_string());
@@ -2134,7 +2152,7 @@ impl ExtensionManager {
 
         if !enabled_extensions.is_empty() {
             output_parts.push(format!(
-                "\n\nExtensions available to disable:\n{}\n",
+                "\n\nExtensions available to disable for this chat:\n{}\n",
                 enabled_extensions
                     .iter()
                     .map(|name| format!("- {}", name))
@@ -2236,6 +2254,29 @@ mod tests {
                 .insert(sanitized_name, extension);
             self.invalidate_tools_cache_and_bump_version().await;
         }
+    }
+
+    #[tokio::test]
+    async fn available_pack_catalog_lists_unloaded_appsec() {
+        let temp_dir = tempfile::tempdir().unwrap();
+        let extension_manager =
+            ExtensionManager::new_without_provider(temp_dir.path().to_path_buf());
+        let catalog = extension_manager.available_pack_catalog().await;
+        assert!(
+            catalog.iter().any(|pack| pack.name == "appsec"),
+            "expected appsec in catalog, got {catalog:?}"
+        );
+        let search = extension_manager
+            .search_available_extensions()
+            .await
+            .expect("search should succeed");
+        let text = search
+            .iter()
+            .filter_map(|block| block.as_text().map(|text| text.text.as_str()))
+            .collect::<Vec<_>>()
+            .join("\n");
+        assert!(text.contains("appsec"), "search output: {text}");
+        assert!(text.contains("this chat"), "search output: {text}");
     }
 
     struct MockClient {}

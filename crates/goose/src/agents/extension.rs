@@ -414,6 +414,18 @@ impl ExtensionConfig {
         .to_string()
     }
 
+    pub fn description(&self) -> &str {
+        match self {
+            Self::Sse { description, .. }
+            | Self::StreamableHttp { description, .. }
+            | Self::Stdio { description, .. }
+            | Self::Builtin { description, .. }
+            | Self::Platform { description, .. }
+            | Self::Frontend { description, .. }
+            | Self::InlinePython { description, .. } => description,
+        }
+    }
+
     /// Check if a tool should be available to the LLM
     pub fn is_tool_available(&self, tool_name: &str) -> bool {
         let available_tools = match self {
@@ -550,6 +562,39 @@ pub struct ExtensionInfo {
     pub name: String,
     pub instructions: String,
     pub has_resources: bool,
+}
+
+/// Short catalog entry for an installed pack that is not loaded in this chat.
+#[derive(Clone, Debug, Serialize, PartialEq, Eq)]
+pub struct PackCatalogEntry {
+    pub name: String,
+    pub description: String,
+}
+
+impl PackCatalogEntry {
+    pub fn new(name: impl Into<String>, description: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            description: description.into(),
+        }
+    }
+}
+
+/// Markdown the model sees instead of full tool schemas / pack instructions.
+pub fn format_available_packs_prompt(packs: &[PackCatalogEntry]) -> Option<String> {
+    if packs.is_empty() {
+        return None;
+    }
+    let mut lines = vec![
+        "# Available extensions".to_string(),
+        "These extensions are not loaded in this chat. Their tools and detailed instructions are omitted to keep context small.\n\
+         If the task needs one, enable it with `manage_extensions` for this session only (this does not change the user's default extensions)."
+            .to_string(),
+    ];
+    for pack in packs {
+        lines.push(format!("- `{}`: {}", pack.name, pack.description));
+    }
+    Some(lines.join("\n"))
 }
 
 impl ExtensionInfo {

@@ -1,0 +1,70 @@
+version: 1.0.0
+title: Scan and recap
+description: Run Achilles engines on a workspace, then recap open findings in this session. Finding ids only — do not invent issues.
+author:
+  contact: Achilles
+
+activities:
+  - "message: Scan this workspace and recap what is open."
+  - Scan this workspace and summarize what is open
+  - What should I look at first?
+
+parameters:
+  - key: workspace
+    input_type: string
+    requirement: required
+    description: Absolute path of the repo to scan
+  - key: mode
+    input_type: select
+    requirement: optional
+    default: quick
+    description: Tree walk (quick) or git-changed files (diff). SCA still reads lockfiles in diff mode.
+    options:
+      - quick
+      - diff
+  - key: depth
+    input_type: select
+    requirement: optional
+    default: fast
+    description: fast = engines only. investigate/deep queue SAST for the agent loop.
+    options:
+      - fast
+      - investigate
+      - deep
+
+settings:
+  max_turns: 20
+
+extensions:
+  - type: platform
+    name: appsec
+  - type: platform
+    name: developer
+
+instructions: |
+  You are recapping an Achilles scan. Do not invent finding ids, CVEs, secrets, or CVSS.
+
+  When talking to the user: say findings, never ledger, handle, or achilles.db.
+  Do not mention that chat is a preview or that Findings has a fuller list. Just recap.
+
+  Tools:
+  - appsec_scan(working_dir, mode, depth, wait=true) — start engines
+  - appsec_query — latest assessment + finding ids
+  - appsec_investigate — one finding_id + nearby source, then stop
+  - appsec_intel — CVE/GHSA lookup (KEV + EPSS). If a field is null, say unknown.
+
+  Spell out SAST (static analysis of source patterns) vs SCA (known-vulnerable
+  third-party packages) if both appear.
+
+  Do not provide exploit steps or payloads. Do not triage or mark false positives
+  unless the user asks in a follow-up.
+
+prompt: |
+  Scan {{ workspace }} with mode={{ mode }} and depth={{ depth }} (wait until it
+  finishes). Then appsec_query and recap.
+
+  Lead with open critical/high. For each: finding id, what it is, where, why it
+  matters in one sentence, a safe next step (confirm, dismiss, or ask for a
+  fix).
+
+  If the scan returns nothing, say there are no open findings — do not speculate.
