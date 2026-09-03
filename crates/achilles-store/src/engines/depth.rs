@@ -102,6 +102,9 @@ mod tests {
         assert_eq!(ScanDepth::Investigate.max_units(), 0);
         assert!(ScanDepth::Deep.max_units() > ScanDepth::Investigate.max_units());
         assert!(ScanDepth::Deep.max_turns() >= ScanDepth::Investigate.max_turns());
-        assert!(ScanDepth::Deep.walk_opts(false).max_files >= ScanDepth::Fast.walk_opts(false).max_files);
+        assert!(
+            ScanDepth::Deep.walk_opts(false).max_files
+                >= ScanDepth::Fast.walk_opts(false).max_files
+        );
     }
 }

@@ -277,16 +277,16 @@ fn from_cargo_toml(file: &WalkedFile, rels: &[&str], out: &mut Vec<StartupPath>)
 }
 
 fn toml_string(line: &str, key: &str) -> Option<String> {
-    let prefix = format!("{key}");
+    let prefix = key.to_string();
     let t = line.trim();
     if !t.starts_with(&prefix) {
         return None;
     }
-    let rest = t[prefix.len()..].trim_start();
+    let rest = t.get(prefix.len()..)?.trim_start();
     if !rest.starts_with('=') {
         return None;
     }
-    let rest = rest[1..].trim();
+    let rest = rest.strip_prefix('=')?.trim();
     if let Some(s) = rest.strip_prefix('"').and_then(|s| s.split('"').next()) {
         return Some(s.to_string());
     }
@@ -359,7 +359,7 @@ fn starts_inst(line: &str, inst: &str) -> bool {
 }
 
 fn strip_inst(line: &str, inst: &str) -> String {
-    line[inst.len()..].trim().to_string()
+    line.get(inst.len()..).unwrap_or("").trim().to_string()
 }
 
 fn from_compose(file: &WalkedFile, out: &mut Vec<StartupPath>) {

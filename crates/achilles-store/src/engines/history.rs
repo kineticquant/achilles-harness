@@ -85,7 +85,7 @@ fn parse_patch(
         if !line.starts_with('+') || line.starts_with("+++") {
             continue;
         }
-        let added = &line[1..];
+        let added = line.strip_prefix('+').unwrap_or(line);
         for mut hit in secrets::hits_on_line(&rel, 0, added) {
             hit.category = "history".into();
             hit.rule_id = format!("{}-history", hit.rule_id);

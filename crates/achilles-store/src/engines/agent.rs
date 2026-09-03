@@ -103,6 +103,9 @@ struct UnitFindingJson {
     why: String,
 }
 
+// Scan orchestration passes the full assessment context through; grouping
+// into a struct would churn every engine call site for no behavior change.
+#[allow(clippy::too_many_arguments)]
 pub async fn run(
     store: &AchillesStore,
     root: &Path,
@@ -525,7 +528,10 @@ async fn review_one(
         Ok(v) => v,
         Err(err) => {
             tracing::debug!(error = %err, subject, "investigator complete failed");
-            return (ReviewOutcome::Error, review_note(&job, "error", &err.to_string()));
+            return (
+                ReviewOutcome::Error,
+                review_note(&job, "error", &err.to_string()),
+            );
         }
     };
     if let Some(finding_id) = &job.finding_id {
@@ -564,7 +570,10 @@ async fn review_one(
         Ok(v) => v,
         Err(err) => {
             tracing::debug!(error = %err, subject, "validator complete failed");
-            return (ReviewOutcome::Error, review_note(&job, "error", &err.to_string()));
+            return (
+                ReviewOutcome::Error,
+                review_note(&job, "error", &err.to_string()),
+            );
         }
     };
     if let Some(finding_id) = &job.finding_id {
@@ -654,6 +663,7 @@ async fn review_one(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn unit_one(
     store: &AchillesStore,
     root: &Path,
@@ -724,6 +734,7 @@ async fn unit_one(
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn complete_verdict(
     store: &AchillesStore,
     root: &Path,
@@ -900,7 +911,9 @@ pub fn extract_json(text: &str) -> Option<Value> {
             x if x == close => {
                 depth -= 1;
                 if depth == 0 {
-                    return serde_json::from_str(&stripped[start..=i]).ok();
+                    return stripped
+                        .get(start..=i)
+                        .and_then(|s| serde_json::from_str(s).ok());
                 }
             }
             _ => {}

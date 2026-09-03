@@ -47,7 +47,7 @@ pub async fn scan(
         .get("score")
         .and_then(|v| v.as_f64())
         .unwrap_or(-1.0);
-    if score < 0.0 || score >= 5.0 {
+    if !(0.0..5.0).contains(&score) {
         return Ok(Vec::new());
     }
     Ok(vec![NewFinding {

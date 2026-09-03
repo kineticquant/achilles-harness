@@ -78,7 +78,7 @@ impl IntelClient {
             "kev": row.map(|e| e.in_kev).unwrap_or(false),
             "epss": row.and_then(|e| e.epss),
             "epssPercentile": row.and_then(|e| e.epss_percentile),
-            "cvss": row.and_then(|e| e.cvss).or_else(|| nvd.as_ref().and_then(|v| nvd_cvss(v))),
+            "cvss": row.and_then(|e| e.cvss).or_else(|| nvd.as_ref().and_then(nvd_cvss)),
             "nvd": nvd,
             "ghsa": ghsa,
             "depsDev": deps,

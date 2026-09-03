@@ -92,7 +92,7 @@ fn classify_finding(root: &Path, finding: &NewFinding) -> ArgKind {
 }
 
 fn first_argument<'a>(line: &'a str, sink: &str) -> &'a str {
-    let hay = if sink.is_empty() { line } else { line };
+    let hay = line;
     let after = if !sink.is_empty() && hay.contains(sink) {
         let pos = hay.find(sink).unwrap_or(0);
         hay.get(pos + sink.len()..).unwrap_or("")
@@ -114,12 +114,12 @@ fn cut_expr(s: &str) -> &str {
             '(' | '[' | '{' => depth += 1,
             ')' | ']' | '}' => {
                 if depth == 0 {
-                    return s[..i].trim();
+                    return s.get(..i).map(str::trim).unwrap_or("");
                 }
                 depth -= 1;
             }
-            ',' if depth == 0 => return s[..i].trim(),
-            ';' if depth == 0 => return s[..i].trim(),
+            ',' if depth == 0 => return s.get(..i).map(str::trim).unwrap_or(""),
+            ';' if depth == 0 => return s.get(..i).map(str::trim).unwrap_or(""),
             _ => {}
         }
     }

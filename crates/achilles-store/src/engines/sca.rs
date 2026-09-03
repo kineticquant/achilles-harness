@@ -600,7 +600,7 @@ fn yarn_package_name(spec: &str) -> String {
     if spec.starts_with('@') {
         if let Some(idx) = spec.rfind('@') {
             if idx > 0 {
-                return spec[..idx].to_string();
+                return spec.get(..idx).unwrap_or(spec).to_string();
             }
         }
         return spec.to_string();
@@ -694,8 +694,8 @@ fn parse_requirements(path: &Path, source: &str) -> Vec<PackageRef> {
 /// and querying it makes OSV return every historical advisory for that gem.
 fn strip_bundler_platform(version: &str) -> &str {
     for (i, _) in version.match_indices('-') {
-        if is_gem_platform(&version[i + 1..]) {
-            return &version[..i];
+        if version.get(i + 1..).is_some_and(is_gem_platform) {
+            return version.get(..i).unwrap_or(version);
         }
     }
     version

@@ -337,7 +337,6 @@ fn alert_domain(kind: &str) -> &'static str {
         || k == "badsemverdependency"
         || k == "floatingdependency"
         || k == "socketupgradeavailable"
-        || k == "badsemverdependency"
     {
         return "quality";
     }

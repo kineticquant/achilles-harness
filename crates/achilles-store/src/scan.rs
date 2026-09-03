@@ -551,6 +551,7 @@ pub async fn pause_scan(
         .ok_or_else(|| anyhow::anyhow!("assessment vanished after pause"))
 }
 
+#[allow(clippy::too_many_arguments)]
 async fn run_engines(
     store: &AchillesStore,
     working_dir: &str,
@@ -1392,9 +1393,7 @@ async fn run_engines(
 
     // Engine hits must stay on the ledger. Pending is a review queue, not a way
     // to hide Fast results when the model errors or never writes a verdict.
-    store
-        .confirm_pending_candidates(assessment_id)
-        .await?;
+    store.confirm_pending_candidates(assessment_id).await?;
 
     let mut skip_absent: Vec<&str> = Vec::new();
     if !scan_literals {
@@ -2511,7 +2510,11 @@ mod tests {
             .iter()
             .find(|f| f.category == "sast")
             .expect("sast finding must remain on the ledger");
-        assert!(sast.state == "open" || sast.state == "confirmed", "{}", sast.state);
+        assert!(
+            sast.state == "open" || sast.state == "confirmed",
+            "{}",
+            sast.state
+        );
         let pending = store
             .list_candidates(&assessment.id, Some("pending"), Some("sast"))
             .await

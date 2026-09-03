@@ -172,22 +172,21 @@ fn is_env_template_name(rel: &str) -> bool {
     let Some(rest) = name.strip_prefix(".env") else {
         return false;
     };
-    rest.split(|c: char| c == '.' || c == '-' || c == '_')
-        .any(|part| {
-            matches!(
-                part,
-                "example"
-                    | "sample"
-                    | "template"
-                    | "tmpl"
-                    | "erb"
-                    | "dist"
-                    | "j2"
-                    | "jinja"
-                    | "jinja2"
-                    | "mustache"
-            )
-        })
+    rest.split(['.', '-', '_']).any(|part| {
+        matches!(
+            part,
+            "example"
+                | "sample"
+                | "template"
+                | "tmpl"
+                | "erb"
+                | "dist"
+                | "j2"
+                | "jinja"
+                | "jinja2"
+                | "mustache"
+        )
+    })
 }
 
 fn has_from(text: &str) -> bool {

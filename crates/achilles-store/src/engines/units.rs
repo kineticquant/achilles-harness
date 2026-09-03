@@ -163,7 +163,7 @@ fn go_func(line: &str) -> Option<String> {
     let rest = t.strip_prefix("func ")?;
     if rest.starts_with('(') {
         let after_recv = rest.find(')')?;
-        ident_before(rest[after_recv + 1..].trim_start(), '(')
+        ident_before(rest.get(after_recv + 1..).unwrap_or("").trim_start(), '(')
     } else {
         ident_before(rest, '(')
     }
@@ -176,7 +176,7 @@ fn rust_fn(line: &str) -> Option<String> {
         s = r.trim_start();
         if s.starts_with('(') {
             let end = s.find(')')?;
-            s = s[end + 1..].trim_start();
+            s = s.get(end + 1..).unwrap_or("").trim_start();
         }
     }
     if let Some(r) = s.strip_prefix("async ") {
@@ -338,7 +338,7 @@ fn clip(text: &str) -> String {
     while cut > 0 && !text.is_char_boundary(cut) {
         cut -= 1;
     }
-    format!("{}\n…", &text[..cut])
+    format!("{}\n…", text.get(..cut).unwrap_or(text))
 }
 
 fn file_stem(rel: &str) -> &str {

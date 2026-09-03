@@ -300,14 +300,19 @@ fn should_skip(path: &Path) -> bool {
 }
 
 fn redact(value: &str) -> String {
-    if value.len() <= 8 {
+    if value.chars().count() <= 8 {
         return "********".into();
     }
-    format!(
-        "{}…{}",
-        &value[..4],
-        &value[value.len().saturating_sub(4)..]
-    )
+    let head: String = value.chars().take(4).collect();
+    let tail: String = value
+        .chars()
+        .rev()
+        .take(4)
+        .collect::<Vec<_>>()
+        .into_iter()
+        .rev()
+        .collect();
+    format!("{head}…{tail}")
 }
 
 pub fn fingerprint(rule_id: &str, path: &str, line: usize, sink: &str) -> String {

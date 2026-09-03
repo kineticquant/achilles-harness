@@ -70,7 +70,7 @@ pub fn scan_pinning_on(
         let name = path.file_name().and_then(|s| s.to_str()).unwrap_or("");
         match name {
             "package.json" => {
-                findings.extend(scan_package_json(path, &rel_str));
+                findings.extend(scan_package_json(path, rel_str));
                 if !lockfile_nearby(
                     path,
                     root,
@@ -85,18 +85,18 @@ pub fn scan_pinning_on(
                     findings.push(missing_lock(
                         "missing-lockfile-npm",
                         "npm package.json has no lockfile",
-                        &rel_str,
+                        rel_str,
                         "This directory has package.json but no package-lock.json / yarn.lock / pnpm-lock.yaml in this tree. Installs are not reproducible and SCA cannot pin versions.",
                     ));
                 }
             }
             "Cargo.toml" => {
-                findings.extend(scan_cargo_toml(path, &rel_str));
+                findings.extend(scan_cargo_toml(path, rel_str));
                 if !lockfile_nearby(path, root, &["Cargo.lock"]) {
                     findings.push(missing_lock(
                         "missing-lockfile-cargo",
                         "Cargo.toml has no Cargo.lock",
-                        &rel_str,
+                        rel_str,
                         "Without Cargo.lock in this tree, crate versions float and OSV cannot ground the graph.",
                     ));
                 }
@@ -106,18 +106,18 @@ pub fn scan_pinning_on(
                     findings.push(missing_lock(
                         "missing-gosum",
                         "go.mod has no go.sum",
-                        &rel_str,
+                        rel_str,
                         "Missing go.sum means module checksums and exact versions are not recorded.",
                     ));
                 }
             }
-            "requirements.txt" => findings.extend(scan_requirements(path, &rel_str)),
+            "requirements.txt" => findings.extend(scan_requirements(path, rel_str)),
             "Gemfile" => {
                 if !lockfile_nearby(path, root, &["Gemfile.lock"]) {
                     findings.push(missing_lock(
                         "missing-lockfile-bundler",
                         "Gemfile has no Gemfile.lock",
-                        &rel_str,
+                        rel_str,
                         "Ruby installs without Gemfile.lock are not reproducible.",
                     ));
                 }
@@ -127,24 +127,24 @@ pub fn scan_pinning_on(
                     findings.push(missing_lock(
                         "missing-lockfile-composer",
                         "composer.json has no composer.lock",
-                        &rel_str,
+                        rel_str,
                         "PHP installs without composer.lock are not reproducible.",
                     ));
                 }
             }
-            "pyproject.toml" => {
+            "pyproject.toml"
                 if !lockfile_nearby(
                     path,
                     root,
                     &["poetry.lock", "pdm.lock", "uv.lock", "requirements.txt"],
-                ) {
-                    findings.push(missing_lock(
-                        "missing-lockfile-python",
-                        "pyproject.toml has no Python lockfile",
-                        &rel_str,
-                        "No poetry.lock / pdm.lock / uv.lock / requirements.txt in this tree.",
-                    ));
-                }
+                ) =>
+            {
+                findings.push(missing_lock(
+                    "missing-lockfile-python",
+                    "pyproject.toml has no Python lockfile",
+                    rel_str,
+                    "No poetry.lock / pdm.lock / uv.lock / requirements.txt in this tree.",
+                ));
             }
             _ => {}
         }

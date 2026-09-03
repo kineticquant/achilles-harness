@@ -101,7 +101,7 @@ pub fn entropy(text: &str) -> serde_json::Value {
 
 pub fn decode_hex(text: &str) -> Result<serde_json::Value> {
     let clean: String = text.chars().filter(|c| !c.is_whitespace()).collect();
-    if clean.len() % 2 != 0 {
+    if !clean.len().is_multiple_of(2) {
         bail!("hex length must be even");
     }
     let mut bytes = Vec::with_capacity(clean.len() / 2);
@@ -284,7 +284,7 @@ pub fn run(args: UtilsArgs<'_>) -> Result<serde_json::Value> {
             let text = args.text.context("text is required for hex")?;
             let compact: String = text.chars().filter(|c| !c.is_whitespace()).collect();
             if compact.len() >= 2
-                && compact.len() % 2 == 0
+                && compact.len().is_multiple_of(2)
                 && compact.chars().all(|c| c.is_ascii_hexdigit())
             {
                 decode_hex(text)
@@ -375,7 +375,7 @@ pub fn parse_registry_time(raw: &str) -> Option<DateTime<Utc>> {
 
 fn decode_b64url_json(part: &str) -> Result<serde_json::Value> {
     let mut s = part.replace('-', "+").replace('_', "/");
-    while s.len() % 4 != 0 {
+    while !s.len().is_multiple_of(4) {
         s.push('=');
     }
     let bytes = STANDARD.decode(&s).context("jwt b64")?;

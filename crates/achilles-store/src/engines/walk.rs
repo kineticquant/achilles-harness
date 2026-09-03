@@ -230,7 +230,6 @@ fn walk_pass(
     builder.run(|| {
         let hits = &hits;
         let seen = &seen;
-        let keep = keep;
         Box::new(move |entry| {
             if wait_if_paused(pause, cancel) || seen.load(Ordering::Relaxed) >= pass.max_files {
                 return WalkState::Quit;

@@ -592,6 +592,7 @@ impl AchillesStore {
         .await
     }
 
+    #[allow(clippy::too_many_arguments)]
     pub async fn record_engine_run_with(
         &self,
         assessment_id: &str,
@@ -1761,9 +1762,7 @@ impl AchillesStore {
         working_dir: Option<&str>,
     ) -> Result<Vec<Finding>> {
         let Some(id) = assessment_id else {
-            return self
-                .list_findings(None, engagement_id, working_dir)
-                .await;
+            return self.list_findings(None, engagement_id, working_dir).await;
         };
         let pool = self.pool().await?;
         let rows = sqlx::query(

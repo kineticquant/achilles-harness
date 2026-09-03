@@ -435,11 +435,11 @@ fn edit_distance(a: &str, b: &str) -> usize {
     let b: Vec<char> = b.chars().collect();
     let (n, m) = (a.len(), b.len());
     let mut d = vec![vec![0usize; m + 1]; n + 1];
-    for i in 0..=n {
-        d[i][0] = i;
+    for (i, row) in d.iter_mut().enumerate() {
+        row[0] = i;
     }
-    for j in 0..=m {
-        d[0][j] = j;
+    for (j, cell) in d[0].iter_mut().enumerate() {
+        *cell = j;
     }
     for i in 1..=n {
         for j in 1..=m {
@@ -479,9 +479,7 @@ fn pnpm_key_name(key: &str) -> Option<String> {
     }
     let name = if key.starts_with('@') {
         let rest = key.trim_start_matches('@');
-        let Some((scope, after)) = rest.split_once('/') else {
-            return None;
-        };
+        let (scope, after) = rest.split_once('/')?;
         let pkg = after.split('@').next().unwrap_or(after);
         format!("@{scope}/{pkg}")
     } else {
