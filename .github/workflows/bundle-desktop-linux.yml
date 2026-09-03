@@ -218,7 +218,7 @@ jobs:
         if: matrix.variant == 'standard'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: Goose-linux-x64-deb
+          name: Achilles-linux-x64-deb
           path: ui/desktop/out/make/deb/x64/*.deb
           if-no-files-found: error
 
@@ -226,7 +226,7 @@ jobs:
         if: matrix.variant == 'vulkan'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: Goose-linux-x64-vulkan-deb
+          name: Achilles-linux-x64-vulkan-deb
           path: ui/desktop/out/make/deb/x64/*-vulkan.deb
           if-no-files-found: error
 
@@ -234,7 +234,7 @@ jobs:
         if: matrix.variant == 'standard'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: Goose-linux-x64-rpm
+          name: Achilles-linux-x64-rpm
           path: ui/desktop/out/make/rpm/x64/*.rpm
           if-no-files-found: error
 
@@ -242,7 +242,7 @@ jobs:
         if: matrix.variant == 'vulkan'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: Goose-linux-x64-vulkan-rpm
+          name: Achilles-linux-x64-vulkan-rpm
           path: ui/desktop/out/make/rpm/x64/*-vulkan.rpm
           if-no-files-found: error
 
@@ -250,7 +250,7 @@ jobs:
         if: matrix.variant == 'standard'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: Goose-linux-x64-flatpak
+          name: Achilles-linux-x64-flatpak
           path: ui/desktop/out/make/flatpak/x86_64/*.flatpak
           if-no-files-found: error
 
@@ -258,6 +258,6 @@ jobs:
         if: matrix.variant == 'vulkan'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a  # v7.0.1
         with:
-          name: Goose-linux-x64-vulkan-flatpak
+          name: Achilles-linux-x64-vulkan-flatpak
           path: ui/desktop/out/make/flatpak/x86_64/*-vulkan.flatpak
           if-no-files-found: error
