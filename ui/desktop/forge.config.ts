@@ -90,6 +90,7 @@ module.exports = {
         authors: 'Achilles',
         description: 'Achilles — agent harness',
         setupIcon: resolve(__dirname, 'src/images/icon.ico'),
+        loadingGif: resolve(__dirname, 'src/images/loading-achilles.gif'),
         setupExe: windowsSetupExe,
       },
     },
