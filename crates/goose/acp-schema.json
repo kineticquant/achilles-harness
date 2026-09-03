@@ -6577,6 +6577,549 @@
       "x-side": "agent",
       "x-method": "_goose/unstable/local-inference/chat-templates/builtin/list"
     },
+    "AssessmentsStartRequest": {
+      "type": "object",
+      "properties": {
+        "workingDir": {
+          "type": "string"
+        },
+        "sessionId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "parentAssessmentId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "wait": {
+          "type": "boolean",
+          "default": false
+        },
+        "includeVendor": {
+          "type": "boolean",
+          "description": "Scan `node_modules` / `vendor` / `target` (capped; still skips `.git` and binaries).",
+          "default": false
+        },
+        "scanLiterals": {
+          "type": "boolean",
+          "description": "Opt-in hardcoded-value scan. Not security — stability / config hygiene.",
+          "default": false
+        },
+        "scanDelta": {
+          "type": "boolean",
+          "description": "Opt-in: compact staged/unstaged/untracked diffs and check introduced logic against the tree.",
+          "default": false
+        },
+        "depth": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "`fast` (engines), `investigate` (engines + AI review), `deep` (wider investigate)."
+        },
+        "resumeAssessmentId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "Reopen this cancelled/partial assessment and skip finished work units."
+        },
+        "maxDurationSecs": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "description": "Wall-clock cap in seconds. Stop as partial; resume to continue.",
+          "minimum": 0
+        },
+        "maxCostUsd": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "format": "double",
+          "description": "BYO spend cap in USD. Stop as partial when the model reports cost."
+        }
+      },
+      "required": [
+        "workingDir"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/assessments/start"
+    },
+    "AssessmentsStartResponse": {
+      "type": "object",
+      "properties": {
+        "assessment": {
+          "$ref": "#/$defs/AssessmentDto"
+        }
+      },
+      "required": [
+        "assessment"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/assessments/start"
+    },
+    "AssessmentDto": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "engagementId": {
+          "type": "string"
+        },
+        "workingDir": {
+          "type": "string"
+        },
+        "sessionId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "mode": {
+          "type": "string"
+        },
+        "status": {
+          "type": "string"
+        },
+        "startedAt": {
+          "type": "string"
+        },
+        "finishedAt": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "phases": {},
+        "stats": {},
+        "errorMessage": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trigger": {
+          "type": "string"
+        },
+        "parentAssessmentId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "baseGitSha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "headGitSha": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "contentFingerprint": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "modelClass": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "openFindingCount": {
+          "type": "integer"
+        },
+        "newFindingCount": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "goneFindingCount": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "engagementId",
+        "workingDir",
+        "mode",
+        "status",
+        "startedAt",
+        "updatedAt",
+        "phases",
+        "stats",
+        "trigger",
+        "openFindingCount"
+      ]
+    },
+    "AssessmentsCancelRequest": {
+      "type": "object",
+      "properties": {
+        "assessmentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "assessmentId"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/assessments/cancel"
+    },
+    "AssessmentsCancelResponse": {
+      "type": "object",
+      "properties": {
+        "assessment": {
+          "$ref": "#/$defs/AssessmentDto"
+        }
+      },
+      "required": [
+        "assessment"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/assessments/cancel"
+    },
+    "AssessmentsPauseRequest": {
+      "type": "object",
+      "properties": {
+        "assessmentId": {
+          "type": "string"
+        },
+        "paused": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "assessmentId",
+        "paused"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/assessments/pause"
+    },
+    "AssessmentsPauseResponse": {
+      "type": "object",
+      "properties": {
+        "assessment": {
+          "$ref": "#/$defs/AssessmentDto"
+        }
+      },
+      "required": [
+        "assessment"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/assessments/pause"
+    },
+    "AssessmentsListRequest": {
+      "type": "object",
+      "properties": {
+        "workingDir": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "sessionId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/assessments/list"
+    },
+    "AssessmentsListResponse": {
+      "type": "object",
+      "properties": {
+        "assessments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AssessmentDto"
+          }
+        }
+      },
+      "required": [
+        "assessments"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/assessments/list"
+    },
+    "AssessmentsGetRequest": {
+      "type": "object",
+      "properties": {
+        "assessmentId": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "assessmentId"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/assessments/get"
+    },
+    "AssessmentsGetResponse": {
+      "type": "object",
+      "properties": {
+        "assessment": {
+          "$ref": "#/$defs/AssessmentDto"
+        }
+      },
+      "required": [
+        "assessment"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/assessments/get"
+    },
+    "FindingsListRequest": {
+      "type": "object",
+      "properties": {
+        "assessmentId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "engagementId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "workingDir": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/findings/list"
+    },
+    "FindingsListResponse": {
+      "type": "object",
+      "properties": {
+        "findings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FindingDto"
+          }
+        }
+      },
+      "required": [
+        "findings"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/findings/list"
+    },
+    "FindingDto": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "engagementId": {
+          "type": "string"
+        },
+        "assessmentId": {
+          "type": "string"
+        },
+        "lastSeenAssessmentId": {
+          "type": "string"
+        },
+        "fingerprint": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "severity": {
+          "type": "string"
+        },
+        "confidence": {
+          "type": "string"
+        },
+        "category": {
+          "type": "string"
+        },
+        "ruleId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "lineStart": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "lineEnd": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "cwe": {},
+        "cve": {},
+        "evidence": {},
+        "firstSeenAt": {
+          "type": "string"
+        },
+        "lastSeenAt": {
+          "type": "string"
+        },
+        "statusReason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "id",
+        "engagementId",
+        "assessmentId",
+        "lastSeenAssessmentId",
+        "fingerprint",
+        "state",
+        "severity",
+        "confidence",
+        "category",
+        "ruleId",
+        "title",
+        "description",
+        "cwe",
+        "cve",
+        "evidence",
+        "firstSeenAt",
+        "lastSeenAt"
+      ]
+    },
+    "FindingsSetStateRequest": {
+      "type": "object",
+      "properties": {
+        "findingId": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "required": [
+        "findingId",
+        "state"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/findings/setState"
+    },
+    "FindingsSetStateResponse": {
+      "type": "object",
+      "properties": {
+        "finding": {
+          "$ref": "#/$defs/FindingDto"
+        }
+      },
+      "required": [
+        "finding"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/findings/setState"
+    },
+    "UtilsRunRequest": {
+      "type": "object",
+      "properties": {
+        "workingDir": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string"
+        },
+        "path": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "text": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "passphrase": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "expected": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "confirm": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "required": [
+        "workingDir",
+        "action"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/utils/run"
+    },
+    "UtilsRunResponse": {
+      "type": "object",
+      "properties": {
+        "result": {}
+      },
+      "required": [
+        "result"
+      ],
+      "x-side": "agent",
+      "x-method": "_achilles/unstable/utils/run"
+    },
     "GooseSessionNotification_unstable": {
       "type": "object",
       "properties": {
@@ -7909,6 +8452,78 @@
                   ],
                   "description": "Params for _goose/unstable/local-inference/chat-templates/builtin/list",
                   "title": "LocalInferenceBuiltinChatTemplatesListRequest_unstable"
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/AssessmentsStartRequest"
+                    }
+                  ],
+                  "description": "Params for _achilles/unstable/assessments/start",
+                  "title": "AssessmentsStartRequest"
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/AssessmentsCancelRequest"
+                    }
+                  ],
+                  "description": "Params for _achilles/unstable/assessments/cancel",
+                  "title": "AssessmentsCancelRequest"
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/AssessmentsPauseRequest"
+                    }
+                  ],
+                  "description": "Params for _achilles/unstable/assessments/pause",
+                  "title": "AssessmentsPauseRequest"
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/AssessmentsListRequest"
+                    }
+                  ],
+                  "description": "Params for _achilles/unstable/assessments/list",
+                  "title": "AssessmentsListRequest"
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/AssessmentsGetRequest"
+                    }
+                  ],
+                  "description": "Params for _achilles/unstable/assessments/get",
+                  "title": "AssessmentsGetRequest"
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/FindingsListRequest"
+                    }
+                  ],
+                  "description": "Params for _achilles/unstable/findings/list",
+                  "title": "FindingsListRequest"
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/FindingsSetStateRequest"
+                    }
+                  ],
+                  "description": "Params for _achilles/unstable/findings/setState",
+                  "title": "FindingsSetStateRequest"
+                },
+                {
+                  "allOf": [
+                    {
+                      "$ref": "#/$defs/UtilsRunRequest"
+                    }
+                  ],
+                  "description": "Params for _achilles/unstable/utils/run",
+                  "title": "UtilsRunRequest"
                 }
               ]
             },
@@ -8539,6 +9154,70 @@
                         }
                       ],
                       "title": "LocalInferenceBuiltinChatTemplatesListResponse_unstable"
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/AssessmentsStartResponse"
+                        }
+                      ],
+                      "title": "AssessmentsStartResponse"
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/AssessmentsCancelResponse"
+                        }
+                      ],
+                      "title": "AssessmentsCancelResponse"
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/AssessmentsPauseResponse"
+                        }
+                      ],
+                      "title": "AssessmentsPauseResponse"
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/AssessmentsListResponse"
+                        }
+                      ],
+                      "title": "AssessmentsListResponse"
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/AssessmentsGetResponse"
+                        }
+                      ],
+                      "title": "AssessmentsGetResponse"
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/FindingsListResponse"
+                        }
+                      ],
+                      "title": "FindingsListResponse"
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/FindingsSetStateResponse"
+                        }
+                      ],
+                      "title": "FindingsSetStateResponse"
+                    },
+                    {
+                      "allOf": [
+                        {
+                          "$ref": "#/$defs/UtilsRunResponse"
+                        }
+                      ],
+                      "title": "UtilsRunResponse"
                     }
                   ]
                 },

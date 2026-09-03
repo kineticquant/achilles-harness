@@ -564,6 +564,46 @@
       "method": "_goose/unstable/local-inference/chat-templates/builtin/list",
       "requestType": "LocalInferenceBuiltinChatTemplatesListRequest_unstable",
       "responseType": "LocalInferenceBuiltinChatTemplatesListResponse_unstable"
+    },
+    {
+      "method": "_achilles/unstable/assessments/start",
+      "requestType": "AssessmentsStartRequest",
+      "responseType": "AssessmentsStartResponse"
+    },
+    {
+      "method": "_achilles/unstable/assessments/cancel",
+      "requestType": "AssessmentsCancelRequest",
+      "responseType": "AssessmentsCancelResponse"
+    },
+    {
+      "method": "_achilles/unstable/assessments/pause",
+      "requestType": "AssessmentsPauseRequest",
+      "responseType": "AssessmentsPauseResponse"
+    },
+    {
+      "method": "_achilles/unstable/assessments/list",
+      "requestType": "AssessmentsListRequest",
+      "responseType": "AssessmentsListResponse"
+    },
+    {
+      "method": "_achilles/unstable/assessments/get",
+      "requestType": "AssessmentsGetRequest",
+      "responseType": "AssessmentsGetResponse"
+    },
+    {
+      "method": "_achilles/unstable/findings/list",
+      "requestType": "FindingsListRequest",
+      "responseType": "FindingsListResponse"
+    },
+    {
+      "method": "_achilles/unstable/findings/setState",
+      "requestType": "FindingsSetStateRequest",
+      "responseType": "FindingsSetStateResponse"
+    },
+    {
+      "method": "_achilles/unstable/utils/run",
+      "requestType": "UtilsRunRequest",
+      "responseType": "UtilsRunResponse"
     }
   ],
   "notifications": [
