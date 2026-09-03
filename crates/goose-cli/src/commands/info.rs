@@ -1,7 +1,7 @@
-use anyhow::{Result, anyhow};
+use anyhow::{anyhow, Result};
 use console::style;
-use goose::config::Config;
 use goose::config::paths::Paths;
+use goose::config::Config;
 use goose::conversation::message::Message;
 use goose::session::session_manager::{DB_NAME, SESSIONS_FOLDER};
 use goose_providers::errors::ProviderError;

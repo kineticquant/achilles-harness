@@ -3,7 +3,7 @@
 use std::path::PathBuf;
 
 use anyhow::Result;
-use goose::agents::platform_extensions::analyze::{AnalyzeClient, format, graph, inspect};
+use goose::agents::platform_extensions::analyze::{format, graph, inspect, AnalyzeClient};
 
 pub fn handle_analyze(
     path: Option<PathBuf>,

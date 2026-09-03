@@ -8,8 +8,8 @@ use anyhow::Result;
 use rayon::prelude::*;
 use serde::{Deserialize, Serialize};
 
-use super::AnalyzeClient;
 use super::graph::CallGraph;
+use super::AnalyzeClient;
 
 const DEFAULT_MAX_DEPTH: u32 = 3;
 const MAX_WALK_DEPTH: u32 = 6;
@@ -257,20 +257,16 @@ mod tests {
 
         let graph = inspect_focus(tmp.path(), "process", 3, 2, 80).unwrap();
         assert!(graph.found);
-        assert!(
-            graph
-                .nodes
-                .iter()
-                .any(|n| n.name == "process" && n.kind == "focus")
-        );
+        assert!(graph
+            .nodes
+            .iter()
+            .any(|n| n.name == "process" && n.kind == "focus"));
         assert!(graph.nodes.iter().any(|n| n.name == "validate"));
         assert!(!graph.edges.is_empty());
-        assert!(
-            graph
-                .edges
-                .iter()
-                .any(|e| { e.source.contains("process") && e.target.contains("validate") })
-        );
+        assert!(graph
+            .edges
+            .iter()
+            .any(|e| { e.source.contains("process") && e.target.contains("validate") }));
     }
 
     #[test]

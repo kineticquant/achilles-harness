@@ -1,17 +1,17 @@
-use anyhow::{Context, Result, anyhow, bail};
+use anyhow::{anyhow, bail, Context, Result};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-use crate::session::{SessionBuilderConfig, build_session};
+use crate::session::{build_session, SessionBuilderConfig};
 
-use goose::checks::{DiscoveredReview, discover};
+use goose::checks::{discover, DiscoveredReview};
 use goose::subprocess::git_command;
 
 use super::orchestrator::{
-    Severity, emit_findings, run_checks_in_parallel, run_main_pass_in_parallel,
+    emit_findings, run_checks_in_parallel, run_main_pass_in_parallel, Severity,
 };
-use super::prompt::{DEFAULT_REVIEW_PROMPT, build_review_prompt};
+use super::prompt::{build_review_prompt, DEFAULT_REVIEW_PROMPT};
 
 /// Options for `goose review`.
 #[derive(Debug, Clone, Default)]

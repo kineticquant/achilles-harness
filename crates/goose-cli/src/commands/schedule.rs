@@ -1,7 +1,7 @@
-use anyhow::{Context, Result, bail};
+use anyhow::{bail, Context, Result};
 use goose::scheduler::{
-    ScheduledJob, Scheduler, SchedulerError, get_default_scheduled_recipes_dir,
-    get_default_scheduler_storage_path,
+    get_default_scheduled_recipes_dir, get_default_scheduler_storage_path, ScheduledJob, Scheduler,
+    SchedulerError,
 };
 use goose::session::SessionManager;
 use std::path::Path;
