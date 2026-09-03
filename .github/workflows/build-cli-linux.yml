@@ -106,6 +106,22 @@ jobs:
             git \
             tar
 
+      - name: Bootstrap rustup (manylinux container)
+        if: matrix.container != ''
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+            | sh -s -- -y --default-toolchain none --profile minimal --no-modify-path
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+          export PATH="$HOME/.cargo/bin:$PATH"
+          TARGET="${{ matrix.architecture }}-${{ matrix.target-suffix }}"
+          RUST_CHANNEL=$(grep '^channel' rust-toolchain.toml | cut -d'"' -f2)
+          if [ -z "$RUST_CHANNEL" ]; then
+            echo "Could not parse channel from rust-toolchain.toml" >&2
+            exit 1
+          fi
+          rustup toolchain install "$RUST_CHANNEL" --profile minimal \
+            --component rustc,cargo --target "$TARGET"
+
       - name: Cache Cargo artifacts
         uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4  # v2.9.1
         with:
@@ -142,19 +158,7 @@ jobs:
         env:
           RUST_BACKTRACE: 1
         run: |
-          # Hermit's tool cache is host-runner-scoped; inside the container we
-          # bootstrap rustup directly and let rust-toolchain.toml pin the channel.
-          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
-            | sh -s -- -y --default-toolchain none --profile minimal --no-modify-path
-          export PATH="$HOME/.cargo/bin:$PATH"
           TARGET="${{ matrix.architecture }}-${{ matrix.target-suffix }}"
-          RUST_CHANNEL=$(grep '^channel' rust-toolchain.toml | cut -d'"' -f2)
-          if [ -z "$RUST_CHANNEL" ]; then
-            echo "Could not parse channel from rust-toolchain.toml" >&2
-            exit 1
-          fi
-          rustup toolchain install "$RUST_CHANNEL" --profile minimal \
-            --component rustc,cargo --target "$TARGET"
           rustup show
           cargo build --release --target "$TARGET" -p goose-cli --bin goose
 

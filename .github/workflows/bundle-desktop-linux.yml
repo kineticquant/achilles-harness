@@ -172,6 +172,7 @@ jobs:
 
       - name: Build Linux packages
         env:
+          NODE_OPTIONS: --max-old-space-size=8192
           GOOSE_DESKTOP_LINUX_VARIANT: ${{ matrix.variant }}
         run: |
           source ./bin/activate-hermit

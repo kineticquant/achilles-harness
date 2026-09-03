@@ -255,6 +255,7 @@ jobs:
       - name: Build desktop UI with pnpm
         shell: bash
         env:
+          NODE_OPTIONS: --max-old-space-size=8192
           ELECTRON_PLATFORM: win32
           GOOSE_BUNDLE_NAME: Achilles
           GOOSE_WINDOWS_VARIANT: ${{ inputs.windows_variant }}
