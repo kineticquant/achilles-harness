@@ -8,7 +8,7 @@
 # Supported Architectures: x86_64
 #
 # Usage:
-#   Invoke-WebRequest -Uri "https://github.com/aaif-goose/goose/releases/download/stable/download_cli.ps1" -OutFile "download_cli.ps1"; .\download_cli.ps1
+#   Invoke-WebRequest -Uri "https://github.com/kineticquant/achilles-harness/releases/download/stable/download_cli.ps1" -OutFile "download_cli.ps1"; .\download_cli.ps1
 #   Or simply: .\download_cli.ps1
 #
 # Environment variables:
@@ -25,8 +25,8 @@
 $ErrorActionPreference = "Stop"
 
 # --- 1) Variables ---
-$REPO = "aaif-goose/goose"
-$OUT_FILE = "goose.exe"
+$REPO = "kineticquant/achilles-harness"
+$OUT_FILE = "achilles.exe"
 
 # Set default bin directory if not specified
 if (-not $env:GOOSE_BIN_DIR) {
@@ -70,18 +70,26 @@ if ($WINDOWS_VARIANT -ne "standard" -and $WINDOWS_VARIANT -ne "cuda") {
 }
 
 # --- 3) Build download URL ---
-$FILE = if ($WINDOWS_VARIANT -eq "cuda") { "goose-$ARCH-pc-windows-msvc-cuda.zip" } else { "goose-$ARCH-pc-windows-msvc.zip" }
+$FILE = if ($WINDOWS_VARIANT -eq "cuda") { "achilles-$ARCH-pc-windows-msvc-cuda.zip" } else { "achilles-$ARCH-pc-windows-msvc.zip" }
 $DOWNLOAD_URL = "https://github.com/$REPO/releases/download/$RELEASE_TAG/$FILE"
 
 Write-Host "Downloading $RELEASE_TAG release: $FILE..." -ForegroundColor Green
 
-# --- 4) Download the file ---
+# --- 4) Download the file (fall back to legacy goose asset name) ---
 try {
     Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile $FILE -UseBasicParsing
     Write-Host "Download completed successfully." -ForegroundColor Green
 } catch {
-    Write-Error "Failed to download $DOWNLOAD_URL. Error: $($_.Exception.Message)"
-    exit 1
+    $LEGACY_FILE = $FILE -replace '^achilles-', 'goose-'
+    $LEGACY_URL = $DOWNLOAD_URL -replace 'achilles-', 'goose-'
+    Write-Host "Achilles asset not found, trying legacy name: $LEGACY_FILE..." -ForegroundColor Yellow
+    try {
+        Invoke-WebRequest -Uri $LEGACY_URL -OutFile $FILE -UseBasicParsing
+        Write-Host "Download completed successfully." -ForegroundColor Green
+    } catch {
+        Write-Error "Failed to download $DOWNLOAD_URL. Error: $($_.Exception.Message)"
+        exit 1
+    }
 }
 
 # --- 5) Create temporary directory for extraction ---
@@ -110,7 +118,10 @@ Remove-Item -Path $FILE -Force
 
 # --- 7) Determine extraction directory ---
 $EXTRACT_DIR = $TMP_DIR
-if (Test-Path (Join-Path $TMP_DIR "goose-package")) {
+if (Test-Path (Join-Path $TMP_DIR "achilles-package")) {
+    Write-Host "Found achilles-package subdirectory, using that as extraction directory" -ForegroundColor Yellow
+    $EXTRACT_DIR = Join-Path $TMP_DIR "achilles-package"
+} elseif (Test-Path (Join-Path $TMP_DIR "goose-package")) {
     Write-Host "Found goose-package subdirectory, using that as extraction directory" -ForegroundColor Yellow
     $EXTRACT_DIR = Join-Path $TMP_DIR "goose-package"
 }
@@ -127,25 +138,27 @@ if (-not (Test-Path $env:GOOSE_BIN_DIR)) {
     }
 }
 
-# --- 9) Install goose binary ---
+# --- 9) Install achilles binary (fall back to legacy goose binary) ---
+$SOURCE_ACHILLES = Join-Path $EXTRACT_DIR "achilles.exe"
 $SOURCE_GOOSE = Join-Path $EXTRACT_DIR "goose.exe"
-$DEST_GOOSE = Join-Path $env:GOOSE_BIN_DIR $OUT_FILE
+$SOURCE_BIN = if (Test-Path $SOURCE_ACHILLES) { $SOURCE_ACHILLES } else { $SOURCE_GOOSE }
+$DEST_BIN = Join-Path $env:GOOSE_BIN_DIR $OUT_FILE
 
-if (Test-Path $SOURCE_GOOSE) {
-    Write-Host "Moving goose to $DEST_GOOSE" -ForegroundColor Green
+if (Test-Path $SOURCE_BIN) {
+    Write-Host "Moving achilles to $DEST_BIN" -ForegroundColor Green
     try {
         # Remove existing file if it exists to avoid conflicts
-        if (Test-Path $DEST_GOOSE) {
-            Remove-Item -Path $DEST_GOOSE -Force
+        if (Test-Path $DEST_BIN) {
+            Remove-Item -Path $DEST_BIN -Force
         }
-        Move-Item -Path $SOURCE_GOOSE -Destination $DEST_GOOSE -Force
+        Move-Item -Path $SOURCE_BIN -Destination $DEST_BIN -Force
     } catch {
-        Write-Error "Failed to move goose.exe to $DEST_GOOSE. Error: $($_.Exception.Message)"
+        Write-Error "Failed to move achilles.exe to $DEST_BIN. Error: $($_.Exception.Message)"
         Remove-Item -Path $TMP_DIR -Recurse -Force -ErrorAction SilentlyContinue
         exit 1
     }
 } else {
-    Write-Error "goose.exe not found in extracted files"
+    Write-Error "achilles.exe not found in extracted files"
     Remove-Item -Path $TMP_DIR -Recurse -Force -ErrorAction SilentlyContinue
     exit 1
 }
@@ -174,25 +187,25 @@ try {
     Write-Warning "Could not clean up temporary directory: $TMP_DIR"
 }
 
-# --- 12) Configure goose (Optional) ---
+# --- 12) Configure achilles (Optional) ---
 if ($CONFIGURE -eq "true") {
     Write-Host ""
-    Write-Host "Configuring goose" -ForegroundColor Green
+    Write-Host "Configuring achilles" -ForegroundColor Green
     Write-Host ""
     try {
-        & $DEST_GOOSE configure
+        & $DEST_BIN configure
     } catch {
-        Write-Warning "Failed to run goose configure. You may need to run it manually later."
+        Write-Warning "Failed to run achilles configure. You may need to run it manually later."
     }
 } else {
-    Write-Host "Skipping 'goose configure', you may need to run this manually later" -ForegroundColor Yellow
+    Write-Host "Skipping 'achilles configure', you may need to run this manually later" -ForegroundColor Yellow
 }
 
 # --- 13) Check PATH and give instructions if needed ---
 $CURRENT_PATH = $env:PATH
 if ($CURRENT_PATH -notlike "*$env:GOOSE_BIN_DIR*") {
     Write-Host ""
-    Write-Host "Warning: goose installed, but $env:GOOSE_BIN_DIR is not in your PATH." -ForegroundColor Yellow
+    Write-Host "Warning: achilles installed, but $env:GOOSE_BIN_DIR is not in your PATH." -ForegroundColor Yellow
     Write-Host "To add it to your PATH permanently, run the following command as Administrator:" -ForegroundColor Yellow
     Write-Host "    [Environment]::SetEnvironmentVariable('PATH', `$env:PATH + ';$env:GOOSE_BIN_DIR', 'Machine')" -ForegroundColor Cyan
     Write-Host ""
@@ -204,5 +217,5 @@ if ($CURRENT_PATH -notlike "*$env:GOOSE_BIN_DIR*") {
     Write-Host ""
 }
 
-Write-Host "goose CLI installation completed successfully!" -ForegroundColor Green
-Write-Host "goose is installed at: $DEST_GOOSE" -ForegroundColor Green
+Write-Host "achilles CLI installation completed successfully!" -ForegroundColor Green
+Write-Host "achilles is installed at: $DEST_BIN" -ForegroundColor Green

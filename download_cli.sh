@@ -55,7 +55,7 @@ fi
 
 # --- 2) Variables ---
 REPO="kineticquant/achilles-harness"
-OUT_FILE="goose"
+OUT_FILE="achilles"
 
 # Set default bin directory based on detected OS environment
 if [[ "${WINDIR:-}" ]] || [[ "${windir:-}" ]] || [[ "$OSTYPE" == "msys" ]] || [[ "$OSTYPE" == "cygwin" ]]; then
@@ -185,7 +185,7 @@ echo "Detected OS: $OS with ARCH $ARCH"
 
 # Build the filename and URL for the stable release
 if [ "$OS" = "darwin" ]; then
-  FILE="goose-$ARCH-apple-darwin.tar.bz2"
+  FILE="achilles-$ARCH-apple-darwin.tar.bz2"
   EXTRACT_CMD="tar"
 elif [ "$OS" = "windows" ]; then
   case "$GOOSE_WINDOWS_VARIANT" in
@@ -200,12 +200,12 @@ elif [ "$OS" = "windows" ]; then
     echo "Error: Windows currently only supports x86_64 architecture."
     exit 1
   fi
-  FILE="goose-$ARCH-pc-windows-msvc.zip"
+  FILE="achilles-$ARCH-pc-windows-msvc.zip"
   if [ "$GOOSE_WINDOWS_VARIANT" = "cuda" ]; then
-    FILE="goose-$ARCH-pc-windows-msvc-cuda.zip"
+    FILE="achilles-$ARCH-pc-windows-msvc-cuda.zip"
   fi
   EXTRACT_CMD="unzip"
-  OUT_FILE="goose.exe"
+  OUT_FILE="achilles.exe"
 else
   case "$GOOSE_LINUX_VARIANT" in
     standard|vulkan|musl) ;;
@@ -214,20 +214,40 @@ else
       exit 1
       ;;
   esac
-  FILE="goose-$ARCH-unknown-linux-gnu.tar.bz2"
+  FILE="achilles-$ARCH-unknown-linux-gnu.tar.bz2"
   if [ "$GOOSE_LINUX_VARIANT" = "vulkan" ]; then
-    FILE="goose-$ARCH-unknown-linux-gnu-vulkan.tar.bz2"
+    FILE="achilles-$ARCH-unknown-linux-gnu-vulkan.tar.bz2"
   elif [ "$GOOSE_LINUX_VARIANT" = "musl" ]; then
-    FILE="goose-$ARCH-unknown-linux-musl.tar.bz2"
+    FILE="achilles-$ARCH-unknown-linux-musl.tar.bz2"
   fi
   EXTRACT_CMD="tar"
 fi
 
+download_file() {
+  curl -sLf "$1" --output "$2"
+}
+
+# Try the achilles asset first, fall back to the legacy goose asset name.
+resolve_download_url() {
+  local url="$1"
+  if download_file "$url" "$FILE"; then
+    return 0
+  fi
+  local legacy_url legacy_file
+  legacy_file="$(echo "$FILE" | sed 's/^achilles-/goose-/')"
+  legacy_url="$(echo "$url" | sed 's/achilles-/goose-/')"
+  echo "Achilles asset not found, trying legacy name: $legacy_file..."
+  if download_file "$legacy_url" "$FILE"; then
+    return 0
+  fi
+  return 1
+}
+
 DOWNLOAD_URL="https://github.com/$REPO/releases/download/$RELEASE_TAG/$FILE"
 
-# --- 4) Download & extract 'goose' binary ---
+# --- 4) Download & extract 'achilles' binary ---
 echo "Downloading $RELEASE_TAG release: $FILE..."
-if ! curl -sLf "$DOWNLOAD_URL" --output "$FILE"; then
+if ! resolve_download_url "$DOWNLOAD_URL"; then
   # If the download fails, only fall back to latest stable when no version was specified and canary was not requested).
   if ! [ -n "${GOOSE_VERSION:-}" ] && [ "${CANARY:-false}" != "true" ]; then
     LATEST_TAG=$(curl -s https://api.github.com/repos/kineticquant/achilles-harness/releases/latest | \
@@ -238,7 +258,7 @@ if ! curl -sLf "$DOWNLOAD_URL" --output "$FILE"; then
     fi
 
     DOWNLOAD_URL="https://github.com/$REPO/releases/download/$LATEST_TAG/$FILE"
-    if curl -sLf "$DOWNLOAD_URL" --output "$FILE"; then
+    if resolve_download_url "$DOWNLOAD_URL"; then
       # Fallback succeeded
       :
     else
@@ -298,19 +318,32 @@ set -e  # Re-enable immediate exit on error
 
 rm "$FILE" # clean up the downloaded archive
 
-# Determine the extraction directory (handle subdirectory in Windows packages)
-# Windows releases may contain files in a 'goose-package' subdirectory
+# Determine the extraction directory (handle subdirectory in packages)
+# New releases use 'achilles-package'; older ones used 'goose-package'.
 EXTRACT_DIR="$TMP_DIR"
-if [ "$OS" = "windows" ] && [ -d "$TMP_DIR/goose-package" ]; then
+if [ -d "$TMP_DIR/achilles-package" ]; then
+  echo "Found achilles-package subdirectory, using that as extraction directory"
+  EXTRACT_DIR="$TMP_DIR/achilles-package"
+elif [ "$OS" = "windows" ] && [ -d "$TMP_DIR/goose-package" ]; then
   echo "Found goose-package subdirectory, using that as extraction directory"
   EXTRACT_DIR="$TMP_DIR/goose-package"
 fi
 
+pick_binary() {
+  # Prefer the achilles binary, fall back to the legacy goose binary.
+  local stem="$1"
+  if [ -f "$EXTRACT_DIR/achilles${stem}" ]; then
+    echo "$EXTRACT_DIR/achilles${stem}"
+  else
+    echo "$EXTRACT_DIR/goose${stem}"
+  fi
+}
+
 # Make binary executable
 if [ "$OS" = "windows" ]; then
-  chmod +x "$EXTRACT_DIR/goose.exe"
+  chmod +x "$(pick_binary .exe)"
 else
-  chmod +x "$EXTRACT_DIR/goose"
+  chmod +x "$(pick_binary "")"
 fi
 
 # --- 5) Install to $GOOSE_BIN_DIR ---
@@ -319,9 +352,13 @@ if [ ! -d "$GOOSE_BIN_DIR" ]; then
   mkdir -p "$GOOSE_BIN_DIR"
 fi
 
-echo "Moving goose to $GOOSE_BIN_DIR/$OUT_FILE"
+echo "Moving achilles to $GOOSE_BIN_DIR/$OUT_FILE"
+SRC_BIN="$(pick_binary "")"
 if [ "$OS" = "windows" ]; then
-  mv "$EXTRACT_DIR/goose.exe" "$GOOSE_BIN_DIR/$OUT_FILE"
+  SRC_BIN="$(pick_binary .exe)"
+fi
+if [ "$OS" = "windows" ]; then
+  mv "$SRC_BIN" "$GOOSE_BIN_DIR/$OUT_FILE"
 else
   # On Linux, if the target binary is currently running, writing to it fails
   # with ETXTBSY ("Text file busy"). Rename the old binary out of the way
@@ -329,14 +366,14 @@ else
   # so the user is never left without an executable.
   if [ -f "$GOOSE_BIN_DIR/$OUT_FILE" ]; then
     mv "$GOOSE_BIN_DIR/$OUT_FILE" "$GOOSE_BIN_DIR/$OUT_FILE.old"
-    if ! mv "$EXTRACT_DIR/goose" "$GOOSE_BIN_DIR/$OUT_FILE"; then
+    if ! mv "$SRC_BIN" "$GOOSE_BIN_DIR/$OUT_FILE"; then
       echo "Error: failed to install new binary, restoring previous version"
       mv "$GOOSE_BIN_DIR/$OUT_FILE.old" "$GOOSE_BIN_DIR/$OUT_FILE"
       exit 1
     fi
     rm -f "$GOOSE_BIN_DIR/$OUT_FILE.old"
   else
-    mv "$EXTRACT_DIR/goose" "$GOOSE_BIN_DIR/$OUT_FILE"
+    mv "$SRC_BIN" "$GOOSE_BIN_DIR/$OUT_FILE"
   fi
 fi
 
