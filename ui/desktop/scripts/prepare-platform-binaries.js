@@ -206,17 +206,25 @@ function ensureAchillesCliAlias(targetPlatform) {
     const goosePath = path.join(srcBinDir, gooseName);
     const achillesPath = path.join(srcBinDir, achillesName);
 
-    if (!fs.existsSync(goosePath) || !fs.statSync(goosePath).isFile()) {
+    // Achilles is the primary name; goose is kept for internal/legacy lookups.
+    // Alias whichever direction is missing so both names always exist.
+    const gooseExists = fs.existsSync(goosePath) && fs.statSync(goosePath).isFile();
+    const achillesExists = fs.existsSync(achillesPath) && fs.statSync(achillesPath).isFile();
+    if (!gooseExists && !achillesExists) {
         return;
     }
 
-    fs.copyFileSync(goosePath, achillesPath);
+    const [src, dest, srcLabel, destLabel] = gooseExists
+        ? [goosePath, achillesPath, gooseName, achillesName]
+        : [achillesPath, goosePath, achillesName, gooseName];
+
+    fs.copyFileSync(src, dest);
     try {
-        fs.chmodSync(achillesPath, 0o755);
+        fs.chmodSync(dest, 0o755);
     } catch {
         /* windows */
     }
-    console.log(`Copied ${gooseName} → ${achillesName} for user-facing MCP snippets`);
+    console.log(`Copied ${srcLabel} → ${destLabel} for user-facing MCP snippets`);
 }
 
 // Helper function to copy platform-specific files
