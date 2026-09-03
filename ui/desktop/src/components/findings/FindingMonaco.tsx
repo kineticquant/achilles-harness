@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import Editor, { type Monaco, type OnMount } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import './monacoEnv';
@@ -61,25 +61,28 @@ export default function FindingMonaco({
   const onActiveLineRef = useRef(onActiveLine);
   onActiveLineRef.current = onActiveLine;
 
-  const paintHit = (instance: editor.IStandaloneCodeEditor, monaco: Monaco) => {
-    const start = Math.max(1, lineStart ?? 0);
-    if (!lineStart) {
-      decorations.current = instance.deltaDecorations(decorations.current, []);
-      return;
-    }
-    const end = Math.max(start, lineEnd ?? start);
-    decorations.current = instance.deltaDecorations(decorations.current, [
-      {
-        range: new monaco.Range(start, 1, end, 1),
-        options: {
-          isWholeLine: true,
-          className: 'finding-hit-line',
-          linesDecorationsClassName: 'finding-hit-gutter',
+  const paintHit = useCallback(
+    (instance: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+      const start = Math.max(1, lineStart ?? 0);
+      if (!lineStart) {
+        decorations.current = instance.deltaDecorations(decorations.current, []);
+        return;
+      }
+      const end = Math.max(start, lineEnd ?? start);
+      decorations.current = instance.deltaDecorations(decorations.current, [
+        {
+          range: new monaco.Range(start, 1, end, 1),
+          options: {
+            isWholeLine: true,
+            className: 'finding-hit-line',
+            linesDecorationsClassName: 'finding-hit-gutter',
+          },
         },
-      },
-    ]);
-    instance.revealLineInCenter(start);
-  };
+      ]);
+      instance.revealLineInCenter(start);
+    },
+    [lineStart, lineEnd]
+  );
 
   const handleMount: OnMount = (instance, monaco) => {
     editorRef.current = instance;
@@ -98,7 +101,7 @@ export default function FindingMonaco({
     const monaco = monacoRef.current;
     if (!instance || !monaco) return;
     paintHit(instance, monaco);
-  }, [lineStart, lineEnd, value, path]);
+  }, [lineStart, lineEnd, value, path, paintHit]);
 
   useEffect(() => {
     editorRef.current?.updateOptions({

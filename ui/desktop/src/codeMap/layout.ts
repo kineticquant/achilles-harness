@@ -49,7 +49,7 @@ function sortNodes(list: InspectNode[]): InspectNode[] {
 }
 
 export function layoutInspectGraph(graph: InspectGraph): {
-  nodes: Node<CodeMapNodeData>[];
+  nodes: Node<CodeMapNodeData, 'codeMap'>[];
   edges: Edge[];
 } {
   const apiSharesFocus = graph.nodes.some(
@@ -72,7 +72,7 @@ export function layoutInspectGraph(graph: InspectGraph): {
     byX.set(x, existing.concat(list));
   }
 
-  const nodes: Node<CodeMapNodeData>[] = [];
+  const nodes: Node<CodeMapNodeData, 'codeMap'>[] = [];
   for (const [x, list] of byX) {
     list.forEach((node, index) => {
       nodes.push({

@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { pinGraphToFileSymbol } from './pinGraph';
 import type { InspectGraph } from './types';
 

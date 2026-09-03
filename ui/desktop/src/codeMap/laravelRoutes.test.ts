@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { parseLaravelRoutes } from './laravelRoutes';
 import { extractNamedRouteRefs, resolveNamedRouteRefs } from './routeHelpers';
 

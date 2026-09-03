@@ -714,6 +714,7 @@ const SessionListView: React.FC<SessionListViewProps> = React.memo(({ onSelectSe
 
   const SessionItem = React.memo(function SessionItem({
     session,
+    onSelectClick,
     onEditClick,
     onDuplicateClick,
     onDeleteClick,
@@ -723,6 +724,7 @@ const SessionListView: React.FC<SessionListViewProps> = React.memo(({ onSelectSe
     isSharing,
   }: {
     session: SessionListItem;
+    onSelectClick: (sessionId: string, session: SessionListItem) => void;
     onEditClick: (session: SessionListItem) => void;
     onDuplicateClick: (session: SessionListItem) => void;
     onDeleteClick: (session: SessionListItem) => void;
@@ -756,8 +758,8 @@ const SessionListView: React.FC<SessionListViewProps> = React.memo(({ onSelectSe
     );
 
     const handleCardClick = useCallback(() => {
-      onSelectSession(session.id, session);
-    }, [onSelectSession, session]);
+      onSelectClick(session.id, session);
+    }, [onSelectClick, session]);
 
     const handleExportSelect = useCallback(
       (format: SessionExportFormat) => {
@@ -963,6 +965,7 @@ const SessionListView: React.FC<SessionListViewProps> = React.memo(({ onSelectSe
                 <SessionItem
                   key={session.id}
                   session={session}
+                  onSelectClick={onSelectSession}
                   onEditClick={handleEditSession}
                   onDuplicateClick={handleDuplicateSession}
                   onDeleteClick={handleDeleteSession}

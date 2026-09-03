@@ -128,7 +128,10 @@ export default function ConfigSettings() {
   }, [typedConfig]);
 
   useEffect(() => {
-    if (typedConfig[TELEMETRY_CONFIG_KEY] !== false) {
+    // Telemetry is force-disabled; the stored value is boolean false at runtime
+    // even though ConfigValue only models string-ish config entries.
+    const telemetry = typedConfig[TELEMETRY_CONFIG_KEY] as unknown;
+    if (telemetry !== false) {
       void upsert(TELEMETRY_CONFIG_KEY, false, false).catch((error) => {
         console.error('Failed to force-disable telemetry:', error);
       });

@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { buildApiGraph, extractHttpHits, normalizePath, pathsMatch } from './httpRoutes';
 
 describe('normalizePath', () => {

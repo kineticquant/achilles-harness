@@ -1,3 +1,5 @@
+import { describe, expect, it } from 'vitest';
+
 import { enclosingFunction, listFunctionsInSource, seedSymbolFromSource } from './seedSymbol';
 
 const rust = `fn helper() {}
