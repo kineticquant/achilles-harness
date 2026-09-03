@@ -948,6 +948,16 @@ mod tests {
         }
     }
 
+    // Used by #[cfg(not(windows))] tests below; allow dead code on Windows.
+    #[cfg_attr(windows, allow(dead_code))]
+    fn extract_shell_output(result: &CallToolResult) -> ShellOutput {
+        let value = result
+            .structured_content
+            .clone()
+            .expect("expected structured content");
+        serde_json::from_value(value).expect("expected shell output structured content")
+    }
+
     #[tokio::test]
     async fn shell_executes_command() {
         let tool = ShellTool::new_for_test().unwrap();
