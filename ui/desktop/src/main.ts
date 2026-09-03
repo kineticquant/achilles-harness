@@ -396,6 +396,53 @@ async function configureProxy() {
 
 if (started) app.quit();
 
+// Squirrel only creates a Start Menu shortcut, so drop one on the Desktop
+// during install/update. The shortcut launches via Update.exe --processStart
+// so it keeps working across versioned app folders. Best-effort: the
+// installer must never fail because of this.
+function windowsDesktopShortcut(action: 'create' | 'remove'): void {
+  if (process.platform !== 'win32' || !app.isPackaged) return;
+  try {
+    const psQuote = (s: string) => `'${s.replace(/'/g, "''")}'`;
+    const script =
+      action === 'create'
+        ? [
+            `$desktop = [Environment]::GetFolderPath('Desktop')`,
+            `$lnk = Join-Path $desktop ${psQuote(`${path.basename(process.execPath, '.exe')}.lnk`)}`,
+            `if (-not (Test-Path $lnk)) {`,
+            `  $ws = New-Object -ComObject WScript.Shell`,
+            `  $sc = $ws.CreateShortcut($lnk)`,
+            `  $appRoot = ${psQuote(path.dirname(path.dirname(process.execPath)))}`,
+            `  $sc.TargetPath = Join-Path $appRoot 'Update.exe'`,
+            `  $sc.Arguments = ${psQuote(`--processStart "${path.basename(process.execPath)}"`)}`,
+            `  $sc.WorkingDirectory = $appRoot`,
+            `  $sc.IconLocation = ${psQuote(`${process.execPath},0`)}`,
+            `  $sc.Save()`,
+            `}`,
+          ].join('\n')
+        : [
+            `$lnk = Join-Path ([Environment]::GetFolderPath('Desktop')) ${psQuote(`${path.basename(process.execPath, '.exe')}.lnk`)}`,
+            `if (Test-Path $lnk) { Remove-Item $lnk -Force }`,
+          ].join('\n');
+    execFileSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-Command', script], {
+      windowsHide: true,
+      timeout: 30000,
+    });
+  } catch (error) {
+    log.warn('[Main] Windows Desktop shortcut maintenance failed:', errorMessage(error));
+  }
+}
+
+if (process.platform === 'win32' && app.isPackaged) {
+  if (process.argv.some((arg) => arg === '--squirrel-install' || arg === '--squirrel-updated')) {
+    windowsDesktopShortcut('create');
+  } else if (process.argv.includes('--squirrel-uninstall')) {
+    windowsDesktopShortcut('remove');
+  }
+}
+
+if (started) app.quit();
+
 if (process.platform === 'win32') {
   app.setAppUserModelId('com.achilles.desktop');
 }
