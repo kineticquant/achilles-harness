@@ -1,5 +1,7 @@
 use anyhow::Result;
 use axum::http::{HeaderMap, HeaderName};
+#[cfg(unix)]
+use axum::http::HeaderValue;
 use chrono::{DateTime, Utc};
 use futures::stream::{self, FuturesUnordered, StreamExt};
 use futures::Stream;
