@@ -10,7 +10,7 @@ import { createClient } from "@hey-api/openapi-ts";
 import { execSync } from "child_process";
 import * as fs from "fs/promises";
 import { dirname, resolve } from "path";
-import { fileURLToPath } from "url";
+import { fileURLToPath, pathToFileURL } from "url";
 import * as prettier from "prettier";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -422,8 +422,13 @@ ${agentRequestDispatcherFn}
   await fs.writeFile(clientPath, src);
 }
 
-// Run main if this file is executed directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Run main if this file is executed directly.
+// pathToFileURL keeps this working on Windows, where argv[1] uses
+// backslashes and never matches import.meta.url verbatim.
+if (
+  process.argv[1] &&
+  import.meta.url === pathToFileURL(process.argv[1]).href
+) {
   main().catch((err) => {
     console.error(err);
     process.exit(1);

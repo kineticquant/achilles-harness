@@ -2683,6 +2683,234 @@ export const zLocalInferenceBuiltinChatTemplatesListResponse_unstable = z.object
     templates: z.array(z.string())
 });
 
+export const zAssessmentsStartRequest = z.object({
+    workingDir: z.string(),
+    sessionId: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    mode: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    parentAssessmentId: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    wait: z.boolean().optional().default(false),
+    includeVendor: z.boolean().optional().default(false),
+    scanLiterals: z.boolean().optional().default(false),
+    scanDelta: z.boolean().optional().default(false),
+    depth: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    resumeAssessmentId: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    maxDurationSecs: z.union([
+        z.number().int().gte(0),
+        z.null()
+    ]).optional(),
+    maxCostUsd: z.union([
+        z.number(),
+        z.null()
+    ]).optional()
+});
+
+export const zAssessmentDto = z.object({
+    id: z.string(),
+    engagementId: z.string(),
+    workingDir: z.string(),
+    sessionId: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    mode: z.string(),
+    status: z.string(),
+    startedAt: z.string(),
+    finishedAt: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    updatedAt: z.string(),
+    phases: z.unknown(),
+    stats: z.unknown(),
+    errorMessage: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    trigger: z.string(),
+    parentAssessmentId: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    baseGitSha: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    headGitSha: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    contentFingerprint: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    modelClass: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    openFindingCount: z.number().int(),
+    newFindingCount: z.union([
+        z.number().int(),
+        z.null()
+    ]).optional(),
+    goneFindingCount: z.union([
+        z.number().int(),
+        z.null()
+    ]).optional()
+});
+
+export const zAssessmentsStartResponse = z.object({
+    assessment: zAssessmentDto
+});
+
+export const zAssessmentsCancelRequest = z.object({
+    assessmentId: z.string()
+});
+
+export const zAssessmentsCancelResponse = z.object({
+    assessment: zAssessmentDto
+});
+
+export const zAssessmentsPauseRequest = z.object({
+    assessmentId: z.string(),
+    paused: z.boolean()
+});
+
+export const zAssessmentsPauseResponse = z.object({
+    assessment: zAssessmentDto
+});
+
+export const zAssessmentsListRequest = z.object({
+    workingDir: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    sessionId: z.union([
+        z.string(),
+        z.null()
+    ]).optional()
+});
+
+export const zAssessmentsListResponse = z.object({
+    assessments: z.array(zAssessmentDto)
+});
+
+export const zAssessmentsGetRequest = z.object({
+    assessmentId: z.string()
+});
+
+export const zAssessmentsGetResponse = z.object({
+    assessment: zAssessmentDto
+});
+
+export const zFindingsListRequest = z.object({
+    assessmentId: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    engagementId: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    workingDir: z.union([
+        z.string(),
+        z.null()
+    ]).optional()
+});
+
+export const zFindingDto = z.object({
+    id: z.string(),
+    engagementId: z.string(),
+    assessmentId: z.string(),
+    lastSeenAssessmentId: z.string(),
+    fingerprint: z.string(),
+    state: z.string(),
+    severity: z.string(),
+    confidence: z.string(),
+    category: z.string(),
+    ruleId: z.string(),
+    title: z.string(),
+    description: z.string(),
+    path: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    lineStart: z.union([
+        z.number().int(),
+        z.null()
+    ]).optional(),
+    lineEnd: z.union([
+        z.number().int(),
+        z.null()
+    ]).optional(),
+    cwe: z.unknown(),
+    cve: z.unknown(),
+    evidence: z.unknown(),
+    firstSeenAt: z.string(),
+    lastSeenAt: z.string(),
+    statusReason: z.union([
+        z.string(),
+        z.null()
+    ]).optional()
+});
+
+export const zFindingsListResponse = z.object({
+    findings: z.array(zFindingDto)
+});
+
+export const zFindingsSetStateRequest = z.object({
+    findingId: z.string(),
+    state: z.string(),
+    reason: z.union([
+        z.string(),
+        z.null()
+    ]).optional()
+});
+
+export const zFindingsSetStateResponse = z.object({
+    finding: zFindingDto
+});
+
+export const zUtilsRunRequest = z.object({
+    workingDir: z.string(),
+    action: z.string(),
+    path: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    text: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    passphrase: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    expected: z.union([
+        z.string(),
+        z.null()
+    ]).optional(),
+    confirm: z.boolean().optional().default(false)
+});
+
+export const zUtilsRunResponse = z.object({
+    result: z.unknown()
+});
+
 /**
  * Streaming context-window usage update for a session.
  */
@@ -2938,7 +3166,15 @@ export const zExtRequest = z.object({
             zLocalInferenceModelSettingsUpdateRequest_unstable,
             zLocalInferenceHuggingFaceSearchRequest_unstable,
             zLocalInferenceHuggingFaceRepoVariantsRequest_unstable,
-            zLocalInferenceBuiltinChatTemplatesListRequest_unstable
+            zLocalInferenceBuiltinChatTemplatesListRequest_unstable,
+            zAssessmentsStartRequest,
+            zAssessmentsCancelRequest,
+            zAssessmentsPauseRequest,
+            zAssessmentsListRequest,
+            zAssessmentsGetRequest,
+            zFindingsListRequest,
+            zFindingsSetStateRequest,
+            zUtilsRunRequest
         ]),
         z.union([
             z.record(z.unknown()),
@@ -3026,7 +3262,15 @@ export const zExtResponse = z.union([
                 zLocalInferenceModelSettingsUpdateResponse_unstable,
                 zLocalInferenceHuggingFaceSearchResponse_unstable,
                 zLocalInferenceHuggingFaceRepoVariantsResponse_unstable,
-                zLocalInferenceBuiltinChatTemplatesListResponse_unstable
+                zLocalInferenceBuiltinChatTemplatesListResponse_unstable,
+                zAssessmentsStartResponse,
+                zAssessmentsCancelResponse,
+                zAssessmentsPauseResponse,
+                zAssessmentsListResponse,
+                zAssessmentsGetResponse,
+                zFindingsListResponse,
+                zFindingsSetStateResponse,
+                zUtilsRunResponse
             ]),
             z.unknown()
         ]).optional()

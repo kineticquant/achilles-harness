@@ -20,6 +20,16 @@ import type {
   AppsListRequest_unstable,
   AppsListResponse_unstable,
   ArchiveSessionRequest_unstable,
+  AssessmentsCancelRequest,
+  AssessmentsCancelResponse,
+  AssessmentsGetRequest,
+  AssessmentsGetResponse,
+  AssessmentsListRequest,
+  AssessmentsListResponse,
+  AssessmentsPauseRequest,
+  AssessmentsPauseResponse,
+  AssessmentsStartRequest,
+  AssessmentsStartResponse,
   CanonicalModelInfoRequest_unstable,
   CanonicalModelInfoResponse_unstable,
   ConfigReadAllRequest_unstable,
@@ -72,6 +82,10 @@ import type {
   ExportSessionResponse_unstable,
   ExportSourceRequest_unstable,
   ExportSourceResponse_unstable,
+  FindingsListRequest,
+  FindingsListResponse,
+  FindingsSetStateRequest,
+  FindingsSetStateResponse,
   GetAvailableExtensionsRequest_unstable,
   GetAvailableExtensionsResponse_unstable,
   GetConfigExtensionsRequest_unstable,
@@ -199,12 +213,19 @@ import type {
   UpdateSourceRequest_unstable,
   UpdateSourceResponse_unstable,
   UpdateWorkingDirRequest_unstable,
+  UtilsRunRequest,
+  UtilsRunResponse,
 } from './types.gen.js';
 import {
   zAppsDeleteResponse_unstable,
   zAppsExportResponse_unstable,
   zAppsImportResponse_unstable,
   zAppsListResponse_unstable,
+  zAssessmentsCancelResponse,
+  zAssessmentsGetResponse,
+  zAssessmentsListResponse,
+  zAssessmentsPauseResponse,
+  zAssessmentsStartResponse,
   zCanonicalModelInfoResponse_unstable,
   zConfigReadAllResponse_unstable,
   zConfigReadResponse_unstable,
@@ -224,6 +245,8 @@ import {
   zEncodeRecipeResponse_unstable,
   zExportSessionResponse_unstable,
   zExportSourceResponse_unstable,
+  zFindingsListResponse,
+  zFindingsSetStateResponse,
   zGetAvailableExtensionsResponse_unstable,
   zGetConfigExtensionsResponse_unstable,
   zGetPromptResponse_unstable,
@@ -277,6 +300,7 @@ import {
   zSteerSessionResponse_unstable,
   zUpdateScheduleResponse_unstable,
   zUpdateSourceResponse_unstable,
+  zUtilsRunResponse,
 } from './zod.gen.js';
 
 export class GooseExtClient {
@@ -1460,6 +1484,86 @@ export class GooseExtClient {
     return zLocalInferenceBuiltinChatTemplatesListResponse_unstable.parse(
       raw,
     ) as LocalInferenceBuiltinChatTemplatesListResponse_unstable;
+  }
+
+  async achillesUnstableAssessmentsStart(
+    params: AssessmentsStartRequest,
+  ): Promise<AssessmentsStartResponse> {
+    const raw = await this.conn.extMethod(
+      "_achilles/unstable/assessments/start",
+      params,
+    );
+    return zAssessmentsStartResponse.parse(raw) as AssessmentsStartResponse;
+  }
+
+  async achillesUnstableAssessmentsCancel(
+    params: AssessmentsCancelRequest,
+  ): Promise<AssessmentsCancelResponse> {
+    const raw = await this.conn.extMethod(
+      "_achilles/unstable/assessments/cancel",
+      params,
+    );
+    return zAssessmentsCancelResponse.parse(raw) as AssessmentsCancelResponse;
+  }
+
+  async achillesUnstableAssessmentsPause(
+    params: AssessmentsPauseRequest,
+  ): Promise<AssessmentsPauseResponse> {
+    const raw = await this.conn.extMethod(
+      "_achilles/unstable/assessments/pause",
+      params,
+    );
+    return zAssessmentsPauseResponse.parse(raw) as AssessmentsPauseResponse;
+  }
+
+  async achillesUnstableAssessmentsList(
+    params: AssessmentsListRequest,
+  ): Promise<AssessmentsListResponse> {
+    const raw = await this.conn.extMethod(
+      "_achilles/unstable/assessments/list",
+      params,
+    );
+    return zAssessmentsListResponse.parse(raw) as AssessmentsListResponse;
+  }
+
+  async achillesUnstableAssessmentsGet(
+    params: AssessmentsGetRequest,
+  ): Promise<AssessmentsGetResponse> {
+    const raw = await this.conn.extMethod(
+      "_achilles/unstable/assessments/get",
+      params,
+    );
+    return zAssessmentsGetResponse.parse(raw) as AssessmentsGetResponse;
+  }
+
+  async achillesUnstableFindingsList(
+    params: FindingsListRequest,
+  ): Promise<FindingsListResponse> {
+    const raw = await this.conn.extMethod(
+      "_achilles/unstable/findings/list",
+      params,
+    );
+    return zFindingsListResponse.parse(raw) as FindingsListResponse;
+  }
+
+  async achillesUnstableFindingsSetState(
+    params: FindingsSetStateRequest,
+  ): Promise<FindingsSetStateResponse> {
+    const raw = await this.conn.extMethod(
+      "_achilles/unstable/findings/setState",
+      params,
+    );
+    return zFindingsSetStateResponse.parse(raw) as FindingsSetStateResponse;
+  }
+
+  async achillesUnstableUtilsRun(
+    params: UtilsRunRequest,
+  ): Promise<UtilsRunResponse> {
+    const raw = await this.conn.extMethod(
+      "_achilles/unstable/utils/run",
+      params,
+    );
+    return zUtilsRunResponse.parse(raw) as UtilsRunResponse;
   }
 }
 
