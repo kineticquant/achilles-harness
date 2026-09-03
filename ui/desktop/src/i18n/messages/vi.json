@@ -203,6 +203,9 @@
   "chatInput.send": {
     "defaultMessage": "Gửi"
   },
+  "chatInput.sendWillQueue": {
+    "defaultMessage": "Stop is finishing — this message will send next"
+  },
   "chatInput.transcribing": {
     "defaultMessage": "Đang chuyển lời nói thành văn bản..."
   },
@@ -232,6 +235,114 @@
   },
   "chatSettings.responseStylesTitle": {
     "defaultMessage": "Phong cách phản hồi"
+  },
+  "codeMap.allFiles": {
+    "defaultMessage": "Entire workspace"
+  },
+  "codeMap.apiEmpty": {
+    "defaultMessage": "Leave Entire workspace and click Map. Expands Rails/Laravel resources, Hotwire/Blade helpers (room_messages_path, route('…')), and fetch/axios. Big repos just take longer."
+  },
+  "codeMap.apiEmptyTitle": {
+    "defaultMessage": "No HTTP paths found"
+  },
+  "codeMap.apiHint": {
+    "defaultMessage": "Caller → route → handler. Rails/Hotwire and Laravel resources, plus fetch/axios and string routes. Tests and third-party URLs are skipped."
+  },
+  "codeMap.browse": {
+    "defaultMessage": "Browse"
+  },
+  "codeMap.close": {
+    "defaultMessage": "Close"
+  },
+  "codeMap.empty": {
+    "defaultMessage": "Click a name above. Typing is optional."
+  },
+  "codeMap.emptyTitle": {
+    "defaultMessage": "Pick a function in this file"
+  },
+  "codeMap.fileLabel": {
+    "defaultMessage": "Filter"
+  },
+  "codeMap.fileSearch": {
+    "defaultMessage": "Type to search files…"
+  },
+  "codeMap.focus": {
+    "defaultMessage": "Function"
+  },
+  "codeMap.focusPlaceholder": {
+    "defaultMessage": "Or click a name below"
+  },
+  "codeMap.follow": {
+    "defaultMessage": "Hops"
+  },
+  "codeMap.followHelp": {
+    "defaultMessage": "How far to follow callers and callees"
+  },
+  "codeMap.hint": {
+    "defaultMessage": "Click a box to open that line. Double-click to map that function instead."
+  },
+  "codeMap.inFile": {
+    "defaultMessage": "Functions in {file}"
+  },
+  "codeMap.intro": {
+    "defaultMessage": "Callers on the left, callees on the right. Opened from a finding, this maps the enclosing function."
+  },
+  "codeMap.map": {
+    "defaultMessage": "Map"
+  },
+  "codeMap.mapping": {
+    "defaultMessage": "Mapping…"
+  },
+  "codeMap.mappingWorkspace": {
+    "defaultMessage": "Mapping the workspace file by file…"
+  },
+  "codeMap.noDir": {
+    "defaultMessage": "Pick a workspace folder in Chat or Scan first."
+  },
+  "codeMap.notFound": {
+    "defaultMessage": "Nothing named “{name}” in these files."
+  },
+  "codeMap.path": {
+    "defaultMessage": "Folder"
+  },
+  "codeMap.pathPlaceholder": {
+    "defaultMessage": "Optional"
+  },
+  "codeMap.propertyHint": {
+    "defaultMessage": "“{name}” is not a function. Pick a method from the list."
+  },
+  "codeMap.recenter": {
+    "defaultMessage": "Back to center"
+  },
+  "codeMap.scanning": {
+    "defaultMessage": "Scanning {current} of {total} · {file}"
+  },
+  "codeMap.stats": {
+    "defaultMessage": "{files} files · {nodes} functions"
+  },
+  "codeMap.tabApis": {
+    "defaultMessage": "APIs"
+  },
+  "codeMap.tabFunctions": {
+    "defaultMessage": "Functions"
+  },
+  "codeMap.tabTemplates": {
+    "defaultMessage": "Templates"
+  },
+  "codeMap.title": {
+    "defaultMessage": "Call graph"
+  },
+  "codeMap.tplEmpty": {
+    "defaultMessage": "Leave Entire workspace and click Map. Looks for render_template, res.render, Rails render, view(), Django render, and the template files they open. Type to filter to one file."
+  },
+  "codeMap.tplEmptyTitle": {
+    "defaultMessage": "No templates found in this workspace"
+  },
+  "codeMap.tplHint": {
+    "defaultMessage": "Render → template → variables, across the workspace. Jinja, Django, ERB, EJS, Twig, Handlebars, Laravel, Rails, and similar — not Jinja only."
+  },
+  "codeMap.truncated": {
+    "defaultMessage": "Stopped at {count} nodes so the map stays readable."
   },
   "configSettings.configReset": {
     "defaultMessage": "Đặt lại cấu hình"
@@ -277,6 +388,12 @@
   },
   "configSettings.saving": {
     "defaultMessage": "Đang lưu..."
+  },
+  "configSettings.telemetryForced": {
+    "defaultMessage": "Disabled — force disabled"
+  },
+  "configSettings.telemetryForcedHint": {
+    "defaultMessage": "Achilles does not collect telemetry."
   },
   "configSettings.title": {
     "defaultMessage": "Cấu hình"
@@ -1226,29 +1343,539 @@
   "externalBackendSection.useExternalServerDescription": {
     "defaultMessage": "Kết nối tới một máy chủ goose đang chạy ở nơi khác (cần khởi động lại ứng dụng)"
   },
-  "findingsView.description": {
-    "defaultMessage": "Secrets and dependency results from Scan my repo. Ledger lives in achilles.db, not chat."
+  "findingsView.agentVerdict": {
+    "defaultMessage": "{role}: {verdict}{reason}"
   },
-  "findingsView.empty": {
-    "defaultMessage": "No findings yet. Choose a workspace from New Chat, then run Scan my repo."
+  "findingsView.askAi": {
+    "defaultMessage": "Ask about this finding"
+  },
+  "findingsView.askAiWait": {
+    "defaultMessage": "Wait for the scan to finish, then type your question about this finding."
+  },
+  "findingsView.attachedFinding": {
+    "defaultMessage": "Asking about this finding"
+  },
+  "findingsView.cancelFailed": {
+    "defaultMessage": "Could not stop scan: {error}"
+  },
+  "findingsView.chatFailed": {
+    "defaultMessage": "Could not send: {error}"
+  },
+  "findingsView.chatHint": {
+    "defaultMessage": "Ask about these findings below."
+  },
+  "findingsView.chatPlaceholder": {
+    "defaultMessage": "Ask Achilles for security guidance to take to your coding app"
+  },
+  "findingsView.clearAttachedFinding": {
+    "defaultMessage": "Remove finding from chat"
+  },
+  "findingsView.collapseComposer": {
+    "defaultMessage": "Collapse input"
+  },
+  "findingsView.collapseFinding": {
+    "defaultMessage": "Collapse finding"
+  },
+  "findingsView.confirm": {
+    "defaultMessage": "Confirm"
+  },
+  "findingsView.copiedForEditor": {
+    "defaultMessage": "Copied as a prompt — paste it into your coding app to fix this, then Rescan here"
+  },
+  "findingsView.copyForEditor": {
+    "defaultMessage": "Copy as prompt"
+  },
+  "findingsView.copyForEditorFailed": {
+    "defaultMessage": "Could not copy"
+  },
+  "findingsView.copyForEditorHint": {
+    "defaultMessage": "Copies a prompt. Paste it into Cursor, Claude Code, Codex, or OpenCode to fix this there, then Rescan here."
+  },
+  "findingsView.countCritical": {
+    "defaultMessage": "{count} critical"
+  },
+  "findingsView.countHigh": {
+    "defaultMessage": "{count} high"
+  },
+  "findingsView.countInfo": {
+    "defaultMessage": "{count} info"
+  },
+  "findingsView.countLow": {
+    "defaultMessage": "{count} low"
+  },
+  "findingsView.countMedium": {
+    "defaultMessage": "{count} medium"
+  },
+  "findingsView.depthDeep": {
+    "defaultMessage": "Deep"
+  },
+  "findingsView.depthDeepHelp": {
+    "defaultMessage": "Wider file walk than Fast or Investigate. The model reviews hits and functions, and may read callers or search for the same sink. New findings need a quote from source it was shown."
+  },
+  "findingsView.depthFast": {
+    "defaultMessage": "Fast"
+  },
+  "findingsView.depthFastHelp": {
+    "defaultMessage": "Quick pass over secrets, known code patterns, dependencies, and deploy config. Typical run is seconds."
+  },
+  "findingsView.depthGroup": {
+    "defaultMessage": "Scan depth"
+  },
+  "findingsView.depthGroupHelpAria": {
+    "defaultMessage": "What Fast, Investigate, and Deep mean"
+  },
+  "findingsView.depthGroupHelpDeep": {
+    "defaultMessage": "Deep: walks more of the tree. The model reviews hits and functions."
+  },
+  "findingsView.depthGroupHelpFast": {
+    "defaultMessage": "Fast: secrets, code patterns, dependencies, and deploy config. Usually seconds."
+  },
+  "findingsView.depthGroupHelpInvestigate": {
+    "defaultMessage": "Investigate: the configured model confirms or rejects code-pattern hits."
+  },
+  "findingsView.depthInvestigate": {
+    "defaultMessage": "Investigate"
+  },
+  "findingsView.depthInvestigateHelp": {
+    "defaultMessage": "Same coverage as Fast, then the configured model confirms or rejects code-pattern hits. It can read more source and look up existing findings."
+  },
+  "findingsView.doneAgent": {
+    "defaultMessage": "{count,plural,=0{AI inspection finished} one{AI inspected 1 item} other{AI inspected # items}}"
+  },
+  "findingsView.doneAgentPlain": {
+    "defaultMessage": "Finished AI review"
+  },
+  "findingsView.doneDelta": {
+    "defaultMessage": "{count,plural,=0{No issues introduced by local changes} one{Found 1 issue introduced by local changes} other{Found # issues introduced by local changes}}"
+  },
+  "findingsView.doneDeltaPlain": {
+    "defaultMessage": "Finished comparing local changes to the rest of the tree"
+  },
+  "findingsView.doneFingerprint": {
+    "defaultMessage": "Indexed {count} files"
+  },
+  "findingsView.doneFingerprintPlain": {
+    "defaultMessage": "Finished indexing the codebase"
+  },
+  "findingsView.doneHarden": {
+    "defaultMessage": "{count,plural,=0{No cookie/CORS/CSP issues found} one{Found 1 cookie/CORS/CSP issue} other{Found # cookie/CORS/CSP issues}}"
+  },
+  "findingsView.doneHardenPlain": {
+    "defaultMessage": "Finished checking cookie, CORS, and CSP defaults"
+  },
+  "findingsView.doneHistory": {
+    "defaultMessage": "{count,plural,=0{No secrets left in git history} one{Found 1 secret still in git history} other{Found # secrets still in git history}}"
+  },
+  "findingsView.doneHistoryPlain": {
+    "defaultMessage": "Finished checking git history for deleted secrets"
+  },
+  "findingsView.doneIntel": {
+    "defaultMessage": "{count,plural,=0{No findings matched known threats} one{Matched 1 finding to known threats} other{Matched # findings to known threats}}"
+  },
+  "findingsView.doneIntelPlain": {
+    "defaultMessage": "Finished matching threat intelligence"
+  },
+  "findingsView.doneInvestigate": {
+    "defaultMessage": "{count,plural,=0{Investigation complete} one{Investigation complete · 1 finding still needs a closer look} other{Investigation complete · # findings still need a closer look}}"
+  },
+  "findingsView.doneInvestigatePlain": {
+    "defaultMessage": "Investigation complete"
+  },
+  "findingsView.doneLiterals": {
+    "defaultMessage": "{count,plural,=0{No hardcoded values flagged (not a security check)} one{Flagged 1 hardcoded value (not a security finding)} other{Flagged # hardcoded values (not security findings)}}"
+  },
+  "findingsView.doneLiteralsPlain": {
+    "defaultMessage": "Finished checking for hardcoded values (not a security scan)"
+  },
+  "findingsView.doneSast": {
+    "defaultMessage": "{count,plural,=0{No insecure coding patterns found} one{Found 1 insecure coding pattern} other{Found # insecure coding patterns}}"
+  },
+  "findingsView.doneSastPlain": {
+    "defaultMessage": "Finished checking for insecure coding patterns"
+  },
+  "findingsView.doneSca": {
+    "defaultMessage": "{count,plural,=0{No known vulnerable dependencies found} one{Found 1 known vulnerable dependency} other{Found # known vulnerable dependencies}}"
+  },
+  "findingsView.doneScaPlain": {
+    "defaultMessage": "Finished checking dependencies"
+  },
+  "findingsView.doneSecrets": {
+    "defaultMessage": "{count,plural,=0{No potential leaked or exposed secrets found} one{Found 1 potential leaked or exposed secret} other{Found # potential leaked or exposed secrets}}"
+  },
+  "findingsView.doneSecretsPlain": {
+    "defaultMessage": "Finished looking for potential leaked secrets"
+  },
+  "findingsView.doneSurfaces": {
+    "defaultMessage": "{count,plural,=0{No exposed attack surfaces found} one{Found 1 exposed attack surface} other{Found # exposed attack surfaces}}"
+  },
+  "findingsView.doneSurfacesPlain": {
+    "defaultMessage": "Finished mapping attack surfaces"
+  },
+  "findingsView.emptyTranscript": {
+    "defaultMessage": "Pick a workspace, then Scan."
+  },
+  "findingsView.engineAll": {
+    "defaultMessage": "All"
+  },
+  "findingsView.engineGroupReview": {
+    "defaultMessage": "Review"
+  },
+  "findingsView.engineGroupSource": {
+    "defaultMessage": "Source"
+  },
+  "findingsView.engineGroupStack": {
+    "defaultMessage": "Stack"
+  },
+  "findingsView.engineKind": {
+    "defaultMessage": "Kind: {kind}"
+  },
+  "findingsView.engineToolbar": {
+    "defaultMessage": "Finding type"
+  },
+  "findingsView.envTemplateNote": {
+    "defaultMessage": "Looks like an env template, not a filled-in .env. Fast does not read values — dismiss if this is only placeholders."
+  },
+  "findingsView.expandComposer": {
+    "defaultMessage": "Expand input"
+  },
+  "findingsView.expandFinding": {
+    "defaultMessage": "Expand finding"
+  },
+  "findingsView.falsePositive": {
+    "defaultMessage": "False positive"
+  },
+  "findingsView.falsePositiveHint": {
+    "defaultMessage": "Marked as a false positive"
+  },
+  "findingsView.filterActive": {
+    "defaultMessage": "Open"
+  },
+  "findingsView.filterAll": {
+    "defaultMessage": "All"
+  },
+  "findingsView.filterFalsePositives": {
+    "defaultMessage": "False positives"
+  },
+  "findingsView.filterFixed": {
+    "defaultMessage": "Fixed"
+  },
+  "findingsView.fingerprintEmpty": {
+    "defaultMessage": "Fingerprint has not finished yet."
+  },
+  "findingsView.fingerprintFiles": {
+    "defaultMessage": "{count,plural,one{# file} other{# files}}"
+  },
+  "findingsView.fingerprintNeedsRescan": {
+    "defaultMessage": "{count} files were indexed. Rescan to show the full tree."
+  },
+  "findingsView.graphEmpty": {
+    "defaultMessage": "No surface-to-finding overlaps on this scan."
+  },
+  "findingsView.graphHeading": {
+    "defaultMessage": "Surfaces ↔ findings"
+  },
+  "findingsView.includeVendorHelp": {
+    "defaultMessage": "Also walk node_modules, vendor, and target. Off by default — those trees are large and usually not your code."
+  },
+  "findingsView.includeVendorHelpAria": {
+    "defaultMessage": "What include vendor means"
+  },
+  "findingsView.includeVendorShort": {
+    "defaultMessage": "Include vendor"
+  },
+  "findingsView.investigateInChat": {
+    "defaultMessage": "Investigate in chat"
+  },
+  "findingsView.kevFlag": {
+    "defaultMessage": "Known exploited (CISA KEV catalog)"
   },
   "findingsView.lastScan": {
-    "defaultMessage": "Last scan {status} · {count} open"
+    "defaultMessage": "Last scan {when}"
+  },
+  "findingsView.localChangeOrigin": {
+    "defaultMessage": "Introduced by {origin} local changes"
+  },
+  "findingsView.mcpBody": {
+    "defaultMessage": "Add Achilles as an MCP server in the app you already write code in. Cursor, Claude Code, Codex, and OpenCode can then pull findings, investigate, and mark them fixed. They apply the patch. You stay here to Rescan. Copy the snippet for the app you use:"
+  },
+  "findingsView.mcpClaudeLabel": {
+    "defaultMessage": "Claude Code"
+  },
+  "findingsView.mcpCodexLabel": {
+    "defaultMessage": "Codex — ~/.codex/config.toml"
+  },
+  "findingsView.mcpCommandLabel": {
+    "defaultMessage": "Command"
+  },
+  "findingsView.mcpCopied": {
+    "defaultMessage": "Copied"
+  },
+  "findingsView.mcpCopyFailed": {
+    "defaultMessage": "Could not copy"
+  },
+  "findingsView.mcpCopySnippet": {
+    "defaultMessage": "Copy"
+  },
+  "findingsView.mcpCursorLabel": {
+    "defaultMessage": "Cursor — .cursor/mcp.json"
+  },
+  "findingsView.mcpOpencodeLabel": {
+    "defaultMessage": "OpenCode — opencode.json"
+  },
+  "findingsView.mcpTitle": {
+    "defaultMessage": "Connect Achilles MCP in your coding app"
+  },
+  "findingsView.mcpTrigger": {
+    "defaultMessage": "Find out how to connect Achilles MCP to your favorite editor"
+  },
+  "findingsView.needsAgent": {
+    "defaultMessage": "needs agent"
   },
   "findingsView.noDir": {
     "defaultMessage": "Pick a workspace folder first (New Chat directory switcher)."
   },
+  "findingsView.noEngineFindings": {
+    "defaultMessage": "No {engine} findings in this filter."
+  },
+  "findingsView.noFindings": {
+    "defaultMessage": "No findings in this filter."
+  },
+  "findingsView.notSecurityFinding": {
+    "defaultMessage": "Not a security finding — stability / config hygiene"
+  },
+  "findingsView.openCount": {
+    "defaultMessage": "Open {count}"
+  },
+  "findingsView.openFile": {
+    "defaultMessage": "Open file"
+  },
+  "findingsView.pastScans": {
+    "defaultMessage": "Past scans"
+  },
+  "findingsView.pauseFailed": {
+    "defaultMessage": "Could not pause scan: {error}"
+  },
+  "findingsView.pauseScan": {
+    "defaultMessage": "Pause"
+  },
+  "findingsView.previewBinary": {
+    "defaultMessage": "This file is not text, so it cannot be previewed."
+  },
+  "findingsView.previewCallGraph": {
+    "defaultMessage": "Call graph"
+  },
+  "findingsView.previewClose": {
+    "defaultMessage": "Close preview"
+  },
+  "findingsView.previewError": {
+    "defaultMessage": "Could not read this file."
+  },
+  "findingsView.previewLine": {
+    "defaultMessage": "L{start}"
+  },
+  "findingsView.previewLineRange": {
+    "defaultMessage": "L{start}–{end}"
+  },
+  "findingsView.previewMissing": {
+    "defaultMessage": "This file is not on disk. It may have been moved or deleted."
+  },
+  "findingsView.previewModeEdit": {
+    "defaultMessage": "Edit"
+  },
+  "findingsView.previewModePreview": {
+    "defaultMessage": "Preview"
+  },
+  "findingsView.previewPopOut": {
+    "defaultMessage": "Pop out"
+  },
+  "findingsView.previewRegion": {
+    "defaultMessage": "File preview"
+  },
+  "findingsView.previewSaveFailed": {
+    "defaultMessage": "Could not save this file."
+  },
+  "findingsView.previewSaving": {
+    "defaultMessage": "Saving"
+  },
+  "findingsView.previewTooLarge": {
+    "defaultMessage": "This file is too large to preview here."
+  },
+  "findingsView.queuedForAgent": {
+    "defaultMessage": "{count} finding(s) still open after AI review — you can continue in chat."
+  },
+  "findingsView.railCallGraph": {
+    "defaultMessage": "Call graph"
+  },
+  "findingsView.reopen": {
+    "defaultMessage": "Reopen"
+  },
+  "findingsView.rescan": {
+    "defaultMessage": "Rescan"
+  },
+  "findingsView.resizeComposer": {
+    "defaultMessage": "Resize input"
+  },
+  "findingsView.resizeRail": {
+    "defaultMessage": "Resize findings panel"
+  },
+  "findingsView.resumeScan": {
+    "defaultMessage": "Resume"
+  },
+  "findingsView.scanAction": {
+    "defaultMessage": "Scan"
+  },
+  "findingsView.scanChanged": {
+    "defaultMessage": "Scan changed files"
+  },
+  "findingsView.scanCompleteLine": {
+    "defaultMessage": "{count,plural,=0{Scan complete · no open findings} one{Scan complete · 1 open finding} other{Scan complete · # open findings}}"
+  },
+  "findingsView.scanDeltaHelp": {
+    "defaultMessage": "Optional. Read staged, unstaged, and untracked edits, compact the functions they touch, and check that new logic against the rest of the tree. Flags sinks this change introduces — especially when the repo already uses a safer pattern."
+  },
+  "findingsView.scanDeltaHelpAria": {
+    "defaultMessage": "What local changes means"
+  },
+  "findingsView.scanDeltaShort": {
+    "defaultMessage": "Local changes"
+  },
   "findingsView.scanFailed": {
     "defaultMessage": "Scan failed: {error}"
   },
-  "findingsView.scanMyRepo": {
-    "defaultMessage": "Scan my repo"
+  "findingsView.scanLiteralsHelp": {
+    "defaultMessage": "Optional. Not a security scan. Limits, timeouts, and magic numbers rank higher than URLs (URLs in source are often fine). IPs, paths, and connection strings are called out because they usually belong in config."
   },
-  "findingsView.scanning": {
-    "defaultMessage": "Scanning…"
+  "findingsView.scanLiteralsHelpAria": {
+    "defaultMessage": "What hardcoded values means"
   },
-  "findingsView.title": {
-    "defaultMessage": "Findings"
+  "findingsView.scanLiteralsShort": {
+    "defaultMessage": "Hardcoded values"
+  },
+  "findingsView.scanPausedLine": {
+    "defaultMessage": "Scan paused."
+  },
+  "findingsView.scanPromptDefault": {
+    "defaultMessage": "{depth,select,investigate{Perform an Investigative Scan on my repo} deep{Perform a Deep Scan on my repo} other{Perform a Fast Scan on my repo}}"
+  },
+  "findingsView.scanPromptDiff": {
+    "defaultMessage": "{depth,select,investigate{Perform an Investigative Scan on changed files} deep{Perform a Deep Scan on changed files} other{Perform a Fast Scan on changed files}}"
+  },
+  "findingsView.scanPromptPlaceholder": {
+    "defaultMessage": "Scan this workspace…"
+  },
+  "findingsView.scanStoppedLine": {
+    "defaultMessage": "Scan stopped."
+  },
+  "findingsView.scanningAgent": {
+    "defaultMessage": "Achilles is inspecting findings with the model (investigator + validator). Deep also walks functions…"
+  },
+  "findingsView.scanningDelta": {
+    "defaultMessage": "Achilles is compacting local git changes and checking the logic they introduce against the rest of the tree…"
+  },
+  "findingsView.scanningFingerprint": {
+    "defaultMessage": "Achilles is indexing the codebase…"
+  },
+  "findingsView.scanningHarden": {
+    "defaultMessage": "Achilles is checking cookie, CORS, and CSP defaults in source…"
+  },
+  "findingsView.scanningHistory": {
+    "defaultMessage": "Achilles is checking git history for secrets that left the working tree…"
+  },
+  "findingsView.scanningIntel": {
+    "defaultMessage": "Achilles is matching findings against known threats…"
+  },
+  "findingsView.scanningInvestigate": {
+    "defaultMessage": "Achilles is reviewing findings that need a closer look…"
+  },
+  "findingsView.scanningLiterals": {
+    "defaultMessage": "Achilles is checking source for hardcoded values (not a security scan — stability / config hygiene)…"
+  },
+  "findingsView.scanningNow": {
+    "defaultMessage": "Scan in progress"
+  },
+  "findingsView.scanningSast": {
+    "defaultMessage": "Achilles is checking the code for known insecure patterns…"
+  },
+  "findingsView.scanningSca": {
+    "defaultMessage": "Achilles is checking dependencies for known vulnerabilities…"
+  },
+  "findingsView.scanningSecrets": {
+    "defaultMessage": "Achilles is looking for potential secrets leaked or accidentally exposed in the code…"
+  },
+  "findingsView.scanningSurfaces": {
+    "defaultMessage": "Achilles is mapping exposed attack surfaces…"
+  },
+  "findingsView.scanningWorkspace": {
+    "defaultMessage": "Achilles is scanning the workspace…"
+  },
+  "findingsView.sendChat": {
+    "defaultMessage": "Send"
+  },
+  "findingsView.skippedAgent": {
+    "defaultMessage": "AI review skipped (no model, or Fast scan)"
+  },
+  "findingsView.skippedDelta": {
+    "defaultMessage": "Local-change comparison skipped"
+  },
+  "findingsView.skippedFingerprint": {
+    "defaultMessage": "Indexing skipped"
+  },
+  "findingsView.skippedHarden": {
+    "defaultMessage": "App-config hardening scan skipped"
+  },
+  "findingsView.skippedHistory": {
+    "defaultMessage": "Git-history secret scan skipped"
+  },
+  "findingsView.skippedIntel": {
+    "defaultMessage": "Threat-intel scan skipped"
+  },
+  "findingsView.skippedInvestigate": {
+    "defaultMessage": "Investigation skipped"
+  },
+  "findingsView.skippedLiterals": {
+    "defaultMessage": "Hardcoded-value scan skipped"
+  },
+  "findingsView.skippedSast": {
+    "defaultMessage": "Insecure-pattern scan skipped"
+  },
+  "findingsView.skippedSca": {
+    "defaultMessage": "Dependency scan skipped"
+  },
+  "findingsView.skippedSecrets": {
+    "defaultMessage": "Secret scan skipped"
+  },
+  "findingsView.skippedSurfaces": {
+    "defaultMessage": "Attack-surface scan skipped"
+  },
+  "findingsView.snippetUnavailable": {
+    "defaultMessage": "Could not read this file."
+  },
+  "findingsView.socketOff": {
+    "defaultMessage": "Socket off"
+  },
+  "findingsView.socketOffHint": {
+    "defaultMessage": "Optional extra package alerts. Add your own free Socket token in Settings — not required. Scans still use OSV."
+  },
+  "findingsView.startupEmpty": {
+    "defaultMessage": "No start command found in manifests or usual entry files."
+  },
+  "findingsView.startupHeading": {
+    "defaultMessage": "How it starts"
+  },
+  "findingsView.stopChat": {
+    "defaultMessage": "Stop reply"
+  },
+  "findingsView.stopScan": {
+    "defaultMessage": "Stop scan"
+  },
+  "findingsView.stopping": {
+    "defaultMessage": "Stopping…"
+  },
+  "findingsView.triageFailed": {
+    "defaultMessage": "Could not update finding: {error}"
+  },
+  "findingsView.vsParent": {
+    "defaultMessage": "{newCount} new / {goneCount} gone since last"
   },
   "goosehintsModal.close": {
     "defaultMessage": "Đóng"
@@ -2396,8 +3023,29 @@
   "navigation.itemSkills": {
     "defaultMessage": "Kỹ năng"
   },
+  "navigation.itemTools": {
+    "defaultMessage": "Utils"
+  },
+  "navigationPanel.cancel": {
+    "defaultMessage": "Cancel"
+  },
   "navigationPanel.chats": {
     "defaultMessage": "Cuộc trò chuyện"
+  },
+  "navigationPanel.delete": {
+    "defaultMessage": "Delete"
+  },
+  "navigationPanel.deleteChat.message": {
+    "defaultMessage": "Are you sure you want to delete \"{name}\"? This cannot be undone."
+  },
+  "navigationPanel.deleteChat.title": {
+    "defaultMessage": "Delete chat"
+  },
+  "navigationPanel.deleteScan.message": {
+    "defaultMessage": "Are you sure you want to delete the scan \"{name}\"? This cannot be undone."
+  },
+  "navigationPanel.deleteScan.title": {
+    "defaultMessage": "Delete scan"
   },
   "navigationPanel.metaCreated": {
     "defaultMessage": "Đã tạo"
@@ -2417,6 +3065,9 @@
   "navigationPanel.noChats": {
     "defaultMessage": "Không có cuộc trò chuyện gần đây"
   },
+  "navigationPanel.scans": {
+    "defaultMessage": "Scan history"
+  },
   "navigationPanel.statusError": {
     "defaultMessage": "Lỗi"
   },
@@ -2428,6 +3079,12 @@
   },
   "navigationPanel.statusUnread": {
     "defaultMessage": "Hoạt động chưa đọc"
+  },
+  "navigationPanel.toast.deleteFailed": {
+    "defaultMessage": "Could not delete \"{name}\": {error}"
+  },
+  "navigationPanel.toast.deleted": {
+    "defaultMessage": "Deleted"
   },
   "navigationPanel.untitledSession": {
     "defaultMessage": "Phiên chưa đặt tên"
@@ -2456,20 +3113,8 @@
   "onboardingSuccess.getStarted": {
     "defaultMessage": "Bắt đầu"
   },
-  "onboardingSuccess.learnMore": {
-    "defaultMessage": "Tìm hiểu thêm"
-  },
   "onboardingSuccess.localModelReady": {
     "defaultMessage": "Mô hình cục bộ đã sẵn sàng"
-  },
-  "onboardingSuccess.privacyDescription": {
-    "defaultMessage": "Dữ liệu sử dụng ẩn danh giúp cải thiện goose. Chúng tôi không bao giờ thu thập cuộc trò chuyện, mã nguồn hoặc dữ liệu cá nhân của bạn."
-  },
-  "onboardingSuccess.privacyTitle": {
-    "defaultMessage": "Quyền riêng tư"
-  },
-  "onboardingSuccess.shareUsageData": {
-    "defaultMessage": "Chia sẻ dữ liệu sử dụng ẩn danh"
   },
   "parameterInput.defaultValue": {
     "defaultMessage": "Giá trị mặc định"
@@ -2909,6 +3554,9 @@
   "providerSelector.localModelDescription": {
     "defaultMessage": "Tải xuống một mô hình và chạy hoàn toàn trên máy của bạn. Không cần khóa API, không cần tài khoản."
   },
+  "providerSelector.localModelDetail": {
+    "defaultMessage": "A free on-device model from Achilles.sh and Eastlake Labs, built on Liquid AI. Little RAM, no GPU, everything stays on this machine. Strong at tool-calling and RAG — local cybersecurity tooling, no usage cap."
+  },
   "providerSelector.selectProvider": {
     "defaultMessage": "Chọn một nhà cung cấp"
   },
@@ -3263,6 +3911,9 @@
   "recipesView.shareRecipe": {
     "defaultMessage": "Chia sẻ công thức"
   },
+  "recipesView.shippedBadge": {
+    "defaultMessage": "Shipped"
+  },
   "recipesView.slashCommandDescription": {
     "defaultMessage": "Đặt một lệnh gạch chéo để nhanh chóng chạy công thức này từ bất kỳ cuộc trò chuyện nào"
   },
@@ -3509,11 +4160,17 @@
   "scheduleModal.invalidFileType": {
     "defaultMessage": "Loại tệp không hợp lệ: Vui lòng chọn tệp YAML (.yaml hoặc .yml)"
   },
+  "scheduleModal.library": {
+    "defaultMessage": "Library"
+  },
   "scheduleModal.nameLabel": {
     "defaultMessage": "Tên:"
   },
   "scheduleModal.namePlaceholder": {
     "defaultMessage": "ví dụ: daily-summary-job"
+  },
+  "scheduleModal.noLibraryRecipes": {
+    "defaultMessage": "No recipes in the library yet."
   },
   "scheduleModal.provideValidRecipe": {
     "defaultMessage": "Vui lòng cung cấp nguồn công thức hợp lệ."
@@ -3532,6 +4189,9 @@
   },
   "scheduleModal.scheduleLabel": {
     "defaultMessage": "Lịch trình:"
+  },
+  "scheduleModal.selectRecipe": {
+    "defaultMessage": "Select a recipe..."
   },
   "scheduleModal.selected": {
     "defaultMessage": "Đã chọn: {path}"
@@ -4157,6 +4817,9 @@
   "skillsView.adjustSearchTerms": {
     "defaultMessage": "Hãy thử điều chỉnh từ khóa tìm kiếm của bạn"
   },
+  "skillsView.builtinBadge": {
+    "defaultMessage": "Built-in"
+  },
   "skillsView.comingSoon": {
     "defaultMessage": "Sắp ra mắt"
   },
@@ -4181,8 +4844,74 @@
   "skillsView.skillsTitle": {
     "defaultMessage": "Kỹ năng"
   },
+  "skillsView.toggleFailed": {
+    "defaultMessage": "Could not update skill: {error}"
+  },
+  "skillsView.toggleOff": {
+    "defaultMessage": "off"
+  },
+  "skillsView.toggleOn": {
+    "defaultMessage": "on"
+  },
+  "skillsView.toggleSkill": {
+    "defaultMessage": "Turn {name} {state}"
+  },
   "skillsView.tryAgain": {
     "defaultMessage": "Thử lại"
+  },
+  "socketSettings.cli": {
+    "defaultMessage": "Socket CLI"
+  },
+  "socketSettings.description": {
+    "defaultMessage": "Optional add-on. Scans already check lockfiles for known CVEs (OSV), unpinned dependencies, install-time scripts, and lookalike package names — no token needed. Socket adds extra package-risk signals the tree and OSV do not cover."
+  },
+  "socketSettings.extraHint": {
+    "defaultMessage": "PR diffs, SBOMs, and threat feeds stay in Socket’s own CLI and CI. Use the same org if you already have them."
+  },
+  "socketSettings.github": {
+    "defaultMessage": "GitHub / CI"
+  },
+  "socketSettings.orgLabel": {
+    "defaultMessage": "Organization slug"
+  },
+  "socketSettings.orgPlaceholder": {
+    "defaultMessage": "your-org (from socket.dev)"
+  },
+  "socketSettings.pricing": {
+    "defaultMessage": "Pricing"
+  },
+  "socketSettings.remove": {
+    "defaultMessage": "Remove token"
+  },
+  "socketSettings.removed": {
+    "defaultMessage": "Socket token removed"
+  },
+  "socketSettings.save": {
+    "defaultMessage": "Save"
+  },
+  "socketSettings.saveFailed": {
+    "defaultMessage": "Could not save Socket settings: {error}"
+  },
+  "socketSettings.saved": {
+    "defaultMessage": "Socket API settings saved"
+  },
+  "socketSettings.signup": {
+    "defaultMessage": "Create a free Socket account"
+  },
+  "socketSettings.signupHint": {
+    "defaultMessage": "Free add-on for extra package-risk signals. You keep the token — Achilles never ships one."
+  },
+  "socketSettings.title": {
+    "defaultMessage": "Socket API"
+  },
+  "socketSettings.tokenLabel": {
+    "defaultMessage": "API token"
+  },
+  "socketSettings.tokenPlaceholder": {
+    "defaultMessage": "Organization API token"
+  },
+  "socketSettings.tokenSavedPlaceholder": {
+    "defaultMessage": "Token saved — paste a new one to replace"
   },
   "spellcheckToggle.description": {
     "defaultMessage": "Kiểm tra chính tả trong ô nhập trò chuyện. Cần khởi động lại để có hiệu lực."
@@ -4529,6 +5258,126 @@
   "toolConfirmation.gooseWouldLikeToCallWithName": {
     "defaultMessage": "Achilles muốn gọi {toolName}. Cho phép?"
   },
+  "toolsView.base64": {
+    "defaultMessage": "Base64"
+  },
+  "toolsView.base64Help": {
+    "defaultMessage": "If the paste is valid base64, it is decoded; otherwise it is encoded. Handy for tokens, small blobs, and protocol payloads. Invalid input is reported rather than silently mangled."
+  },
+  "toolsView.browse": {
+    "defaultMessage": "Browse"
+  },
+  "toolsView.callGraph": {
+    "defaultMessage": "Call graph"
+  },
+  "toolsView.confirmShred": {
+    "defaultMessage": "I understand this overwrites and deletes the file"
+  },
+  "toolsView.decrypt": {
+    "defaultMessage": "Decrypt file"
+  },
+  "toolsView.decryptHelp": {
+    "defaultMessage": "Decrypts an .ach1 file to a .decrypted sibling using your passphrase. Do not paste the recovered plaintext into chat. A wrong passphrase fails closed."
+  },
+  "toolsView.description": {
+    "defaultMessage": "Built-in utilities for security work that sits outside scans and chats: hashing, encoding, redaction, encryption, and related helpers. They run locally on workspace files or pasted text, and they do not start a conversation or a scan."
+  },
+  "toolsView.emptyResult": {
+    "defaultMessage": "Run to see output here. Secrets and passphrases stay off this page."
+  },
+  "toolsView.encrypt": {
+    "defaultMessage": "Encrypt file"
+  },
+  "toolsView.encryptHelp": {
+    "defaultMessage": "Writes a sibling .ach1 file using AES-256-GCM with an Argon2id passphrase. The passphrase is never stored. Keep the original until you confirm you can decrypt the new file."
+  },
+  "toolsView.entropy": {
+    "defaultMessage": "Entropy"
+  },
+  "toolsView.entropyHelp": {
+    "defaultMessage": "Estimates Shannon entropy of pasted text. Higher values look more random (typical of keys and tokens); lower values look structured. This is a local statistic, not a cryptographic strength test."
+  },
+  "toolsView.expected": {
+    "defaultMessage": "Expected SHA-256"
+  },
+  "toolsView.gitPurge": {
+    "defaultMessage": "Git purge plan"
+  },
+  "toolsView.gitPurgeHelp": {
+    "defaultMessage": "Builds a command plan to rewrite git history for a leaked path. Achilles does not run those commands. Review them yourself if you intend to purge, and treat the plan as advisory only."
+  },
+  "toolsView.groupInspect": {
+    "defaultMessage": "Inspect"
+  },
+  "toolsView.groupProtect": {
+    "defaultMessage": "Protect"
+  },
+  "toolsView.groupTransform": {
+    "defaultMessage": "Transform"
+  },
+  "toolsView.hash": {
+    "defaultMessage": "Hash file"
+  },
+  "toolsView.hashHelp": {
+    "defaultMessage": "Computes a SHA-256 digest of a file in the current workspace. Use it to fingerprint a file before sharing, or to compare the same path later. The digest is shown here; the file is not modified."
+  },
+  "toolsView.hashVerify": {
+    "defaultMessage": "Verify hash"
+  },
+  "toolsView.hashVerifyHelp": {
+    "defaultMessage": "Compares a workspace file to an expected SHA-256 hex digest. Use this after a download or handoff to confirm the bytes match. A mismatch means the file is not the same as the one that produced the digest."
+  },
+  "toolsView.hex": {
+    "defaultMessage": "Hex"
+  },
+  "toolsView.hexHelp": {
+    "defaultMessage": "Converts between UTF-8 text and hexadecimal. Paste text to encode, or an even-length hex string to decode. Useful for inspecting binary-ish payloads without opening a hex editor."
+  },
+  "toolsView.jwt": {
+    "defaultMessage": "Decode JWT"
+  },
+  "toolsView.jwtHelp": {
+    "defaultMessage": "Splits a JSON Web Token and shows the header and payload as JSON. The signature is not verified, so this does not prove who issued the token or that it is unaltered."
+  },
+  "toolsView.noDir": {
+    "defaultMessage": "Pick a workspace folder in Chat or Scan first."
+  },
+  "toolsView.passphrase": {
+    "defaultMessage": "Passphrase"
+  },
+  "toolsView.path": {
+    "defaultMessage": "File"
+  },
+  "toolsView.pathHint": {
+    "defaultMessage": "Relative to the current workspace. Paths outside it are refused."
+  },
+  "toolsView.redact": {
+    "defaultMessage": "Redact"
+  },
+  "toolsView.redactHelp": {
+    "defaultMessage": "Masks common secret shapes in pasted text, such as tokens, keys, and similar patterns, so a snippet is safer to share. Nothing is written to disk. Review the output; unusual formats can still leak."
+  },
+  "toolsView.result": {
+    "defaultMessage": "Result"
+  },
+  "toolsView.run": {
+    "defaultMessage": "Run"
+  },
+  "toolsView.running": {
+    "defaultMessage": "Running…"
+  },
+  "toolsView.shred": {
+    "defaultMessage": "Shred file"
+  },
+  "toolsView.shredHelp": {
+    "defaultMessage": "Overwrites a working-tree file, then deletes it. SSDs and snapshots can still retain remnants. Git history is not rewritten. Use Git purge plan if the file was committed."
+  },
+  "toolsView.text": {
+    "defaultMessage": "Text"
+  },
+  "toolsView.title": {
+    "defaultMessage": "Utils"
+  },
   "updateSection.autoDownload": {
     "defaultMessage": "Achilles sẽ tải bản cập nhật ở chế độ nền và cài đặt vào lần tiếp theo khi bạn thoát hoặc khởi động lại."
   },
@@ -4610,6 +5459,27 @@
   "userMessage.cancelAriaLabel": {
     "defaultMessage": "Hủy chỉnh sửa"
   },
+  "userMessage.deleteAriaLabel": {
+    "defaultMessage": "Delete message: {preview}"
+  },
+  "userMessage.deleteButton": {
+    "defaultMessage": "Delete"
+  },
+  "userMessage.deleteCancel": {
+    "defaultMessage": "Cancel"
+  },
+  "userMessage.deleteConfirmAction": {
+    "defaultMessage": "Delete"
+  },
+  "userMessage.deleteConfirmMessage": {
+    "defaultMessage": "This will remove this message and everything after it from the session."
+  },
+  "userMessage.deleteConfirmTitle": {
+    "defaultMessage": "Delete message"
+  },
+  "userMessage.deleteTitle": {
+    "defaultMessage": "Delete this message"
+  },
   "userMessage.editAriaLabel": {
     "defaultMessage": "Chỉnh sửa nội dung tin nhắn"
   },
@@ -4643,6 +5513,12 @@
   "userMessage.emptyError": {
     "defaultMessage": "Tin nhắn không được để trống"
   },
+  "userMessage.findingContext": {
+    "defaultMessage": "Finding context"
+  },
+  "userMessage.findingContextWithTitle": {
+    "defaultMessage": "Finding · {title}"
+  },
   "userMessage.forkSession": {
     "defaultMessage": "Tách nhánh phiên làm việc"
   },
@@ -4654,5 +5530,14 @@
   },
   "userMessage.removeImageFromEdit": {
     "defaultMessage": "Xóa hình ảnh khỏi tin nhắn"
+  },
+  "userMessage.resendAriaLabel": {
+    "defaultMessage": "Resend message: {preview}"
+  },
+  "userMessage.resendButton": {
+    "defaultMessage": "Resend"
+  },
+  "userMessage.resendTitle": {
+    "defaultMessage": "Send this message again"
   }
 }

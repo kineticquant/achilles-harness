@@ -240,13 +240,13 @@
     "defaultMessage": "Entire workspace"
   },
   "codeMap.apiEmpty": {
-    "defaultMessage": "Independent of the finding. Looks for fetch/axios-style calls and server routes (Express, Flask, Rails, Next.js, …) in the workspace."
+    "defaultMessage": "Leave Entire workspace and click Map. Expands Rails/Laravel resources, Hotwire/Blade helpers (room_messages_path, route('…')), and fetch/axios. Big repos just take longer."
   },
   "codeMap.apiEmptyTitle": {
-    "defaultMessage": "No HTTP in this workspace"
+    "defaultMessage": "No HTTP paths found"
   },
   "codeMap.apiHint": {
-    "defaultMessage": "HTTP across the workspace (or one file if you filter). String paths only — not generated clients."
+    "defaultMessage": "Caller → route → handler. Rails/Hotwire and Laravel resources, plus fetch/axios and string routes. Tests and third-party URLs are skipped."
   },
   "codeMap.browse": {
     "defaultMessage": "Browse"
@@ -264,7 +264,7 @@
     "defaultMessage": "Filter"
   },
   "codeMap.fileSearch": {
-    "defaultMessage": "Search files by name or folder"
+    "defaultMessage": "Type to search files…"
   },
   "codeMap.focus": {
     "defaultMessage": "Function"
@@ -293,11 +293,11 @@
   "codeMap.mapping": {
     "defaultMessage": "Mapping…"
   },
+  "codeMap.mappingWorkspace": {
+    "defaultMessage": "Mapping the workspace file by file…"
+  },
   "codeMap.noDir": {
     "defaultMessage": "Pick a workspace folder in Chat or Scan first."
-  },
-  "codeMap.noFile": {
-    "defaultMessage": "Open Call graph from a file first."
   },
   "codeMap.notFound": {
     "defaultMessage": "Nothing named “{name}” in these files."
@@ -332,17 +332,17 @@
   "codeMap.title": {
     "defaultMessage": "Call graph"
   },
-  "codeMap.truncated": {
-    "defaultMessage": "Stopped at {count} nodes so the map stays readable."
-  },
   "codeMap.tplEmpty": {
-    "defaultMessage": "Independent of the finding. Looks for render_template, res.render, Rails render, view(), Django render, and the template files they open."
+    "defaultMessage": "Leave Entire workspace and click Map. Looks for render_template, res.render, Rails render, view(), Django render, and the template files they open. Type to filter to one file."
   },
   "codeMap.tplEmptyTitle": {
     "defaultMessage": "No templates found in this workspace"
   },
   "codeMap.tplHint": {
     "defaultMessage": "Render → template → variables, across the workspace. Jinja, Django, ERB, EJS, Twig, Handlebars, Laravel, Rails, and similar — not Jinja only."
+  },
+  "codeMap.truncated": {
+    "defaultMessage": "Stopped at {count} nodes so the map stays readable."
   },
   "configSettings.configReset": {
     "defaultMessage": "Configuration Reset"
@@ -1344,7 +1344,7 @@
     "defaultMessage": "Connect to an ACP-compatible backend running elsewhere."
   },
   "findingsView.agentVerdict": {
-    "defaultMessage": "{role}: {verdict}"
+    "defaultMessage": "{role}: {verdict}{reason}"
   },
   "findingsView.askAi": {
     "defaultMessage": "Ask about this finding"
@@ -1440,7 +1440,7 @@
     "defaultMessage": "Same coverage as Fast, then the configured model confirms or rejects code-pattern hits. It can read more source and look up existing findings."
   },
   "findingsView.doneAgent": {
-    "defaultMessage": "{count,plural,=0{AI review finished} one{AI reviewed 1 item} other{AI reviewed # items}}"
+    "defaultMessage": "{count,plural,=0{AI inspection finished} one{AI inspected 1 item} other{AI inspected # items}}"
   },
   "findingsView.doneAgentPlain": {
     "defaultMessage": "Finished AI review"
@@ -1767,7 +1767,7 @@
     "defaultMessage": "Scan stopped."
   },
   "findingsView.scanningAgent": {
-    "defaultMessage": "Achilles is running AI review on findings and functions…"
+    "defaultMessage": "Achilles is inspecting findings with the model (investigator + validator). Deep also walks functions…"
   },
   "findingsView.scanningDelta": {
     "defaultMessage": "Achilles is compacting local git changes and checking the logic they introduce against the rest of the tree…"
