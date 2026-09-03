@@ -22,8 +22,8 @@ importers:
         specifier: workspace:*
         version: link:../sdk
       '@agentclientprotocol/sdk':
-        specifier: ^0.19.0
-        version: 0.19.0(zod@3.25.76)
+        specifier: ^1.4.0
+        version: 1.4.0(zod@3.25.76)
       '@mcp-ui/client':
         specifier: 6.1.0
         version: 6.1.0(@preact/signals-core@1.14.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)(supports-color@8.1.1)
@@ -370,8 +370,8 @@ importers:
         version: 3.25.76
     devDependencies:
       '@agentclientprotocol/sdk':
-        specifier: ^0.19.0
-        version: 0.19.0(zod@3.25.76)
+        specifier: ^1.4.0
+        version: 1.4.0(zod@3.25.76)
       '@hey-api/openapi-ts':
         specifier: ^0.92.3
         version: 0.92.4(magicast@0.5.2)(typescript@5.9.3)
@@ -412,8 +412,8 @@ packages:
   '@adobe/css-tools@4.4.4':
     resolution: {integrity: sha512-Elp+iwUx5rN5+Y8xLt5/GRoG20WGoDCQ/1Fb+1LiGtvwbDavuSk0jhD/eZdckHAuzcDzccnkv+rEjyWfRx18gg==}
 
-  '@agentclientprotocol/sdk@0.19.0':
-    resolution: {integrity: sha512-U9I8ws9WTOk6jCBAWpXefGSDgVXn14/kV6HFzwWGcstQ02mOQgClMAROHmoIn9GqZbDBDEOkdIbP4P4TEMQdug==}
+  '@agentclientprotocol/sdk@1.4.0':
+    resolution: {integrity: sha512-/eufudw+aFY1LKLolT6yFE6UMmYRl7fMJ/DEONSIyR6wI3slHWITBsANRGqXEY8FRzqUxwh7QEaGiZHcJPVThg==}
     peerDependencies:
       zod: ^3.25.0 || ^4.0.0
 
@@ -3943,6 +3943,7 @@ packages:
   eslint@9.39.4:
     resolution: {integrity: sha512-XoMjdBOwe/esVgEvLmNsD3IRHkm7fbKIUGvrleloJXUZgDHig2IPWNniv+GwjyJXzuNqVjlr5+4yVUZjycJwfQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -7016,7 +7017,7 @@ snapshots:
 
   '@adobe/css-tools@4.4.4': {}
 
-  '@agentclientprotocol/sdk@0.19.0(zod@3.25.76)':
+  '@agentclientprotocol/sdk@1.4.0(zod@3.25.76)':
     dependencies:
       zod: 3.25.76
 
