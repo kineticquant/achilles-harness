@@ -672,6 +672,9 @@ async fn resolve_hook_path() -> Option<String> {
     }
 }
 
+// Production use is `#[cfg(not(windows))]` (see `resolve_hook_path`); the
+// unit test below runs on all platforms, so allow dead code on Windows lib builds.
+#[cfg_attr(windows, allow(dead_code))]
 fn merge_paths(first: &str, second: &str) -> String {
     let mut seen = std::collections::HashSet::new();
     let mut merged = Vec::new();

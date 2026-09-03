@@ -3,19 +3,14 @@ use std::str::FromStr;
 use anyhow::Result;
 use rmcp::{transport::stdio, ServiceExt};
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Default)]
 pub enum McpCommand {
     AutoVisualiser,
     ComputerController,
     Memory,
     Tutorial,
+    #[default]
     Achilles,
-}
-
-impl Default for McpCommand {
-    fn default() -> Self {
-        Self::Achilles
-    }
 }
 
 impl FromStr for McpCommand {

@@ -1267,7 +1267,9 @@ pub fn load_init_config_from_workspace() -> Result<Mapping, ConfigError> {
 mod tests {
     use super::*;
     use serial_test::serial;
-    use tempfile::{NamedTempFile, TempDir};
+    use tempfile::NamedTempFile;
+    #[cfg(unix)]
+    use tempfile::TempDir;
     #[test]
     fn test_basic_config() -> Result<(), ConfigError> {
         let config = new_test_config();

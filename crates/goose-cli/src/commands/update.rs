@@ -1,12 +1,12 @@
-use anyhow::{Context, Result, bail};
+use anyhow::{bail, Context, Result};
 use reqwest::{
+    header::{HeaderValue, AUTHORIZATION},
     StatusCode,
-    header::{AUTHORIZATION, HeaderValue},
 };
 use sha2::{Digest, Sha256};
-use sigstore_verify::VerificationPolicy;
-use sigstore_verify::trust_root::{SIGSTORE_PRODUCTION_TRUSTED_ROOT, TrustedRoot};
+use sigstore_verify::trust_root::{TrustedRoot, SIGSTORE_PRODUCTION_TRUSTED_ROOT};
 use sigstore_verify::types::{Bundle, Sha256Hash};
+use sigstore_verify::VerificationPolicy;
 use std::env;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -369,6 +369,8 @@ fn extract_zip(data: &[u8], dest: &Path) -> Result<()> {
 }
 
 /// Validate that an archive entry path is safe (no absolute paths, no `..`).
+/// Used by the tar extractor on Unix; the Windows zip path has its own checks.
+#[cfg_attr(target_os = "windows", allow(dead_code))]
 fn validate_entry_path(path: &Path) -> Result<()> {
     if path.is_absolute() {
         bail!("Tar entry has absolute path: {}", path.display());
@@ -846,8 +848,8 @@ mod tests {
     #[cfg(not(target_os = "windows"))]
     #[test]
     fn test_extract_tar_bz2_safe_archive() {
-        use bzip2::Compression;
         use bzip2::write::BzEncoder;
+        use bzip2::Compression;
 
         let tmp = tempdir().unwrap();
 
@@ -893,8 +895,8 @@ mod tests {
     #[cfg(not(target_os = "windows"))]
     #[test]
     fn test_extract_tar_bz2_blocks_symlink_escape() {
-        use bzip2::Compression;
         use bzip2::write::BzEncoder;
+        use bzip2::Compression;
 
         let tmp = tempdir().unwrap();
 

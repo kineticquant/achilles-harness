@@ -59,7 +59,6 @@ impl GooseAcpAgent {
                 resume_assessment_id: req.resume_assessment_id,
                 max_duration_secs: req.max_duration_secs,
                 max_cost_usd: req.max_cost_usd,
-                ..Default::default()
             },
         )
         .await

@@ -1,4 +1,6 @@
-use anyhow::{Context, Result, anyhow};
+#[cfg(unix)]
+use anyhow::anyhow;
+use anyhow::{Context, Result};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 

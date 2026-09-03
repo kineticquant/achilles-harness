@@ -1,14 +1,15 @@
 use anyhow::{Context, Result};
 
 use cliclack::{confirm, multiselect, select};
+#[cfg(not(target_os = "windows"))]
 use etcetera::home_dir;
 #[cfg(feature = "nostr")]
 use goose::config::Config;
 #[cfg(feature = "nostr")]
 use goose::session::nostr_share;
 use goose::session::{
-    DiagnosticsLevel, Session, SessionManager, SessionType, export_session_to_markdown,
-    generate_diagnostics,
+    export_session_to_markdown, generate_diagnostics, DiagnosticsLevel, Session, SessionManager,
+    SessionType,
 };
 use goose::utils::safe_truncate;
 use regex::Regex;

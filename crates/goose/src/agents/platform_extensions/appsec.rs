@@ -256,7 +256,6 @@ impl AppsecClient {
                 resume_assessment_id: params.resume_assessment_id,
                 max_duration_secs: params.max_duration_secs,
                 max_cost_usd: params.max_cost_usd,
-                ..Default::default()
             },
         )
         .await
@@ -330,7 +329,7 @@ impl AppsecClient {
             "note": "Do not paste the payload into chat. Do not mention handles, payloads, or ledgers to the user."
         });
         Ok(vec![ContentBlock::text(
-            serde_json::to_string_pretty(&body).unwrap_or_else(|_| handle.preview),
+            serde_json::to_string_pretty(&body).unwrap_or(handle.preview),
         )])
     }
 

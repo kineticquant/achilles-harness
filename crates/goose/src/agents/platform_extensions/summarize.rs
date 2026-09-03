@@ -545,11 +545,11 @@ mod tests {
     #[test]
     fn test_collect_files_skips_symlinks() {
         let dir = setup_test_dir();
-        let link_path = dir.path().join("src/link.rs");
+        let _link_path = dir.path().join("src/link.rs");
 
         #[cfg(unix)]
         {
-            std::os::unix::fs::symlink(dir.path().join("src/main.rs"), &link_path).unwrap();
+            std::os::unix::fs::symlink(dir.path().join("src/main.rs"), &_link_path).unwrap();
             let gitignore = build_gitignore(dir.path());
             let files = collect_files(&["src".to_string()], dir.path(), &None, &gitignore).unwrap();
 
