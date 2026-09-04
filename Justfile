@@ -263,17 +263,19 @@ validate version:
     fi
 
 get-next-minor-version:
-    @python -c "import sys; v=sys.argv[1].split('.'); print(f'{v[0]}.{int(v[1])+1}.0')" $(just get-tag-version)
+    @python -c "import sys; v=sys.argv[1].split('-')[0].split('.'); print(f'{v[0]}.{int(v[1])+1}.0')" $(just get-tag-version)
 
 get-next-patch-version:
-    @python -c "import sys; v=sys.argv[1].split('.'); print(f'{v[0]}.{v[1]}.{int(v[2])+1}')" $(just get-tag-version)
+    @python -c "import sys; v=sys.argv[1].split('-')[0].split('.'); print(f'{v[0]}.{v[1]}.{int(v[2])+1}')" $(just get-tag-version)
 
 # derive the prior release tag from a version
 # patch bump (e.g. 1.25.1): prior is v1.25.0 (deterministic)
 # minor bump (e.g. 1.26.0): prior is highest v1.25.* GitHub release
 get-prior-version version:
     #!/usr/bin/env bash
-    IFS='.' read -r major minor patch <<< "{{ version }}"
+    clean="{{ version }}"
+    clean="${clean%%-*}"
+    IFS='.' read -r major minor patch <<< "$clean"
     if [[ "$patch" -gt 0 ]]; then
       echo "v${major}.${minor}.$((patch - 1))"
     elif [[ "$minor" -gt 0 ]]; then
