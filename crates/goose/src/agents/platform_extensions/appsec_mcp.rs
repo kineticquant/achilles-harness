@@ -122,13 +122,16 @@ mod tests {
             "appsec_triage",
             "appsec_scan",
             "appsec_intel",
+            "appsec_coverage",
+            "appsec_graph",
+            "appsec_utils",
         ] {
             assert!(
                 names.iter().any(|name| name == expected),
                 "{expected} missing from {names:?}"
             );
         }
-        assert_eq!(names.len(), 6);
+        assert_eq!(names.len(), 9);
     }
 
     #[test]
