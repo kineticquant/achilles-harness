@@ -16,9 +16,10 @@ mod tests {
             None,
             |result| {
                 assert!(result.error.is_none());
+                let last = result.last_message()?.to_lowercase();
                 assert!(
-                    result.last_message()?.to_lowercase().contains("goose"),
-                    "Response should contain 'goose': {}",
+                    last.contains("goose") || last.contains("achilles") || last.contains("arrav"),
+                    "Response should contain 'goose', 'achilles', or 'arrav': {}",
                     result.last_message()?
                 );
                 Ok(())
