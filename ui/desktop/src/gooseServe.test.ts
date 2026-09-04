@@ -1,8 +1,9 @@
 import fs from 'node:fs';
+import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { buildLocalServeUrls, ensureAchillesCliAlias, findGooseBinaryPath, startGooseServe } from './gooseServe';
+import { buildLocalServeUrls, ensureAchillesCliAlias, findGooseBinaryPath, probeGooseServeStatus, startGooseServe } from './gooseServe';
 
 const binaryName = process.platform === 'win32' ? 'goose.exe' : 'goose';
 const tempDirs: string[] = [];
@@ -144,6 +145,49 @@ describe('buildLocalServeUrls', () => {
       acpUrl: 'wss://127.0.0.1:1234/acp?token=secret',
       redactedAcpUrl: 'wss://127.0.0.1:1234/acp?token=REDACTED',
     });
+  });
+});
+
+describe('probeGooseServeStatus', () => {
+  it('reaches a local HTTP /status without Chromium fetch', async () => {
+    const server = http.createServer((_req, res) => {
+      res.writeHead(200);
+      res.end('ok');
+    });
+    await new Promise<void>((resolve) => {
+      server.listen(0, '127.0.0.1', () => resolve());
+    });
+
+    try {
+      const address = server.address();
+      if (!address || typeof address === 'string') {
+        throw new Error('expected tcp listen address');
+      }
+      const response = await probeGooseServeStatus(`http://127.0.0.1:${address.port}/status`);
+      expect(response.ok).toBe(true);
+      expect(response.status).toBe(200);
+    } finally {
+      await new Promise<void>((resolve, reject) => {
+        server.close((error) => (error ? reject(error) : resolve()));
+      });
+    }
+  });
+
+  it('surfaces connection errors instead of swallowing them', async () => {
+    const closed = http.createServer();
+    await new Promise<void>((resolve) => {
+      closed.listen(0, '127.0.0.1', () => resolve());
+    });
+    const address = closed.address();
+    if (!address || typeof address === 'string') {
+      throw new Error('expected tcp listen address');
+    }
+    const port = address.port;
+    await new Promise<void>((resolve, reject) => {
+      closed.close((error) => (error ? reject(error) : resolve()));
+    });
+
+    await expect(probeGooseServeStatus(`http://127.0.0.1:${port}/status`)).rejects.toThrow();
   });
 });
 

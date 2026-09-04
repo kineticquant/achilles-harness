@@ -1325,7 +1325,6 @@ const createChat = async (
         resourcesPath: app.isPackaged ? process.resourcesPath : undefined,
         logger: log,
         diagnosticsDir: STARTUP_LOGS_DIR,
-        readinessFetch: net.fetch as unknown as typeof globalThis.fetch,
       });
       if (!gooseServeResult.certFingerprint) {
         await gooseServeResult.cleanup();

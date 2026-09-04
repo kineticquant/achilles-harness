@@ -1,5 +1,7 @@
 import { spawn, type ChildProcess } from 'child_process';
 import fs from 'node:fs';
+import http from 'node:http';
+import https from 'node:https';
 import { createServer } from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
@@ -173,19 +175,94 @@ const appendErrorTail = (target: string[], lines: string[], maxLines = 100): voi
 
 const CERT_FINGERPRINT_PREFIX = 'GOOSED_CERT_FINGERPRINT=';
 const TLS_FINGERPRINT_TIMEOUT_MS = 5000;
+const PROBE_TIMEOUT_MS = 1000;
+
+const probeErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.name === 'AbortError' ? 'probe aborted' : error.message;
+  }
+  return String(error);
+};
+
+/**
+ * Local /status probe that uses Node http(s), not Chromium net.fetch.
+ * Electron's network service can crash on the self-signed serve cert; Node still
+ * reaches 127.0.0.1 while that process restarts.
+ */
+export const probeGooseServeStatus = (
+  statusUrl: string,
+  init?: ReadinessFetchInit
+): Promise<Response> => {
+  return new Promise((resolve, reject) => {
+    let parsed: URL;
+    try {
+      parsed = new URL(statusUrl);
+    } catch (error) {
+      reject(error);
+      return;
+    }
+
+    const isTls = parsed.protocol === 'https:';
+    let settled = false;
+    const request = (isTls ? https : http).request(
+      {
+        protocol: parsed.protocol,
+        hostname: parsed.hostname,
+        port: parsed.port,
+        path: `${parsed.pathname}${parsed.search}`,
+        method: 'GET',
+        timeout: PROBE_TIMEOUT_MS,
+        ...(isTls ? { rejectUnauthorized: false } : {}),
+      },
+      (response) => {
+        if (settled) {
+          return;
+        }
+        settled = true;
+        response.resume();
+        resolve(new Response(null, { status: response.statusCode ?? 0 }));
+      }
+    );
+
+    const fail = (error: unknown) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      request.destroy();
+      reject(error instanceof Error ? error : new Error(String(error)));
+    };
+
+    request.on('timeout', () => fail(new Error(`probe timeout after ${PROBE_TIMEOUT_MS}ms`)));
+    request.on('error', fail);
+    init?.signal?.addEventListener(
+      'abort',
+      () => {
+        const abortError = new Error('aborted');
+        abortError.name = 'AbortError';
+        fail(abortError);
+      },
+      { once: true }
+    );
+    request.end();
+  });
+};
 
 const fetchStatus = async (
   statusUrl: string,
   readinessFetch: ReadinessFetch
-): Promise<boolean> => {
+): Promise<{ ok: boolean; error?: string }> => {
   const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 1000);
+  const timeout = setTimeout(() => controller.abort(), PROBE_TIMEOUT_MS);
 
   try {
     const response = await readinessFetch(statusUrl, { signal: controller.signal });
-    return response.ok;
-  } catch {
-    return false;
+    if (response.ok) {
+      return { ok: true };
+    }
+    return { ok: false, error: `HTTP ${response.status}` };
+  } catch (error) {
+    return { ok: false, error: probeErrorMessage(error) };
   } finally {
     clearTimeout(timeout);
   }
@@ -237,12 +314,14 @@ const waitForGooseServeReady = async (
   });
 
   let attempt = 1;
+  let lastProbeError: string | undefined;
   while (Date.now() < deadline) {
     if (shouldStopWaiting()) {
       options.onEvent?.('healthcheck_fatal_error', {
         ...probeDetails,
         attempt,
         reason: 'process_unavailable',
+        lastProbeError,
       });
       return false;
     }
@@ -256,19 +335,35 @@ const waitForGooseServeReady = async (
       return false;
     }
 
-    if (await fetchStatus(statusUrl, options.readinessFetch)) {
+    const probe = await fetchStatus(statusUrl, options.readinessFetch);
+    if (probe.ok) {
       options.onEvent?.('healthcheck_success', {
         ...probeDetails,
         attempt,
       });
       return true;
     }
+    lastProbeError = probe.error;
+    if (probe.error && attempt === 1) {
+      options.onEvent?.('healthcheck_probe_error', {
+        ...probeDetails,
+        attempt,
+        error: probe.error,
+      });
+    }
 
     await delay(interval);
     attempt += 1;
   }
 
-  options.onEvent?.('healthcheck_timeout', { ...probeDetails, timeoutMs: timeout });
+  options.onEvent?.('healthcheck_timeout', {
+    ...probeDetails,
+    timeoutMs: timeout,
+    lastProbeError,
+  });
+  if (lastProbeError) {
+    errorLog.push(`readiness probe: ${lastProbeError}`);
+  }
   return false;
 };
 
@@ -370,7 +465,7 @@ export const startGooseServe = async ({
   resourcesPath,
   logger = defaultLogger,
   diagnosticsDir,
-  readinessFetch = fetch,
+  readinessFetch = probeGooseServeStatus,
 }: StartGooseServeOptions): Promise<GooseServeResult> => {
   const workingDir = dir || process.cwd();
   const startupTrace = createGooseServeStartupDiagnostics(diagnosticsDir, workingDir);
