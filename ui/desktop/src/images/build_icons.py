@@ -180,7 +180,12 @@ def main() -> None:
     dark[1024].save(ROOT / "icon-light.png")
 
     ico_sizes = (16, 24, 32, 48, 64, 128, 256)
-    write_ico(ROOT / "icon.ico", [light[s] for s in ico_sizes])
+    # Dark tile (white mark): used for the exe, installer, and
+    # Programs and Features entry on Windows.
+    write_ico(
+        ROOT / "icon.ico",
+        [dark[s] if s in dark else compose_app(mark, s, dark=True) for s in ico_sizes],
+    )
 
     write_icns(ROOT / "icon.icns", {s: light[s] for s in (16, 32, 64, 128, 256, 512, 1024)})
     light_icns = {s: dark[s] if s in dark else compose_app(mark, s, dark=True) for s in (16, 32, 64, 128, 256, 512, 1024)}
