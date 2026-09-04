@@ -1,12 +1,12 @@
-# goose Release Notes Generator
+# Achilles Release Notes Generator
 #
-# Automatically generates release notes using goose AI agent when a new release is published.
+# Automatically generates release notes using AI agent when a new release is published.
 # Updates the GitHub release with AI-generated categorized notes and posts to Discord.
 #
 # Uses workflow_run instead of release:published because GitHub doesn't trigger
 # workflows for events created by GITHUB_TOKEN (to prevent infinite loops).
 
-name: goose Release Notes Generator
+name: Achilles Release Notes Generator
 
 on:
   # Trigger when Release workflow completes (works around GITHUB_TOKEN limitation)
@@ -37,10 +37,10 @@ env:
         name: developer
 
     instructions: |
-      Generate release notes for the goose release.
+      Generate release notes for the Achilles release.
 
       ## Process
-      1. You are already in the goose repository. Do NOT clone or checkout anything.
+      1. You are already in the Achilles repository. Do NOT clone or checkout anything.
       2. Get the previous release tag by running: git describe --tags --abbrev=0 ${RELEASE_TAG}^
       3. Get commits between tags: git log <previous_tag>..${RELEASE_TAG} --oneline --no-merges
       4. Analyze the commits and categorize changes
@@ -53,7 +53,7 @@ env:
       - 📚 **Documentation** - Documentation updates
 
       Format each item as:
-      - Concise description [#XXXX](https://github.com/aaif-goose/goose/pull/XXXX)
+      - Concise description [#XXXX](https://github.com/${REPOSITORY}/pull/XXXX)
 
       Rules:
       - Extract PR numbers from commit messages (look for (#XXXX) pattern)
@@ -65,7 +65,7 @@ env:
       Write ONLY the release notes content to /tmp/release_notes.md (no extra commentary)
 
     prompt: |
-      Generate release notes for ${RELEASE_TAG} in the goose repository.
+      Generate release notes for ${RELEASE_TAG} in the Achilles repository.
 
 permissions:
   contents: write
@@ -125,19 +125,32 @@ jobs:
           apt-get update
           apt-get install -y gettext curl ripgrep git jq
 
-      - name: Run goose to generate release notes
+      - name: Run Achilles agent to generate release notes
         env:
           RELEASE_TAG: ${{ steps.get-tag.outputs.tag }}
+          REPOSITORY: ${{ github.repository }}
         run: |
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::Missing ANTHROPIC_API_KEY (secrets.RELEASE_BOT_ANTHROPIC_KEY). Configure it in repo Settings > Secrets and variables > Actions."
+            exit 1
+          fi
+          if [ -z "${RELEASE_TAG}" ]; then
+            echo "::error::Empty release tag. Pass a valid tag (e.g. v1.45.0) via workflow_dispatch input."
+            exit 1
+          fi
           mkdir -p $HOME/.local/share/goose/sessions
           mkdir -p $HOME/.config/goose
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
 
           # Checkout the release tag
+          if ! git rev-parse --verify "refs/tags/${RELEASE_TAG}" >/dev/null 2>&1; then
+            echo "::error::Tag '${RELEASE_TAG}' not found in this repository."
+            exit 1
+          fi
           git checkout "${RELEASE_TAG}"
 
           # Create recipe from env var with variable substitution
-          echo "$GOOSE_RECIPE" | envsubst '$RELEASE_TAG' > /tmp/recipe.yaml
+          echo "$GOOSE_RECIPE" | envsubst '$RELEASE_TAG $REPOSITORY' > /tmp/recipe.yaml
 
           goose run --recipe /tmp/recipe.yaml
 
@@ -192,7 +205,7 @@ jobs:
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_RELEASE_BOT_TOKEN }}
           DISCORD_CHANNEL_ID: ${{ secrets.DISCORD_RELEASE_BOT_CHANNEL_ID }}
           RELEASE_TAG: ${{ needs.generate-release-notes.outputs.release_tag }}
-          RELEASE_URL: https://github.com/aaif-goose/goose/releases/tag/${{ needs.generate-release-notes.outputs.release_tag }}
+          RELEASE_URL: https://github.com/${{ github.repository }}/releases/tag/${{ needs.generate-release-notes.outputs.release_tag }}
           RELEASE_NOTES: ${{ needs.generate-release-notes.outputs.release_notes }}
           NOTES_LENGTH: ${{ needs.generate-release-notes.outputs.notes_length }}
         shell: bash
@@ -241,7 +254,7 @@ jobs:
           }
 
           # Build the announcement header
-          HEADER="## 🎉 goose ${RELEASE_TAG} is here!
+          HEADER="## 🎉 Achilles ${RELEASE_TAG} is here!
 
           📦 **Release:** ${RELEASE_URL}"
 
