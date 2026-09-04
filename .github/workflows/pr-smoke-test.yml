@@ -15,6 +15,15 @@ on:
 
 name: Live Provider Tests
 
+# These are inherited goose upstream end-to-end checks that call real providers
+# (Anthropic/OpenAI/Google/Databricks/...) with live API keys and pinned models.
+# They cost money and are flaky by nature. They are OPTIONAL signal for Achilles:
+# - CI (`ci.yml`, mocked `cargo test`) is the required gate.
+# - Live tests only run when a provider key is configured AND the
+#   `SKIP_LIVE_TESTS` repo variable is not `true`.
+# - To force-skip: repo Settings > Secrets and variables > Actions > Variables >
+#   New variable `SKIP_LIVE_TESTS=true`. Delete it to re-enable.
+
 jobs:
   check-fork:
     runs-on: ubuntu-latest
@@ -22,6 +31,27 @@ jobs:
     if: github.actor != 'dependabot[bot]' && (github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
     steps:
       - run: echo "Not a fork PR - proceeding with smoke tests"
+
+  live-enabled:
+    runs-on: ubuntu-latest
+    needs: check-fork
+    outputs:
+      enabled: ${{ steps.check.outputs.enabled }}
+    steps:
+      - id: check
+        env:
+          HAS_KEY: ${{ secrets.ANTHROPIC_API_KEY != '' }}
+          SKIP: ${{ vars.SKIP_LIVE_TESTS || '' }}
+        run: |
+          if [ "$SKIP" = "true" ]; then
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Live Provider Tests disabled via SKIP_LIVE_TESTS=true"
+          elif [ "$HAS_KEY" = "true" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Live Provider Tests skipped: no ANTHROPIC_API_KEY secret configured"
+          fi
 
   changes:
     runs-on: ubuntu-latest
@@ -47,8 +77,8 @@ jobs:
   build-binary:
     name: Build Binary
     runs-on: ubuntu-latest
-    needs: changes
-    if: needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch'
+    needs: [changes, live-enabled]
+    if: needs.live-enabled.outputs.enabled == 'true' && (needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch')
     steps:
       - name: Checkout Code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
@@ -72,6 +102,15 @@ jobs:
           name: goose-binary
           path: target/debug/goose
           retention-days: 1
+
+  live-skipped-notice:
+    name: Live tests skipped (no key)
+    runs-on: ubuntu-latest
+    needs: [changes, live-enabled]
+    if: needs.live-enabled.outputs.enabled != 'true' && (needs.changes.outputs.code == 'true' || github.event_name == 'workflow_dispatch')
+    steps:
+      - run: |
+          echo 'Live Provider Tests skipped: set ANTHROPIC_API_KEY secret and ensure SKIP_LIVE_TESTS is not true to enable. CI (mocked cargo tests) remains the required gate.'
 
   smoke-tests:
     name: Smoke Tests
