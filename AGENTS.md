@@ -24,7 +24,7 @@ git log HEAD..upstream/main --oneline
 
 ## Licensing
 
-See [LICENSING.md](LICENSING.md). Do not delete `LICENSE-APACHE`, `NOTICE`, or Apache headers.
+See [LICENSING.md](LICENSING.md). Do not delete `LICENSE-APACHE`, `NOTICE`, or Apache headers. `LICENSE` must stay the full Apache 2.0 text (not a pointer) so GitHub can classify the repo.
 
 Product docs live in `docs/`. Useful build notes: `CUSTOM_DISTROS.md`, `BUILDING_LINUX.md`, `BUILDING_DOCKER.md`, `ui/desktop/README.md`.
 
