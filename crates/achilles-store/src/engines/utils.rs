@@ -19,13 +19,36 @@ const SALT_LEN: usize = 16;
 const NONCE_LEN: usize = 12;
 
 pub fn resolve_under(root: &Path, rel: &str) -> Result<PathBuf> {
-    let root = root.canonicalize().unwrap_or_else(|_| root.to_path_buf());
+    use std::path::Component;
+    // Lexical normalization so `..` escapes are caught even when the
+    // target does not exist (canonicalize would fail and fall back).
+    fn normalize(path: &Path) -> PathBuf {
+        let mut out = PathBuf::new();
+        for comp in path.components() {
+            match comp {
+                Component::CurDir => {}
+                Component::ParentDir => {
+                    if !out.pop() && out.as_os_str().is_empty() {
+                        out.push("..");
+                    }
+                }
+                other => out.push(other.as_os_str()),
+            }
+        }
+        out
+    }
+    let root = normalize(&root.canonicalize().unwrap_or_else(|_| root.to_path_buf()));
     let joined = if Path::new(rel).is_absolute() {
         PathBuf::from(rel)
     } else {
         root.join(rel)
     };
-    let canon = joined.canonicalize().unwrap_or(joined);
+    let normalized = normalize(&joined);
+    if !normalized.starts_with(&root) {
+        bail!("path is outside the workspace");
+    }
+    // Resolve symlinks when the target exists; re-check after resolution.
+    let canon = normalized.canonicalize().unwrap_or(normalized);
     if !canon.starts_with(&root) {
         bail!("path is outside the workspace");
     }
