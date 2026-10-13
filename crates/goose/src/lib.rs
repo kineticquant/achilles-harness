@@ -24,6 +24,7 @@ pub mod goose_apps;
 pub mod hints;
 pub mod hooks;
 pub mod instance_id;
+pub mod jev;
 pub mod logging;
 pub mod mcp_utils;
 pub mod model_config;
