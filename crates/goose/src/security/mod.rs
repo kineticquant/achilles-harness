@@ -231,6 +231,16 @@ impl SecurityManager {
                     );
                 }
             }
+
+            // Jev safety assistant: additive advisory only. Silent (None) unless
+            // explicitly enabled, and never alters the scanner results above.
+            if let Ok(tool_call) = &tool_request.tool_call {
+                if let Some(advisory) =
+                    crate::jev::guard::advise_tool_call(tool_call, messages, &tool_request.id).await
+                {
+                    results.push(advisory);
+                }
+            }
         }
 
         tracing::info!(
@@ -261,5 +271,105 @@ impl SecurityManager {
 impl Default for SecurityManager {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use rmcp::model::CallToolRequestParams;
+    use wiremock::matchers::{method, path};
+    use wiremock::{Mock, MockServer, ResponseTemplate};
+
+    fn benign_shell_request(id: &str) -> ToolRequest {
+        ToolRequest {
+            id: id.to_string(),
+            tool_call: Ok(CallToolRequestParams::new("shell")
+                .with_arguments(rmcp::object!({ "command": "echo hello" }))),
+            metadata: None,
+            tool_meta: None,
+        }
+    }
+
+    fn high_risk_answers() -> serde_json::Value {
+        serde_json::json!({
+            "model": "jev-1.13.0",
+            "answers": {
+                "is_injection": { "type": "noul", "noul": 0.95 },
+                "is_destructive": { "type": "noul", "noul": 0.1 }
+            },
+            "usage": { "input_tokens": 10, "output_tokens": 2 }
+        })
+    }
+
+    #[tokio::test]
+    #[serial_test::serial]
+    async fn jev_advisory_appended_when_guard_enabled() {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/v1/systemone"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(high_risk_answers()))
+            .expect(1)
+            .mount(&server)
+            .await;
+
+        let endpoint = format!("{}/v1/systemone", server.uri());
+        let _guard = env_lock::lock_env([
+            ("JEV_ENABLED", Some("true")),
+            ("JEV_GUARD_ENABLED", Some("true")),
+            ("JEV_API_KEY", Some("test-key")),
+            ("JEV_ENDPOINT", Some(endpoint.as_str())),
+            ("JEV_MODEL", None::<&str>),
+            ("JEV_TIMEOUT_MS", None::<&str>),
+            ("JEV_GUARD_THRESHOLD", None::<&str>),
+            ("SECURITY_PROMPT_CLASSIFIER_ENABLED", None::<&str>),
+            ("SECURITY_COMMAND_CLASSIFIER_ENABLED_OVERRIDE", None::<&str>),
+        ]);
+
+        let manager = SecurityManager::enabled();
+        let results = manager
+            .analyze_tool_requests(&[benign_shell_request("req-1")], &[])
+            .await
+            .expect("analysis succeeds");
+
+        assert!(
+            results
+                .iter()
+                .any(|r| r.finding_id.starts_with("JEV-") && r.is_malicious),
+            "expected a Jev advisory, got: {results:?}"
+        );
+    }
+
+    #[tokio::test]
+    #[serial_test::serial]
+    async fn no_jev_advisory_when_guard_disabled() {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/v1/systemone"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(high_risk_answers()))
+            .mount(&server)
+            .await;
+
+        let _guard = env_lock::lock_env([
+            ("JEV_ENABLED", None::<&str>),
+            ("JEV_GUARD_ENABLED", None::<&str>),
+            ("JEV_API_KEY", None::<&str>),
+            ("JEV_ENDPOINT", None::<&str>),
+            ("SECURITY_PROMPT_CLASSIFIER_ENABLED", None::<&str>),
+            ("SECURITY_COMMAND_CLASSIFIER_ENABLED_OVERRIDE", None::<&str>),
+        ]);
+
+        let manager = SecurityManager::enabled();
+        let results = manager
+            .analyze_tool_requests(&[benign_shell_request("req-1")], &[])
+            .await
+            .expect("analysis succeeds");
+
+        assert!(
+            results.iter().all(|r| !r.finding_id.starts_with("JEV-")),
+            "disabled guard must add nothing, got: {results:?}"
+        );
+        let received = server.received_requests().await.expect("requests tracked");
+        assert!(received.is_empty(), "disabled guard must not call Jev");
     }
 }

@@ -5,9 +5,13 @@
 
 use super::client::JevClient;
 use super::types::{Answer, Question, SystemOneResponse};
+use crate::config::Config;
+use crate::conversation::message::{Message, MessageContent};
+use crate::conversation::{effective_role, EffectiveRole};
 use crate::security::SecurityResult;
 use anyhow::{Context, Result};
-use serde_json::Value;
+use rmcp::model::CallToolRequestParams;
+use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use uuid::Uuid;
 
@@ -96,6 +100,80 @@ impl GuardAssessment {
     }
 }
 
+/// Master switch plus feature switch. Both default off; unset or invalid
+/// values count as off.
+fn guard_enabled() -> bool {
+    let config = Config::global();
+    config.get_param::<bool>("JEV_ENABLED").unwrap_or(false)
+        && config
+            .get_param::<bool>("JEV_GUARD_ENABLED")
+            .unwrap_or(false)
+}
+
+fn guard_thresholds() -> GuardThresholds {
+    let block_at = Config::global()
+        .get_param::<f64>("JEV_GUARD_THRESHOLD")
+        .unwrap_or(GuardThresholds::default().block_at);
+    GuardThresholds {
+        block_at,
+        ..GuardThresholds::default()
+    }
+}
+
+/// State for one tool call: tool name + arguments plus recent user text.
+/// No file contents, no full history.
+fn tool_call_state(tool_call: &CallToolRequestParams, messages: &[Message]) -> Value {
+    let recent_user_text: Vec<String> = messages
+        .iter()
+        .rev()
+        .filter(|m| effective_role(m) == EffectiveRole::User && !m.is_turn_context())
+        .take(3)
+        .map(|m| {
+            m.content
+                .iter()
+                .filter_map(|c| match c {
+                    MessageContent::Text(t) => Some(t.text.clone()),
+                    _ => None,
+                })
+                .collect::<Vec<_>>()
+                .join("\n")
+        })
+        .filter(|s| !s.is_empty())
+        .collect();
+    json!({
+        "tool": tool_call.name.to_string(),
+        "arguments": tool_call.arguments,
+        "recent_user_text": recent_user_text,
+    })
+}
+
+/// Advisory check for one tool call. Returns `None` when the guard is
+/// disabled, unconfigured, erroring, or the call looks clean — i.e. it fails
+/// open in every non-signal case.
+pub async fn advise_tool_call(
+    tool_call: &CallToolRequestParams,
+    messages: &[Message],
+    tool_request_id: &str,
+) -> Option<SecurityResult> {
+    if !guard_enabled() {
+        return None;
+    }
+    let client = match JevClient::from_config() {
+        Ok(client) => client,
+        Err(error) => {
+            tracing::debug!("Jev guard skipped, client unavailable: {error:#}");
+            return None;
+        }
+    };
+    match advise(&client, tool_call_state(tool_call, messages)).await {
+        Ok(assessment) => assessment.to_security_result(tool_request_id, &guard_thresholds()),
+        Err(error) => {
+            tracing::debug!("Jev guard call failed, failing open: {error:#}");
+            None
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -120,10 +198,9 @@ mod tests {
         let server = MockServer::start().await;
         Mock::given(method("POST"))
             .and(path("/v1/systemone"))
-            .respond_with(ResponseTemplate::new(200).set_body_json(guard_answers(
-                injection,
-                destructive,
-            )))
+            .respond_with(
+                ResponseTemplate::new(200).set_body_json(guard_answers(injection, destructive)),
+            )
             .mount(&server)
             .await;
 
@@ -219,10 +296,84 @@ mod tests {
             injection: 0.1,
             destructive: 0.05,
         };
-        assert!(
-            assessment
-                .to_security_result("req-1", &GuardThresholds::default())
-                .is_none()
-        );
+        assert!(assessment
+            .to_security_result("req-1", &GuardThresholds::default())
+            .is_none());
+    }
+
+    fn shell_tool_call(command: &str) -> rmcp::model::CallToolRequestParams {
+        rmcp::model::CallToolRequestParams::new("shell").with_arguments(rmcp::object!({
+            "command": command
+        }))
+    }
+
+    fn jev_env<'a>(enabled: Option<&'a str>, endpoint: Option<&'a str>) -> env_lock::EnvGuard<'a> {
+        env_lock::lock_env([
+            ("JEV_ENABLED", enabled),
+            ("JEV_GUARD_ENABLED", enabled),
+            ("JEV_API_KEY", Some("test-key")),
+            ("JEV_ENDPOINT", endpoint),
+            ("JEV_MODEL", None::<&str>),
+            ("JEV_TIMEOUT_MS", None::<&str>),
+            ("JEV_GUARD_THRESHOLD", None::<&str>),
+        ])
+    }
+
+    #[tokio::test]
+    #[serial_test::serial]
+    async fn advise_tool_call_returns_none_when_disabled() {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/v1/systemone"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(guard_answers(1.0, 1.0)))
+            .mount(&server)
+            .await;
+
+        let _guard = jev_env(None, None);
+        let result = advise_tool_call(&shell_tool_call("echo hello"), &[], "req-1").await;
+
+        assert!(result.is_none(), "disabled guard must stay silent");
+        let received = server.received_requests().await.expect("requests tracked");
+        assert!(received.is_empty(), "disabled guard must not call Jev");
+    }
+
+    #[tokio::test]
+    #[serial_test::serial]
+    async fn advise_tool_call_maps_high_risk_to_malicious() {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/v1/systemone"))
+            .respond_with(ResponseTemplate::new(200).set_body_json(guard_answers(0.95, 0.1)))
+            .expect(1)
+            .mount(&server)
+            .await;
+
+        let endpoint = format!("{}/v1/systemone", server.uri());
+        let _guard = jev_env(Some("true"), Some(&endpoint));
+        let result = advise_tool_call(&shell_tool_call("echo hello"), &[], "req-9").await;
+
+        let advisory = result.expect("high risk produces an advisory");
+        assert!(advisory.is_malicious);
+        assert!(advisory.should_ask_user);
+        assert_eq!(advisory.tool_request_id, "req-9");
+        assert!(advisory.finding_id.starts_with("JEV-"));
+        assert!(advisory.explanation.contains("jev-assistant:"));
+    }
+
+    #[tokio::test]
+    #[serial_test::serial]
+    async fn advise_tool_call_returns_none_on_jev_error() {
+        let server = MockServer::start().await;
+        Mock::given(method("POST"))
+            .and(path("/v1/systemone"))
+            .respond_with(ResponseTemplate::new(500))
+            .mount(&server)
+            .await;
+
+        let endpoint = format!("{}/v1/systemone", server.uri());
+        let _guard = jev_env(Some("true"), Some(&endpoint));
+        let result = advise_tool_call(&shell_tool_call("echo hello"), &[], "req-1").await;
+
+        assert!(result.is_none(), "Jev errors must fail open to no advisory");
     }
 }
