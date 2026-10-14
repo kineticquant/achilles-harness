@@ -1396,6 +1396,24 @@ impl AchillesStore {
         state: &str,
         reason: Option<&str>,
     ) -> Result<Finding> {
+        self.triage_finding_with_source(finding_id, state, reason, "user")
+            .await
+    }
+
+    /// Triage with an explicit source (`user` or `jev`). The source is stored
+    /// in `evidence.triage` and on the audit event; rescan preservation via
+    /// `preserve_triage` applies to both.
+    pub async fn triage_finding_with_source(
+        &self,
+        finding_id: &str,
+        state: &str,
+        reason: Option<&str>,
+        source: &str,
+    ) -> Result<Finding> {
+        anyhow::ensure!(
+            matches!(source, "user" | "jev"),
+            "invalid triage source {source}"
+        );
         anyhow::ensure!(
             matches!(state, "open" | "confirmed" | "dismissed" | "verified_fixed"),
             "invalid finding state {state}"
@@ -1424,7 +1442,7 @@ impl AchillesStore {
                     "triage".into(),
                     serde_json::json!({
                         "reason": "false_positive",
-                        "source": "user",
+                        "source": source,
                         "at": now,
                     }),
                 );
@@ -1449,7 +1467,7 @@ impl AchillesStore {
         if from_state != state {
             self.insert_finding_event(
                 finding_id,
-                "user",
+                source,
                 Some(&from_state),
                 Some(state),
                 Some(&finding.assessment_id),
@@ -1462,6 +1480,59 @@ impl AchillesStore {
         }
         finding.state = state.to_string();
         finding.status_reason = status_reason.map(str::to_string);
+        finding.evidence_json = evidence;
+        finding.last_seen_at = now;
+        Ok(finding)
+    }
+
+    /// Record a Jev triage assessment without changing finding state. Stored
+    /// under `evidence.jev_assessment` (separate from the investigator/validator
+    /// passes so dual-pass logic is unaffected).
+    pub async fn record_jev_verdict(
+        &self,
+        finding_id: &str,
+        verdict: &str,
+        reason: &str,
+        signals: serde_json::Value,
+    ) -> Result<Finding> {
+        let verdict = crate::engines::investigate::parse_verdict(verdict).ok_or_else(|| {
+            anyhow::anyhow!("verdict must be true_positive, false_positive, or uncertain")
+        })?;
+        let reason = reason.trim();
+        anyhow::ensure!(!reason.is_empty(), "reason is required");
+        anyhow::ensure!(
+            reason.len() <= crate::engines::investigate::MAX_VERDICT_REASON,
+            "reason too long"
+        );
+        let mut finding = self
+            .get_finding(finding_id)
+            .await?
+            .ok_or_else(|| anyhow::anyhow!("unknown finding {finding_id}"))?;
+        let now = now_rfc3339();
+        let mut evidence = finding.evidence_json.clone();
+        if !evidence.is_object() {
+            evidence = serde_json::json!({});
+        }
+        if let serde_json::Value::Object(map) = &mut evidence {
+            map.insert(
+                "jev_assessment".into(),
+                serde_json::json!({
+                    "verdict": verdict,
+                    "reason": reason,
+                    "at": now,
+                    "signals": signals,
+                }),
+            );
+        }
+        let pool = self.pool().await?;
+        let n = sqlx::query("UPDATE findings SET evidence_json = ?, last_seen_at = ? WHERE id = ?")
+            .bind(evidence.to_string())
+            .bind(&now)
+            .bind(finding_id)
+            .execute(pool)
+            .await?
+            .rows_affected();
+        anyhow::ensure!(n == 1, "unknown finding {finding_id}");
         finding.evidence_json = evidence;
         finding.last_seen_at = now;
         Ok(finding)
@@ -2105,6 +2176,130 @@ mod tests {
             kept.evidence_json["investigation"]["passes"]["investigator"]["verdict"],
             serde_json::json!("false_positive")
         );
+    }
+
+    async fn jev_triage_fixture() -> (tempfile::TempDir, AchillesStore, String) {
+        let dir = tempfile::tempdir().unwrap();
+        let store = AchillesStore::new(dir.path().to_path_buf());
+        let engagement = store
+            .upsert_engagement(dir.path().to_str().unwrap())
+            .await
+            .unwrap();
+        let assessment = store
+            .create_assessment(&engagement, None, "quick", "scan_cta", None)
+            .await
+            .unwrap();
+        store
+            .upsert_finding(
+                &engagement.id,
+                &assessment.id,
+                &NewFinding {
+                    fingerprint: "sca|demo-pkg|demo".into(),
+                    severity: Severity::High,
+                    confidence: "medium".into(),
+                    category: "sca".into(),
+                    rule_id: "GHSA-demo".into(),
+                    title: "demo-pkg@1.0.0 has a demo advisory".into(),
+                    description: "test".into(),
+                    path: Some("Cargo.lock".into()),
+                    line_start: None,
+                    line_end: None,
+                    cwe: vec![],
+                    cve: vec!["CVE-2026-0001".into()],
+                    evidence: serde_json::json!({
+                        "engine": "achilles-sca-osv-v0",
+                        "package": "demo-pkg",
+                        "version": "1.0.0",
+                        "ecosystem": "crates.io",
+                    }),
+                },
+            )
+            .await
+            .unwrap();
+        let listed = store
+            .list_findings(Some(&assessment.id), None, None)
+            .await
+            .unwrap();
+        let id = listed[0].id.clone();
+        (dir, store, id)
+    }
+
+    #[tokio::test]
+    async fn triage_finding_with_source_jev_marks_source_and_actor() {
+        let (_dir, store, id) = jev_triage_fixture().await;
+        let marked = store
+            .triage_finding_with_source(&id, "dismissed", Some("false_positive"), "jev")
+            .await
+            .unwrap();
+
+        assert_eq!(marked.state, "dismissed");
+        assert_eq!(marked.status_reason.as_deref(), Some("false_positive"));
+        assert_eq!(
+            marked.evidence_json["triage"]["source"],
+            serde_json::json!("jev")
+        );
+        let events = store.list_finding_events(&id).await.unwrap();
+        assert!(
+            events.iter().any(|event| {
+                event.actor == "jev" && event.to_state.as_deref() == Some("dismissed")
+            }),
+            "{events:?}"
+        );
+    }
+
+    #[tokio::test]
+    async fn triage_finding_defaults_source_to_user() {
+        let (_dir, store, id) = jev_triage_fixture().await;
+        let marked = store
+            .triage_finding(&id, "dismissed", Some("false_positive"))
+            .await
+            .unwrap();
+        assert_eq!(
+            marked.evidence_json["triage"]["source"],
+            serde_json::json!("user")
+        );
+    }
+
+    #[tokio::test]
+    async fn triage_finding_rejects_unknown_source() {
+        let (_dir, store, id) = jev_triage_fixture().await;
+        let result = store
+            .triage_finding_with_source(&id, "dismissed", Some("false_positive"), "skynet")
+            .await;
+        assert!(result.is_err(), "unknown sources must be rejected");
+    }
+
+    #[tokio::test]
+    async fn record_jev_verdict_stores_assessment_without_changing_state() {
+        let (_dir, store, id) = jev_triage_fixture().await;
+        let updated = store
+            .record_jev_verdict(
+                &id,
+                "false_positive",
+                "advisory range starts above the locked version",
+                serde_json::json!({"version_affected": 0.05, "sink_reachable": 0.1}),
+            )
+            .await
+            .unwrap();
+
+        assert_eq!(updated.state, "open", "recording must not change state");
+        assert_eq!(
+            updated.evidence_json["jev_assessment"]["verdict"],
+            serde_json::json!("false_positive")
+        );
+        assert_eq!(
+            updated.evidence_json["jev_assessment"]["signals"]["version_affected"],
+            serde_json::json!(0.05)
+        );
+    }
+
+    #[tokio::test]
+    async fn record_jev_verdict_rejects_bad_verdict() {
+        let (_dir, store, id) = jev_triage_fixture().await;
+        let result = store
+            .record_jev_verdict(&id, "definitely_fine", "nope", serde_json::json!({}))
+            .await;
+        assert!(result.is_err(), "unknown verdicts must be rejected");
     }
 
     #[tokio::test]

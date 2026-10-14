@@ -6,4 +6,5 @@
 
 pub mod client;
 pub mod guard;
+pub mod triage;
 pub mod types;
