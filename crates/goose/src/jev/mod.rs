@@ -5,6 +5,7 @@
 //! `.working_sessions/JEV_INTEGRATION_PLAN.md`.
 
 pub mod client;
+pub mod config;
 pub mod guard;
 pub mod triage;
 pub mod types;

@@ -6,6 +6,7 @@
 //! triage writes. Uncertain or erroring outcomes leave the finding open.
 
 use super::client::JevClient;
+use super::config;
 use super::types::{Answer, Question, SystemOneResponse};
 use achilles_store::brief::snippet_from_evidence;
 use achilles_store::types::{Assessment, Finding};
@@ -13,19 +14,6 @@ use achilles_store::AchillesStore;
 use anyhow::{Context, Result};
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
-
-/// Decision bands: auto-triage needs `confidence >= auto_at`; a false-positive
-/// dismissal additionally needs a corroborating low signal
-/// (`version_affected` or `sink_reachable` at most `1 - auto_at`).
-pub struct TriageThresholds {
-    pub auto_at: f64,
-}
-
-impl Default for TriageThresholds {
-    fn default() -> Self {
-        Self { auto_at: 0.8 }
-    }
-}
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TriageDecision {
@@ -164,7 +152,10 @@ fn noul_answer(response: &SystemOneResponse, key: &str) -> Result<f64> {
 
 /// Pure decision rule: high-confidence verdicts act, everything else stays open.
 /// False-positive dismissal additionally requires a corroborating low signal.
-pub fn decide(assessment: &TriageAssessment, thresholds: &TriageThresholds) -> TriageDecision {
+pub fn decide(
+    assessment: &TriageAssessment,
+    thresholds: &config::TriageThresholds,
+) -> TriageDecision {
     if assessment.confidence < thresholds.auto_at {
         return TriageDecision::LeaveOpen;
     }
@@ -190,7 +181,7 @@ pub async fn triage_one(
     store: &AchillesStore,
     client: &JevClient,
     finding_id: &str,
-    thresholds: &TriageThresholds,
+    thresholds: &config::TriageThresholds,
 ) -> Result<TriageDecision> {
     let finding = store
         .get_finding(finding_id)
@@ -257,7 +248,7 @@ pub async fn triage_assessment(
     store: &AchillesStore,
     client: &JevClient,
     assessment_id: &str,
-    thresholds: &TriageThresholds,
+    thresholds: &config::TriageThresholds,
     limit: usize,
 ) -> Result<TriageSummary> {
     let mut summary = TriageSummary::default();
@@ -469,13 +460,19 @@ mod tests {
 
     #[test]
     fn decide_dismisses_corroborated_high_confidence_fp() {
-        let decision = decide(&fp_assessment(0.9, 0.05, 0.7), &TriageThresholds::default());
+        let decision = decide(
+            &fp_assessment(0.9, 0.05, 0.7),
+            &config::TriageThresholds::default(),
+        );
         assert!(matches!(decision, TriageDecision::DismissFalsePositive));
     }
 
     #[test]
     fn decide_leaves_uncorroborated_fp_open() {
-        let decision = decide(&fp_assessment(0.9, 0.6, 0.7), &TriageThresholds::default());
+        let decision = decide(
+            &fp_assessment(0.9, 0.6, 0.7),
+            &config::TriageThresholds::default(),
+        );
         assert!(matches!(decision, TriageDecision::LeaveOpen));
     }
 
@@ -488,13 +485,16 @@ mod tests {
             version_affected: 0.9,
             sink_reachable: 0.9,
         };
-        let decision = decide(&assessment, &TriageThresholds::default());
+        let decision = decide(&assessment, &config::TriageThresholds::default());
         assert!(matches!(decision, TriageDecision::ConfirmTruePositive));
     }
 
     #[test]
     fn decide_leaves_low_confidence_open() {
-        let decision = decide(&fp_assessment(0.5, 0.05, 0.1), &TriageThresholds::default());
+        let decision = decide(
+            &fp_assessment(0.5, 0.05, 0.1),
+            &config::TriageThresholds::default(),
+        );
         assert!(matches!(decision, TriageDecision::LeaveOpen));
     }
 
@@ -572,7 +572,7 @@ mod tests {
             &store,
             &test_client(&server),
             &id,
-            &TriageThresholds::default(),
+            &config::TriageThresholds::default(),
         )
         .await
         .expect("triage_one succeeds");
@@ -608,7 +608,7 @@ mod tests {
             &store,
             &test_client(&server),
             &id,
-            &TriageThresholds::default(),
+            &config::TriageThresholds::default(),
         )
         .await
         .expect("triage_one succeeds");
@@ -631,7 +631,7 @@ mod tests {
             &store,
             &test_client(&server),
             &id,
-            &TriageThresholds::default(),
+            &config::TriageThresholds::default(),
         )
         .await
         .expect("triage_one succeeds");
@@ -710,7 +710,7 @@ mod tests {
             &store,
             &test_client(&server),
             &assessment_id,
-            &TriageThresholds::default(),
+            &config::TriageThresholds::default(),
             10,
         )
         .await
@@ -751,7 +751,7 @@ mod tests {
             &store,
             &test_client(&server),
             &assessment_id,
-            &TriageThresholds::default(),
+            &config::TriageThresholds::default(),
             2,
         )
         .await

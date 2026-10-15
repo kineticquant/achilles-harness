@@ -4,8 +4,8 @@
 //! Results are tagged `jev-assistant:` so consumers can tell the source.
 
 use super::client::JevClient;
+use super::config;
 use super::types::{Answer, Question, SystemOneResponse};
-use crate::config::Config;
 use crate::conversation::message::{Message, MessageContent};
 use crate::conversation::{effective_role, EffectiveRole};
 use crate::security::SecurityResult;
@@ -14,23 +14,6 @@ use rmcp::model::CallToolRequestParams;
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 use uuid::Uuid;
-
-/// Decision bands: `risk >= block_at` forces an approval prompt;
-/// `ask_at <= risk < block_at` is recorded but allows the call;
-/// below `ask_at` is clean.
-pub struct GuardThresholds {
-    pub block_at: f64,
-    pub ask_at: f64,
-}
-
-impl Default for GuardThresholds {
-    fn default() -> Self {
-        Self {
-            block_at: 0.8,
-            ask_at: 0.5,
-        }
-    }
-}
 
 /// Advisory outcome: the worst of the injection / destructive signals.
 pub struct GuardAssessment {
@@ -81,7 +64,7 @@ impl GuardAssessment {
     pub fn to_security_result(
         &self,
         tool_request_id: &str,
-        thresholds: &GuardThresholds,
+        thresholds: &config::GuardThresholds,
     ) -> Option<SecurityResult> {
         if self.risk < thresholds.ask_at {
             return None;
@@ -103,21 +86,7 @@ impl GuardAssessment {
 /// Master switch plus feature switch. Both default off; unset or invalid
 /// values count as off.
 fn guard_enabled() -> bool {
-    let config = Config::global();
-    config.get_param::<bool>("JEV_ENABLED").unwrap_or(false)
-        && config
-            .get_param::<bool>("JEV_GUARD_ENABLED")
-            .unwrap_or(false)
-}
-
-fn guard_thresholds() -> GuardThresholds {
-    let block_at = Config::global()
-        .get_param::<f64>("JEV_GUARD_THRESHOLD")
-        .unwrap_or(GuardThresholds::default().block_at);
-    GuardThresholds {
-        block_at,
-        ..GuardThresholds::default()
-    }
+    config::feature_enabled(config::GUARD_FLAG)
 }
 
 /// State for one tool call: tool name + arguments plus recent user text.
@@ -166,7 +135,9 @@ pub async fn advise_tool_call(
         }
     };
     match advise(&client, tool_call_state(tool_call, messages)).await {
-        Ok(assessment) => assessment.to_security_result(tool_request_id, &guard_thresholds()),
+        Ok(assessment) => {
+            assessment.to_security_result(tool_request_id, &config::guard_thresholds())
+        }
         Err(error) => {
             tracing::debug!("Jev guard call failed, failing open: {error:#}");
             None
@@ -256,7 +227,7 @@ mod tests {
             destructive: 0.1,
         };
         let result = assessment
-            .to_security_result("req-1", &GuardThresholds::default())
+            .to_security_result("req-1", &config::GuardThresholds::default())
             .expect("high risk produces a result");
 
         assert!(result.is_malicious);
@@ -282,7 +253,7 @@ mod tests {
             destructive: 0.1,
         };
         let result = assessment
-            .to_security_result("req-1", &GuardThresholds::default())
+            .to_security_result("req-1", &config::GuardThresholds::default())
             .expect("mid band is still recorded");
 
         assert!(!result.is_malicious, "mid band must not force approval");
@@ -297,7 +268,7 @@ mod tests {
             destructive: 0.05,
         };
         assert!(assessment
-            .to_security_result("req-1", &GuardThresholds::default())
+            .to_security_result("req-1", &config::GuardThresholds::default())
             .is_none());
     }
 

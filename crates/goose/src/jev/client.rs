@@ -3,6 +3,7 @@
 //! Bearer auth, one retry on 429/529 with a short backoff, hard timeout.
 //! Every failure surfaces as `Err`: callers must fall back to non-Jev behavior.
 
+use super::config;
 use super::types::{Question, SystemOneRequest, SystemOneResponse};
 use crate::config::{Config, ConfigError};
 use anyhow::{Context, Result};
@@ -63,23 +64,23 @@ impl JevClient {
         let config = Config::global();
 
         let api_key: String = config
-            .get_secret("JEV_API_KEY")
+            .get_secret(config::API_KEY)
             .context("JEV_API_KEY is not set (add it as a secret or env var)")?;
         if api_key.trim().is_empty() {
             anyhow::bail!("JEV_API_KEY is not set (add it as a secret or env var)");
         }
 
-        let endpoint = match config.get_param::<String>("JEV_ENDPOINT") {
+        let endpoint = match config.get_param::<String>(config::ENDPOINT_KEY) {
             Ok(value) => value,
             Err(ConfigError::NotFound(_)) => DEFAULT_ENDPOINT.to_string(),
             Err(e) => return Err(e.into()),
         };
-        let model = match config.get_param::<String>("JEV_MODEL") {
+        let model = match config.get_param::<String>(config::MODEL_KEY) {
             Ok(value) => value,
             Err(ConfigError::NotFound(_)) => DEFAULT_MODEL.to_string(),
             Err(e) => return Err(e.into()),
         };
-        let timeout_ms = match config.get_param::<u64>("JEV_TIMEOUT_MS") {
+        let timeout_ms = match config.get_param::<u64>(config::TIMEOUT_MS_KEY) {
             Ok(value) => value,
             Err(ConfigError::NotFound(_)) => DEFAULT_TIMEOUT_MS,
             Err(e) => return Err(e.into()),
